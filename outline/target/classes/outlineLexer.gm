@@ -1,0 +1,45 @@
+/*
+* this is outline lexer for a new dynamic language inferred by GCP method
+* huizi 2024
+*/
+lexer grammar OutlineLexer;
+
+channels{
+    HIDDEN,
+    ERROR
+
+}
+
+//-------comments---------
+MultiLineComment           : /"\/\*[\s\S]*?\*\/"/ ->channel(HIDDEN);
+SingleLineComment          : /"\/\/[\s\S]*?"/ -> channel(HIDDEN);
+
+//-------characters-------
+
+Arrow                      : '->';
+
+//----------key words----------
+Let                        : 'let';
+Var                        : 'var';
+This                       : 'this';
+Return                     : 'return';
+Function                   : 'fx';
+Module                     : 'module';
+Dot                        : '.';
+Import                     : 'import';
+Export                     : 'export';
+From                       : 'from';
+As                         : 'as';
+Base                       : 'base';
+Sync                       : 'sync';
+String                     : 'String';
+Number                     : 'Number';
+Int                        : 'Int';
+Float                      : 'Float';
+Double                     : 'Double';
+//-----------literal------------
+Integer                    :/"(\+|\-)?0|[1-9][0-9_]*"/;
+
+//----------identifier--------
+ID                         : /"(\b[a-z_]\w*)"/;
+

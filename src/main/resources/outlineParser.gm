@@ -1,0 +1,119 @@
+/*
+* this is outline parser for a new dynamic language inferred by GCP method
+* huizi 2024
+*/
+parser grammar OutlineParser;
+
+options {
+    tokenVocab = OutlineLexer;
+}
+//in msll, a root non terminal is required
+root: statement+;
+
+//---------statements----------------
+statement
+    : comment
+    | variable_declarator
+    | assignment
+    | empty_statement
+    | return_statement
+//    | importStatement
+//    | exportStatement
+//    | classDeclaration
+//    | functionDeclaration
+//    | expressionStatement
+//    | ifStatement
+//    | iterationStatement
+//    | continueStatement
+//    | breakStatement
+//    | returnStatement
+//    | yieldStatement
+//    | withStatement
+//    | labelledStatement
+//    | switchStatement
+//    | throwStatement
+//    | tryStatement
+//    | debuggerStatement
+    ;
+//--------statements--------------
+comment
+    : SingleLineComment
+    | MultiLineComment
+    ;
+variable_declarator
+    : ('let'|'var') {notLineTerminator()} assignment
+    ;
+empty_statement
+    : expression ';'?
+    ;
+return_statement
+    : 'return' expression ';'
+    ;
+//------------expressions-------------
+expression
+    : numeric_expression
+    ;
+numeric_expression
+    :term_expression (('+'|'-') term_expression)*
+    ;
+term_expression
+    :unary_expression (('*'|'/'|'%'|'^') unary_expression)*
+    ;
+unary_expression
+    : ('++' | '--' | '-') factor_expression
+    |factor_expression ('++'|'--')?
+    ;
+factor_expression
+    : literal
+    | ID
+    | entity
+    | tuple
+    | block
+    | array
+    | map
+    | lambda
+    | function
+    | factor_expression '[' NUMBER ']'                               # array_accessor aaa
+    | factor_expression '.' ID                                       # entity_member_accessor
+    | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
+    | '(' expression ')'
+    ;
+literal
+    : NUMBER
+    | STRING
+    | This
+    ;
+assignment
+    : ID ('='|'+='|'-='|'*='|'/=') expression ';'
+    ;
+block
+    : '{' statement+ '}'
+    ;
+array
+    : '[' expression (',' expression)* ']'
+    ;
+map
+    : '[' expression ':' expression (',' expression ':' expression)* ']'
+    ;
+entity
+    : '{' property_assignment (',' property_assignment)* ','? '}'
+    ;
+tuple
+    : '(' expression (','expression)* ')'
+    ;
+property_assignment
+    : (('let'|'var') {notLineTerminator()})? ID ':' expression
+    ;
+lambda
+    : lambda_args '->' expression
+    ;
+lambda_args
+    : ID
+    | function_args'
+    ;
+function_args'
+    : '(' (ID (','+ ID)*)? ')'
+    ;
+function
+    : 'fx' function_args' block
+    ;
