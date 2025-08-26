@@ -32,11 +32,11 @@ From                       : 'from';
 As                         : 'as';
 Base                       : 'base';
 Sync                       : 'sync';
-String                     : 'String';
-Number                     : 'Number';
-Int                        : 'Int';
-Float                      : 'Float';
-Double                     : 'Double';
+String_Type                : 'String';
+Number_Type                : 'Number';
+Int_Type                   : 'Int';
+Float_Type                 : 'Float';
+Double_Type                : 'Double';
 //-----------literal------------
 Integer                    :/"(\+|\-)?0|[1-9][0-9_]*"/;
 

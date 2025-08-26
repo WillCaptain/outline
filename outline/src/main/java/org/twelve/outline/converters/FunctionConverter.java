@@ -9,12 +9,14 @@ import org.twelve.gcp.node.expression.Expression;
 import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.body.Body;
 import org.twelve.gcp.node.expression.body.FunctionBody;
+import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.gcp.node.function.Argument;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.operator.OperatorNode;
 import org.twelve.gcp.node.statement.ReturnStatement;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
+import org.twelve.outline.common.Constants;
 
 import java.util.Map;
 
@@ -27,14 +29,24 @@ public class FunctionConverter implements Converter{
         this.converters = converters;
     }
     @Override
-    public Node convert(AST ast, ParseNode source, Node targetParent) {
+    public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode func = cast(source);
-        NonTerminalNode originArgs = cast(func.node(0));
-        Argument[] args = new Argument[Math.round(originArgs.nodes().size()/2)];
-        for(int i=1; i<originArgs.nodes().size()-1;i+=2){
-            args[Math.round((i-1)/2)] = new Argument(cast(converters.get(originArgs.node(i).name()).convert(ast,originArgs.node(i),null)));
+//        NonTerminalNode originArgs = cast(func.node(0));
+        ParseNode[] originArgs = ((NonTerminalNode) func.node(0)).nodes().stream().filter(n -> !"(,)".contains(n.lexeme())).toArray(ParseNode[]::new);
+        Argument[] args = new Argument[Math.round(originArgs.length)];
+        for(int i=0; i<originArgs.length;i++){
+            Identifier arg = null;
+            TypeNode typeNode = null;
+            if(originArgs[i].name().equals(Constants.ARGUMENT)) {
+                NonTerminalNode argument = cast(originArgs[i]);
+                arg = cast(converters.get(argument.node(0).name()).convert(ast, argument.node(0), null));
+                typeNode = cast(converters.get(argument.node(2).name()).convert(ast, argument.node(2), null));
+            }else{
+                arg = cast(converters.get(originArgs[i].name()).convert(ast, originArgs[i], null));
+            }
+            args[i] = new Argument(arg,typeNode);
         }
-        NonTerminalNode originBody = cast(func.node(2));
+        ParseNode originBody = func.node(2);
         Node statements = converters.get(originBody.name()).convert(ast, originBody, null);
         FunctionBody body = new FunctionBody(ast);
         if(statements instanceof Body){
@@ -47,13 +59,3 @@ public class FunctionConverter implements Converter{
         return FunctionNode.from(body,args);
     }
 }
-//Identifier x = new Identifier(ast, new Token<>("x", 0));
-//Identifier y = new Identifier(ast, new Token<>("y", 0));
-//BinaryExpression add = new BinaryExpression(x, y, new OperatorNode<>(ast, BinaryOperator.ADD));
-//
-////return x+y;
-//FunctionBody body = new FunctionBody(ast);
-//        body.addStatement(new ReturnStatement(add));
-//
-//FunctionNode addxy = FunctionNode.from(body, new Argument(new Identifier(ast, new Token<>("x", 0))),
-//        new Argument(new Identifier(ast, new Token<>("y", 0))));

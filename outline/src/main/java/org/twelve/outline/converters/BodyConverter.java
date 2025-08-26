@@ -20,7 +20,7 @@ public class BodyConverter implements Converter{
         this.converters = converters;
     }
     @Override
-    public Node convert(AST ast, ParseNode source, Node targetParent) {
+    public Node convert(AST ast, ParseNode source, Node related) {
         Block block = new Block(ast);
         NonTerminalNode originBlock = cast(source);
         for(int i=1; i<originBlock.nodes().size()-1; i++){

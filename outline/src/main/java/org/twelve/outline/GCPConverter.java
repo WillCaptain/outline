@@ -3,10 +3,7 @@ package org.twelve.outline;
 import org.twelve.outline.converters.*;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
-import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.node.expression.Identifier;
-import org.twelve.gcp.node.expression.LiteralNode;
-import org.twelve.gcp.node.expression.typeable.IdentifierTypeNode;
 import org.twelve.msll.parsetree.ParserTree;
 import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Constants;
@@ -28,10 +25,10 @@ public class GCPConverter {
                 new ProgramConverter(converters).convert(ast, source, targetParent));
         //module
         this.converters.put(Constants.MODULE_STATEMENT, (ast, source, targetParent) ->
-                new ModuleConverter().convert(ast, source, targetParent));
+                new ModuleConverter(converters).convert(ast, source, targetParent));
         //import
         this.converters.put(Constants.IMPORT_STATEMENT, (ast, source, targetParent) ->
-                new ImportConverter().convert(ast, source, targetParent));
+                new ImportConverter(converters).convert(ast, source, targetParent));
         //export
         this.converters.put(Constants.EXPORT_STATEMENT, (ast, source, targetParent) ->
                 new ExportConverter().convert(ast, source, targetParent));
@@ -41,20 +38,22 @@ public class GCPConverter {
                         new VarDeclareConverter(converters).convert(ast, source, targetParent));
         //type
         this.converters.put(Constants.ID_TYPE, (ast, source, targetParent) ->
-                new IdentifierTypeNode(new Identifier(ast, convertStrToken(((TerminalNode) source).token()))));
-        this.converters.put(Constants.INT_TYPE, (ast, source, targetParent) -> {
-            Token token = new Token("Integer", source.location().start());
-            return new IdentifierTypeNode(new Identifier(ast, token));
-        });
+                new IDTypeConverter().convert(ast,source,targetParent));
+        this.converters.put(Constants.INT_TYPE, (ast, source, targetParent) ->
+            new IntTypeConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.DOUBLE_TYPE, (ast, source, targetParent) ->
-                new IdentifierTypeNode(new Identifier(ast, convertStrToken(((TerminalNode) source).token()))));
+                new DoubleTypeConverter().convert(ast,source,targetParent));
+        this.converters.put(Constants.TUPLE_TYPE, (ast, source, targetParent) ->
+                new TupleTypeConverter(converters).convert(ast,source,targetParent));
+        this.converters.put(Constants.QUESTION_TYPE, (ast, source, targetParent) ->
+                new QuestionTypeConverter().convert(ast,source,targetParent));
         //literal
         this.converters.put(Constants.STRING, (ast, source, targetParent) ->
-                LiteralNode.parse(ast, convertStrToken(((TerminalNode) source).token())));
+                new StringLiteralConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.DOUBLE, (ast, source, targetParent) ->
-                LiteralNode.parse(ast, convertNumToken(((TerminalNode) source).token())));
+                new NumberLiteralConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.NUMBER, (ast, source, targetParent) ->
-                LiteralNode.parse(ast, convertNumToken(((TerminalNode) source).token())));
+                new NumberLiteralConverter().convert(ast,source,targetParent));
         //id
         this.converters.put(Constants.ID, (ast, source, targetParent) ->
                 new Identifier(ast, convertStrToken(((TerminalNode) source).token())));
@@ -67,6 +66,27 @@ public class GCPConverter {
         //body
         this.converters.put(Constants.BLOCK, (ast, source, targetParent) ->
                 new BodyConverter(converters).convert(ast, source, targetParent));
+        //entity
+        this.converters.put(Constants.ENTITY, (ast, source, targetParent) ->
+                new EntityConverter(converters).convert(ast, source, targetParent));
+        //entity property assignment
+        this.converters.put(Constants.PROPERTY_ASSIGNMENT, (ast, source, targetParent) ->
+                new PropertyAssignmentConverter(converters).convert(ast, source, targetParent));
+        //tuple
+        this.converters.put(Constants.TUPLE, (ast, source, targetParent) ->
+                new TupleConverter(converters).convert(ast, source, targetParent));
+        //factor expression
+        this.converters.put(Constants.FACTOR_EXPRESSION, (ast, source, targetParent) ->
+                new FactorExprConverter(converters).convert(ast, source, targetParent));
+        //this
+        this.converters.put(Constants.THIS, (ast, source, targetParent) ->
+                new ThisConverter().convert(ast, source, targetParent));
+        //member accessor
+        this.converters.put(Constants.MEMBER_ACCESSOR, (ast, source, targetParent) ->
+                new MemberAccessorConverter(converters).convert(ast, source, targetParent));
+        //function call
+        this.converters.put(Constants.FUNCTION_CALL, (ast, source, targetParent) ->
+                new FunctionCallConverter(converters).convert(ast, source, targetParent));
     }
 
     public GCPConverter() {

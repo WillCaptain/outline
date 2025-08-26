@@ -17,9 +17,9 @@ public class ProgramConverter implements Converter{
         this.converters = converters;
     }
     @Override
-    public Node convert(AST ast, ParseNode source, Node targetParent) {
+    public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode root = cast(source);
-        Program program = cast(targetParent);
+        Program program = cast(related);
         for (ParseNode node : root.nodes()) {
             converters.get(node.name()).convert(ast, node, program.body());
         }

@@ -21,9 +21,22 @@ public final class Constants {
     public static final String NUMBER = "NUMBER";
     public static final String COLON_ = ":";
     public static final String ID_TYPE = ":ID";
-    public static final String INT_TYPE = ":Int";
-    public static final String DOUBLE_TYPE = ":Double";
+    public static final String INT_TYPE = ":Int_Type";
+    public static final String DOUBLE_TYPE = ":Double_Type";
     public static final String FUNCTION = "lambda";
     public static final String NUMERIC_EXPRESSION = "numeric_expression";
     public static final String BLOCK = "block";
+    public static final String ENTITY = "entity";
+    public static final String PROPERTY_ASSIGNMENT = "property_assignment";
+    public static final String VAR = "Var";
+    public static final String LET = "Let";
+    public static final String FACTOR_EXPRESSION = "factor_expression";
+    public static final String THIS = "This";
+    public static final String MEMBER_ACCESSOR = "entity_member_accessor";
+    public static final String FUNCTION_CALL = "function_call";
+    public static final String ARRAY_MAP_ACCESSOR = "array_map_accessor";
+    public static final String TUPLE = "tuple";
+    public static final String ARGUMENT = "argument";
+    public static final String TUPLE_TYPE = "tuple_type";
+    public static final String QUESTION_TYPE = "QUESTION";
 }

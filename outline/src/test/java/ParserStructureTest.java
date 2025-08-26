@@ -3,6 +3,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.ast.Token;
+import org.twelve.gcp.common.VariableKind;
+import org.twelve.gcp.node.expression.Identifier;
+import org.twelve.gcp.node.expression.body.FunctionBody;
+import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.imexport.Export;
 import org.twelve.gcp.node.imexport.ExportSpecifier;
 import org.twelve.gcp.node.imexport.Import;
@@ -21,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.twelve.gcp.common.Tool.cast;
 
 public class ParserStructureTest {
-    private ASF asf;
     private AST ast;
 
     @BeforeEach
@@ -33,7 +37,6 @@ public class ParserStructureTest {
                 import * from e.f.g;
                 let age: Int = 10, name = "Will", height: Double = 1.68, grade = level;
                 export height as stature, name;""";
-        this.asf = new ASF();
         this.ast = new OutlineParser().parse(code);
     }
 
@@ -67,9 +70,9 @@ public class ParserStructureTest {
 
         assertEquals(0, ast.program().id());
         assertEquals(2, ast.program().body().id());
-        assertEquals(6, ast.program().namespace().id());
-        assertEquals(8, ast.program().namespace().nodes().get(0).id());
-        assertEquals(10, ast.program().namespace().nodes().get(1).id());
+        assertEquals(8, ast.program().namespace().id());
+        assertEquals(10, ast.program().namespace().nodes().get(0).id());
+        assertEquals(12, ast.program().namespace().nodes().get(1).id());
     }
     @Test
     void test_import() {
@@ -163,6 +166,53 @@ public class ParserStructureTest {
                   let z = x+y;
                   z
                 };""";
+        assertEquals(expected,ast.lexeme());
+    }
+
+    @SneakyThrows
+    @Test
+    void test_non_argument_function(){
+        String code = """
+                let get = ()->{
+                
+                };""";
+        AST ast = new OutlineParser().parse(code);
+        assertEquals(Token.unit().lexeme(),((FunctionNode)ast.program().body().get(0).get(0).get(1)).argument().name());
+    }
+    @Test
+    void test_entity(){
+        AST ast = ASTHelper.mockSimplePersonEntity();
+        String expected = """
+                module test
+                
+                let person = {
+                  var get_name = ()->this.name.a(x,y).b.c.to_str(),
+                  get_my_name = ()->name,
+                  name = "Will"
+                };
+                let name_1 = person.name;
+                let name_2 = person.get_name();""";
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_tuple(){
+        AST ast =  ASTHelper.mockSimpleTuple();
+        String expected = """
+                module default
+                
+                let person = ("Will",()->this.0);
+                let name_1 = person.0;
+                let name_2 = person.1();""";
+        assertEquals(expected,ast.lexeme());
+
+        ast = ASTHelper.mockGenericTupleProjection();
+        expected = """
+                module default
+                
+                let f = (x: (?, ?))->(x.1,x.0);
+                let h = f(("Will",30));
+                let will = h.1;
+                let age = h.0;""";
         assertEquals(expected,ast.lexeme());
     }
 }

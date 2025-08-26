@@ -8,8 +8,9 @@ options {
     tokenVocab = OutlineLexer;
 }
 //in msll, a root non terminal is required
-root: statement+;
-
+root
+    :  module_statement? import_statement* statement+ export_statement?
+    ;
 //---------statements----------------
 statement
     : comment
@@ -17,9 +18,9 @@ statement
     | assignment
     | empty_statement
     | return_statement
-    | module_statement
-    | import_statement
-    | export_statement
+//    | module_statement
+//    | import_statement
+//    | export_statement
 //    | classDeclaration
 //    | functionDeclaration
 //    | expressionStatement
@@ -36,25 +37,23 @@ statement
 //    | tryStatement
 //    | debuggerStatement
     ;
+
 //--------statements--------------
 module_statement
-    : 'module' member_accessor
+    : 'module' factor_expression
     ;
 import_statement
-    : 'import' ('*' | (ID ('as' ID)? (',' ID ('as' ID)? )*)) 'from' (member_accessor | ID) ';'
+    : 'import' ('*' | (ID ('as' ID)? (',' ID ('as' ID)? )*)) 'from' (factor_expression | ID) ';'
     ;
 export_statement
     : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
-    ;
-member_accessor
-    : ID ('.' ID)+
     ;
 comment
     : SingleLineComment
     | MultiLineComment
     ;
 variable_declarator
-    : ('let'|'var') {notLineTerminator()} ID (':' declared_outline)? '=' expression (',' ID (':' declared_outline)? '=' expression)* ';'
+    : ('let'|'var') {notLineTerminator()} argument '=' expression (',' argument '=' expression)* ';'
     ;
 empty_statement
     : expression ';'?
@@ -77,7 +76,7 @@ unary_expression
     |factor_expression ('++'|'--')?
     ;
 declared_outline
-    : Number | Int | Float | Double | String
+    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | '?'
     ;
 factor_expression
     : literal
@@ -88,9 +87,8 @@ factor_expression
     | array
     | map
     | lambda
-    //| function
-    | factor_expression '[' NUMBER ']'                               # array_accessor aaa
-    | factor_expression '.' ID                                       # entity_member_accessor
+    | factor_expression '[' expression ']'                           # array_map_accessor
+    | factor_expression '.' (ID|NUMBER)                              # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
     | '(' expression ')'
     ;
@@ -103,7 +101,7 @@ assignment
     : ID ('='|'+='|'-='|'*='|'/=') expression ';'
     ;
 block
-    : '{' statement+ '}'
+    : '{' statement* '}'
     ;
 array
     : '[' expression (',' expression)* ']'
@@ -118,7 +116,7 @@ tuple
     : '(' expression (','expression)* ')'
     ;
 property_assignment
-    : (('let'|'var') {notLineTerminator()})? ID ':' expression
+    : (('let'|'var') {notLineTerminator()})? argument '=' expression
     ;
 lambda
     : lambda_args '->' (expression|block)
@@ -128,8 +126,11 @@ lambda_args
     | function_args'
     ;
 function_args'
-    : '(' (ID (','+ ID)*)? ')'
+    : '(' (argument (','+ argument)*)? ')'
     ;
-//function
-//    : 'fx' function_args' block
-//    ;
+argument
+    : ID (':' declared_outline)?
+    ;
+tuple_type
+    : '(' declared_outline (','declared_outline)* ')'
+    ;

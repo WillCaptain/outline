@@ -20,7 +20,7 @@ public class NumericExprConverter implements Converter{
         this.converters = converters;
     }
     @Override
-    public Node convert(AST ast, ParseNode source, Node targetParent) {
+    public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode num = cast(source);
         Expression x = cast(converters.get(num.node(0).name()).convert(ast,num.node(0),null));
         Expression y = cast(converters.get(num.node(2).name()).convert(ast,num.node(2),null));

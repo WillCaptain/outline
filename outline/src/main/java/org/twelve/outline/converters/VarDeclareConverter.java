@@ -24,7 +24,7 @@ public class VarDeclareConverter implements Converter{
         this.converters = converters;
     }
     @Override
-    public Node convert(AST ast, ParseNode source, Node targetParent) {
+    public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode varDel = cast(source);
         TerminalNode kind = cast(varDel.node(0));
         VariableDeclarator declarator = new VariableDeclarator(ast, VariableKind.valueOf(kind.name().toUpperCase()));
@@ -39,11 +39,17 @@ public class VarDeclareConverter implements Converter{
                 value = null;
                 i++;
             }
-            if (varDel.node(i).name().equals(Constants.COLON)) {
-                i++;
-                type = cast(this.converters.get(Constants.COLON_ + varDel.node(i).name()).convert(ast, varDel.node(i), null));
+            if (varDel.node(i).name().equals(Constants.ARGUMENT)) {
+                NonTerminalNode argument = cast(varDel.node(i));
+                var = cast(this.converters.get(argument.node(0).name()).convert(ast,argument.node(0),null));
+                type = cast(this.converters.get(Constants.COLON_ + argument.node(2).name()).convert(ast, argument.node(2), null));
                 i++;
             }
+//            if (varDel.node(i).name().equals(Constants.COLON)) {
+//                i++;
+//                type = cast(this.converters.get(Constants.COLON_ + varDel.node(i).name()).convert(ast, varDel.node(i), null));
+//                i++;
+//            }
             if (varDel.node(i).name().equals(Constants.EQUAL)) {
                 i++;
                 value = cast(this.converters.get(varDel.node(i).name()).convert(ast, varDel.node(i), null));
@@ -58,8 +64,8 @@ public class VarDeclareConverter implements Converter{
                 break;
             }
         }
-        if(targetParent!=null) {
-            ((Body) targetParent).addStatement(declarator);
+        if(related !=null) {
+            ((Body) related).addStatement(declarator);
         }
         return declarator;
     }

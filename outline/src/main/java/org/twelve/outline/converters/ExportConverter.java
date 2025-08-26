@@ -18,7 +18,7 @@ import static org.twelve.outline.common.Tool.convertStrToken;
 
 public class ExportConverter implements Converter{
     @Override
-    public Node convert(AST ast, ParseNode source, Node targetParent) {
+    public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode exports = cast(source);
         List<Pair<Identifier, Identifier>> vars = new ArrayList<>();
         Identifier key = null, value = null;
