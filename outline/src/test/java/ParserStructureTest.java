@@ -270,4 +270,15 @@ public class ParserStructureTest {
         ast = ASTHelper.mockIf(SELECTION_TYPE.TERNARY);
         assertEquals("module default\n\nlet n = name==\"Will\"? name: \"Someone\";",ast.lexeme());
     }
+    @Test
+    void test_declare(){
+        String expected = """
+                module default
+                
+                let f = (x: String->Integer->{name: String, var age: Integer})->(y: String)->(z: Integer)->x(y,z);""";
+
+        AST ast = ASTHelper.mockDeclare();
+
+        assertEquals(expected,ast.lexeme());
+    }
 }

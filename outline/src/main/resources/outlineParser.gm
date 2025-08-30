@@ -61,7 +61,10 @@ declared_outline
     : fix_outline (('|'|'&') fix_outline)*
     ;
 fix_outline
-    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | '?' | ID | literal
+    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | func_type | '?' | ID | literal
+    ;
+tuple_type
+    : '(' declared_outline (','declared_outline)* ')'
     ;
 //------------expressions-------------
 expression
@@ -173,6 +176,4 @@ references
 reference
     : ID (':' declared_outline)?
     ;
-tuple_type
-    : '(' declared_outline (','declared_outline)* ')'
-    ;
+

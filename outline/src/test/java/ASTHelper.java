@@ -106,4 +106,11 @@ public class ASTHelper {
         }
         return new OutlineParser().parse(code);
     }
+
+    @SneakyThrows
+    public static AST mockDeclare() {
+        String code = """
+         let f = (x:String->Integer->{name:String,age:Integer},y:String,z:Integer)->x(y,z);""";
+        return new OutlineParser().parse(code);
+    }
 }
