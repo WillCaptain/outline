@@ -1,6 +1,6 @@
 package org.twelve.outline;
 
-import org.twelve.outline.converters.*;
+import org.twelve.outline.converter.*;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.node.expression.Identifier;
@@ -33,12 +33,19 @@ public class GCPConverter {
         this.converters.put(Constants.EXPORT_STATEMENT, (ast, source, targetParent) ->
                 new ExportConverter().convert(ast, source, targetParent));
         //variable declarator
-        this.converters.put(Constants.VARIABLE_DECLARATOR,
-                (ast, source, targetParent) ->
+        this.converters.put(Constants.VARIABLE_DECLARATOR, (ast, source, targetParent) ->
                         new VarDeclareConverter(converters).convert(ast, source, targetParent));
+        this.converters.put(Constants.ASSIGNMENT, (ast, source, targetParent) ->
+                new AssignmentConverter(converters).convert(ast, source, targetParent));
+        this.converters.put(Constants.EXPRESSION_STATEMENT, (ast, source, targetParent) ->
+                new ExpresionStatementConverter(converters).convert(ast, source, targetParent));
+        this.converters.put(Constants.UNARY_EXPRESSION, (ast, source, targetParent) ->
+                new UnaryExpressionConverter(converters).convert(ast, source, targetParent));
         //type
         this.converters.put(Constants.ID_TYPE, (ast, source, targetParent) ->
                 new IDTypeConverter().convert(ast,source,targetParent));
+        this.converters.put(Constants.STRING_TYPE, (ast, source, targetParent) ->
+                new StringTypeConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.INT_TYPE, (ast, source, targetParent) ->
             new IntTypeConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.DOUBLE_TYPE, (ast, source, targetParent) ->
@@ -47,11 +54,27 @@ public class GCPConverter {
                 new TupleTypeConverter(converters).convert(ast,source,targetParent));
         this.converters.put(Constants.QUESTION_TYPE, (ast, source, targetParent) ->
                 new QuestionTypeConverter().convert(ast,source,targetParent));
+        this.converters.put(Constants.DECLARED_TYPE, (ast, source, targetParent) ->
+                new DeclaredTypeConverter(converters).convert(ast,source,targetParent));
+        this.converters.put(Constants.LITERAL_INT_TYPE, (ast, source, targetParent) ->
+                new LiteralIntTypeConverter(converters).convert(ast,source,targetParent));
+        this.converters.put(Constants.LITERAL_STRING_TYPE, (ast, source, targetParent) ->
+                new LiteralStringTypeConverter(converters).convert(ast,source,targetParent));
+
+        //wrapper
+        this.converters.put(Constants.ARGUMENT, (ast, source, targetParent) ->
+                new ArgumentConverter(converters).convert(ast,source,targetParent));
+        this.converters.put(Constants.REFERENCE, (ast, source, targetParent) ->
+                new ReferenceConverter(converters).convert(ast,source,targetParent));
         //literal
         this.converters.put(Constants.STRING, (ast, source, targetParent) ->
                 new StringLiteralConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.DOUBLE, (ast, source, targetParent) ->
-                new NumberLiteralConverter().convert(ast,source,targetParent));
+                new DoubleLiteralConverter().convert(ast,source,targetParent));
+        this.converters.put(Constants.FLOAT, (ast, source, targetParent) ->
+                new FloatLiteralConverter().convert(ast,source,targetParent));
+        this.converters.put(Constants.INT, (ast, source, targetParent) ->
+                new IntLiteralConverter().convert(ast,source,targetParent));
         this.converters.put(Constants.NUMBER, (ast, source, targetParent) ->
                 new NumberLiteralConverter().convert(ast,source,targetParent));
         //id
@@ -65,7 +88,7 @@ public class GCPConverter {
                 new NumericExprConverter(converters).convert(ast, source, targetParent));
         //body
         this.converters.put(Constants.BLOCK, (ast, source, targetParent) ->
-                new BodyConverter(converters).convert(ast, source, targetParent));
+                new BlockConverter(converters).convert(ast, source, targetParent));
         //entity
         this.converters.put(Constants.ENTITY, (ast, source, targetParent) ->
                 new EntityConverter(converters).convert(ast, source, targetParent));
@@ -84,9 +107,21 @@ public class GCPConverter {
         //member accessor
         this.converters.put(Constants.MEMBER_ACCESSOR, (ast, source, targetParent) ->
                 new MemberAccessorConverter(converters).convert(ast, source, targetParent));
+        //poly expression
+        this.converters.put(Constants.POLY_EXPRESSION, (ast, source, targetParent) ->
+                new PolyExprConverter(converters).convert(ast, source, targetParent));
         //function call
         this.converters.put(Constants.FUNCTION_CALL, (ast, source, targetParent) ->
                 new FunctionCallConverter(converters).convert(ast, source, targetParent));
+        //if expression
+        this.converters.put(Constants.IF_EXPRESSION, (ast, source, targetParent) ->
+                new IfConverter(converters).convert(ast, source, targetParent));
+        this.converters.put(Constants.Consequence, (ast, source, targetParent) ->
+                new ConsequenceConverter(converters).convert(ast, source, targetParent));
+        this.converters.put(Constants.EQUALITY_EXPRESSION, (ast, source, targetParent) ->
+                new EqualityExprConverter(converters).convert(ast, source, targetParent));
+        this.converters.put(Constants.TERNARY_EXPRESSION, (ast, source, targetParent) ->
+                new TernaryExprConverter(converters).convert(ast, source, targetParent));
     }
 
     public GCPConverter() {

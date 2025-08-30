@@ -31,6 +31,8 @@ Export                     : 'export';
 From                       : 'from';
 As                         : 'as';
 Base                       : 'base';
+If                         : 'if';
+Else                       : 'else';
 Sync                       : 'sync';
 String_Type                : 'String';
 Number_Type                : 'Number';
@@ -38,7 +40,7 @@ Int_Type                   : 'Int';
 Float_Type                 : 'Float';
 Double_Type                : 'Double';
 //-----------literal------------
-Integer                    :/"(\+|\-)?0|[1-9][0-9_]*"/;
+INT                    :/"0|[1-9][0-9_]*"/;
 
 //----------identifier--------
 ID                         : /"(\b[a-z_]\w*)"/;

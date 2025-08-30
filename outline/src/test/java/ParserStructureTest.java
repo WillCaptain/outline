@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Token;
+import org.twelve.gcp.common.SELECTION_TYPE;
 import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.body.FunctionBody;
@@ -214,5 +215,59 @@ public class ParserStructureTest {
                 let will = h.1;
                 let age = h.0;""";
         assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_tuple_type(){
+        AST ast = ASTHelper.mockTupleProjection();
+        String expected = """
+                module default
+                
+                let f = fx<a,b>(x: a)->(y: ((a, String), b))->y;
+                let h = f(100,(("Will","Zhang"),"male"));
+                let g = f("Will",(("Will","Zhang"),30));
+                let will = g.0.0;
+                let age = g.1;""";
+
+        assertEquals(expected,ast.lexeme());
+    }
+
+    @Test
+    void test_poly(){
+        AST ast = ASTHelper.mockDefinedPoly();
+        String expected = """
+                module default
+                
+                var poly = 100&"some"&{
+                  age = 40,
+                  name = "Will"
+                }&(40,"Will");""";
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_option(){
+        AST ast = ASTHelper.mockDefinedLiteralUnion();
+        String expected = """
+                module default
+                
+                var option: 100|"some"|String = 100;
+                option++, option = 200;""";
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_if(){
+        AST ast = ASTHelper.mockIf(SELECTION_TYPE.IF);
+        String expected = """
+                    module default
+                    
+                    if(name=="Will"){
+                      name
+                    } else if(name=="Evan"){
+                      age
+                    } else {
+                      "Someone"
+                    }""";
+        assertEquals(expected,ast.lexeme());
+        ast = ASTHelper.mockIf(SELECTION_TYPE.TERNARY);
+        assertEquals("module default\n\nlet n = name==\"Will\"? name: \"Someone\";",ast.lexeme());
     }
 }

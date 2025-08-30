@@ -1,0 +1,16 @@
+package org.twelve.outline.converter;
+
+import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.ast.Token;
+import org.twelve.gcp.node.expression.Identifier;
+import org.twelve.gcp.node.expression.typeable.IdentifierTypeNode;
+import org.twelve.msll.parsetree.ParseNode;
+
+public class StringTypeConverter implements Converter{
+    @Override
+    public Node convert(AST ast, ParseNode source, Node related) {
+        Token token = new Token("String", source.location().start());
+        return new IdentifierTypeNode(new Identifier(ast, token));
+    }
+}

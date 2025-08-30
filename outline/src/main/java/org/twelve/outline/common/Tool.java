@@ -28,4 +28,17 @@ public final class Tool {
     public static Token convertNumToken(org.twelve.msll.lexer.Token token){
         return new Token<>(Tool.parseNumber(token.lexeme()), token.location().start());
     }
+
+    public static Token convertFloatToken(org.twelve.msll.lexer.Token token){
+        String lexeme = token.lexeme().substring(0,token.lexeme().length()-2);
+        return new Token<>(Float.parseFloat(lexeme), token.location().start());
+    }
+    public static Token convertDoubleToken(org.twelve.msll.lexer.Token token){
+        String lexeme = token.lexeme().substring(0,token.lexeme().length()-2);
+        return new Token<>(Double.parseDouble(lexeme), token.location().start());
+    }
+    public static Token convertIntToken(org.twelve.msll.lexer.Token token){
+//        String lexeme = token.lexeme().substring(0,token.lexeme().length()-2);
+        return new Token<>(Integer.valueOf(token.lexeme()), token.location().start());
+    }
 }

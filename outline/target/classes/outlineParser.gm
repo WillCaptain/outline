@@ -15,8 +15,7 @@ root
 statement
     : comment
     | variable_declarator
-    | assignment
-    | empty_statement
+    | expression_statement
     | return_statement
 //    | module_statement
 //    | import_statement
@@ -24,7 +23,6 @@ statement
 //    | classDeclaration
 //    | functionDeclaration
 //    | expressionStatement
-//    | ifStatement
 //    | iterationStatement
 //    | continueStatement
 //    | breakStatement
@@ -55,16 +53,52 @@ comment
 variable_declarator
     : ('let'|'var') {notLineTerminator()} argument '=' expression (',' argument '=' expression)* ';'
     ;
-empty_statement
-    : expression ';'?
-    ;
 return_statement
-    : 'return' expression ';'
+    : 'return' expression? ';'
+    ;
+//---------------type-----------------
+declared_outline
+    : fix_outline (('|'|'&') fix_outline)*
+    ;
+fix_outline
+    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | '?' | ID | literal
     ;
 //------------expressions-------------
 expression
-    : numeric_expression
+    : assignment
     ;
+assignment
+    : conditional_expression (('='|'+='|'-='|'*='|'/=') assignment)?
+    ;
+conditional_expression
+    : if_expression
+    | ternary_expression
+    ;
+if_expression
+    : 'if' '(' expression ')' expression ('else' expression)?
+    ;
+//if_tail
+//    : if_expression
+//    | expression
+//    ;
+ternary_expression
+    : or_expression ('?' expression ':' conditional_expression)?
+    ;
+or_expression
+  : and_expression ('||' and_expression)*
+  ;
+
+and_expression
+  : equality_expression ('&&' equality_expression)*
+  ;
+
+equality_expression
+  : relational_expression (('==' | '!=') relational_expression)*
+  ;
+
+relational_expression
+  : numeric_expression (('<' | '>' | '<=' | '>=') numeric_expression)*
+  ;
 numeric_expression
     :term_expression (('+'|'-') term_expression)*
     ;
@@ -72,36 +106,38 @@ term_expression
     :unary_expression (('*'|'/'|'%'|'^') unary_expression)*
     ;
 unary_expression
-    : ('++' | '--' | '-') factor_expression
+    : ('++' | '--' | '-' | '!') factor_expression
     |factor_expression ('++'|'--')?
-    ;
-declared_outline
-    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | '?'
     ;
 factor_expression
     : literal
+    | This
     | ID
+    | factor_expression '[' expression ']'                           # array_map_accessor
+    | factor_expression '.' (ID|INT)                                 # entity_member_accessor
+    | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
+    | factor_expression '&' expression                               # poly_expression
+    | '(' expression ')'
+    ;
+literal
+    : number
+    | STRING
     | entity
     | tuple
     | block
     | array
     | map
     | lambda
-    | factor_expression '[' expression ']'                           # array_map_accessor
-    | factor_expression '.' (ID|NUMBER)                              # entity_member_accessor
-    | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
-    | '(' expression ')'
     ;
-literal
-    : NUMBER
-    | STRING
-    | This
+number
+    : INT ('.' INT)? | DOUBLE | FLOAT
     ;
-assignment
-    : ID ('='|'+='|'-='|'*='|'/=') expression ';'
+expression_statement
+    : expression ((',' expression)* ';')?
     ;
+
 block
-    : '{' statement* '}'
+    : '{' statement*'}'
     ;
 array
     : '[' expression (',' expression)* ']'
@@ -119,7 +155,7 @@ property_assignment
     : (('let'|'var') {notLineTerminator()})? argument '=' expression
     ;
 lambda
-    : lambda_args '->' (expression|block)
+    : references? lambda_args '->' expression
     ;
 lambda_args
     : ID
@@ -129,6 +165,12 @@ function_args'
     : '(' (argument (','+ argument)*)? ')'
     ;
 argument
+    : ID (':' declared_outline)?
+    ;
+references
+    : Function? '<' reference (','+ reference)* '>'
+    ;
+reference
     : ID (':' declared_outline)?
     ;
 tuple_type
