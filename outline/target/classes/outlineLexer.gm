@@ -39,6 +39,7 @@ Number_Type                : 'Number';
 Int_Type                   : 'Int';
 Float_Type                 : 'Float';
 Double_Type                : 'Double';
+DOT_DOT_DOT                : '...';
 //-----------literal------------
 INT                    :/"0|[1-9][0-9_]*"/;
 

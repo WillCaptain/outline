@@ -57,15 +57,40 @@ return_statement
     : 'return' expression? ';'
     ;
 //---------------type-----------------
+//declared_outline
+//    : fix_outline (('|'|'&') fix_outline)*
+//    ;
 declared_outline
-    : fix_outline (('|'|'&') fix_outline)*
+    : sum_type
+    | func_type
     ;
-fix_outline
-    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | '?' | ID | literal
+sum_type
+    : non_func_type (('|'|'&') non_func_type)*
+    ;
+non_func_type
+    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | entity_type | array_type |  '?' | ID | literal | factor_type
+    ;
+tuple_type
+    : '(' declared_outline (','declared_outline)+ ')'
+    ;
+entity_type
+    : '{' (argument (','argument)*)? '}'
+    ;
+array_type
+    : '[' declared_outline ']'
+    ;
+func_type
+    : sum_type '->' declared_outline
+    ;
+reference_type
+    : Function? '<'argument (','argument)* '>'
+    ;
+factor_type
+    : '(' declared_outline ')'
     ;
 //------------expressions-------------
 expression
-    : assignment
+    : assignment ('as' declared_outline)?
     ;
 assignment
     : conditional_expression (('='|'+='|'-='|'*='|'/=') assignment)?
@@ -77,10 +102,6 @@ conditional_expression
 if_expression
     : 'if' '(' expression ')' expression ('else' expression)?
     ;
-//if_tail
-//    : if_expression
-//    | expression
-//    ;
 ternary_expression
     : or_expression ('?' expression ':' conditional_expression)?
     ;
@@ -140,7 +161,16 @@ block
     : '{' statement*'}'
     ;
 array
-    : '[' expression (',' expression)* ']'
+    : '[' (array_enum_items | array_iterate_expression)? ']'
+    ;
+array_enum_items
+    : expression (',' expression)*
+    ;
+array_iterate_expression
+    : array_iterate_range (',' INT ',' lambda ',' lambda)?
+    ;
+array_iterate_range
+    : INT? '...' INT
     ;
 map
     : '[' expression ':' expression (',' expression ':' expression)* ']'
@@ -155,7 +185,7 @@ property_assignment
     : (('let'|'var') {notLineTerminator()})? argument '=' expression
     ;
 lambda
-    : references? lambda_args '->' expression
+    : reference_type? lambda_args '->' expression
     ;
 lambda_args
     : ID
@@ -167,12 +197,5 @@ function_args'
 argument
     : ID (':' declared_outline)?
     ;
-references
-    : Function? '<' reference (','+ reference)* '>'
-    ;
-reference
-    : ID (':' declared_outline)?
-    ;
-tuple_type
-    : '(' declared_outline (','declared_outline)* ')'
-    ;
+
+

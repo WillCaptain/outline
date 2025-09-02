@@ -24,6 +24,7 @@ public final class Constants {
     public static final String INT_TYPE = ":Int_Type";
     public static final String DOUBLE_TYPE = ":Double_Type";
     public static final String DECLARED_TYPE = ":declared_outline";
+    public static final String SUM_TYPE = ":sum_type";
     public static final String FUNCTION = "lambda";
     public static final String NUMERIC_EXPRESSION = "numeric_expression";
     public static final String BLOCK = "block";
@@ -38,10 +39,13 @@ public final class Constants {
     public static final String ARRAY_MAP_ACCESSOR = "array_map_accessor";
     public static final String TUPLE = "tuple";
     public static final String ARGUMENT = "argument";
+    public static final String ENTITY_TYPE = ":entity_type";
     public static final String TUPLE_TYPE = ":tuple_type";
+    public static final String ARRAY_TYPE = ":array_type";
     public static final String QUESTION_TYPE = ":QUESTION";
-    public static final String REFERENCE = "reference";
-    public static final String REFERENCES = "references";
+    public static final String FUNC_TYPE = ":func_type";
+    public static final String REFERENCE_TYPE = "reference_type";
+//    public static final String REFERENCES = "references";
     public static final String FUNC_HEAD = "Function";
     public static final String FLOAT = "FLOAT";
     public static final String DOUBLE = "DOUBLE";
@@ -57,7 +61,13 @@ public final class Constants {
     public static final String IF_EXPRESSION = "if_expression";
     public static final String EQUALITY_EXPRESSION = "equality_expression";
     public static final String TERNARY_EXPRESSION = "ternary_expression";
-    public static String If = "If";
-    public static String Else = "Else";
-    public static String Consequence = "Consequence";
+    public static final String TERM_EXPRESSION = "term_expression";
+    public static final String EXPRESSION = "expression";
+    public static final String ARRAY = "array";
+    public static final String If = "If";
+    public static final String Else = "Else";
+    public static final String Consequence = "Consequence";
+    public static final String ARRAY_ENUM_ITEMS = "array_enum_items";
+    public static final String ARRAY_ITERATE_RANGE = "array_iterate_range";
+    public static final String ARRAY_ITERATE_EXPRESSION = "array_iterate_expression";
 }

@@ -1,13 +1,9 @@
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.common.SELECTION_TYPE;
-import org.twelve.gcp.common.VariableKind;
-import org.twelve.gcp.node.expression.Identifier;
-import org.twelve.gcp.node.expression.body.FunctionBody;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.imexport.Export;
 import org.twelve.gcp.node.imexport.ExportSpecifier;
@@ -275,10 +271,53 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                let f = (x: String->Integer->{name: String, var age: Integer})->(y: String)->(z: Integer)->x(y,z);""";
+                let f = fx<a:{gender: "male"|"female", age}>(x: a->String->Integer->{name: String, age: Integer})->(y: String)->(z: Integer)->x({
+                  gender = "male",
+                  age = 30 
+                },y,z);""";
 
         AST ast = ASTHelper.mockDeclare();
-
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_reference_in_function(){
+        AST ast = ASTHelper.mockReferenceInFunction();
+        String expected = """
+                module default
+                
+                let f = fx<a,b>(x: a)->{
+                  let y: b = 100;
+                  y
+                };""";
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_as(){
+        AST ast = ASTHelper.mockAs();
+        String expected = """
+                module default
+                
+                let a = {
+                  name = "Will",
+                  age = 20
+                } as {name: String};
+                let b = {
+                  name = "Will",
+                  age = 20
+                } as {name: Integer};""";
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_array_definition(){
+        AST ast = ASTHelper.mockArrayDefinition();
+        String expected = """
+                module default
+                
+                let a = [1,2,3,4];
+                let b: [String] = [];
+                let c: [?] = [...5];
+                let d = [1...6,2,x->x+"2",x->x%2==0];
+                let e = [];""";
         assertEquals(expected,ast.lexeme());
     }
 }

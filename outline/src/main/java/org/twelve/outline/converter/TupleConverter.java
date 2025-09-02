@@ -18,7 +18,8 @@ public class TupleConverter implements Converter{
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        Expression[] values = ((NonTerminalNode) source).nodes().stream().filter(n -> !"(,)".contains(n.lexeme()))
+        Expression[] values = ((NonTerminalNode) source).nodes().stream().filter(n ->
+                        !n.lexeme().equals("(") && !n.lexeme().equals(")") && !n.lexeme().equals(","))
                 .map(n->converters.get(n.name()).convert(ast,n,null)).toArray(Expression[]::new);
         return new TupleNode(ast,values);
     }

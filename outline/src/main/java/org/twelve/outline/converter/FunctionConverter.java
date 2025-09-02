@@ -14,6 +14,7 @@ import org.twelve.gcp.node.statement.ReturnStatement;
 import org.twelve.gcp.outline.projectable.Reference;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
+import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Constants;
 import org.twelve.outline.wrappernode.ArgumentWrapper;
 import org.twelve.outline.wrappernode.ReferenceWrapper;
@@ -37,7 +38,7 @@ public class FunctionConverter implements Converter {
         List<ReferenceNode> refs = new ArrayList<>();
         List<Argument> args = new ArrayList<>();
         int i=0;
-        if(func.node(i).name().equals(Constants.REFERENCES)){
+        if(func.node(i).name().equals(Constants.REFERENCE_TYPE)){
             convertArgOrRef(ast,cast(func.node(i)),refs);
             i++;
         }
@@ -75,8 +76,14 @@ public class FunctionConverter implements Converter {
 
         return FunctionNode.from(body, refs, args);
     }
-    private void convertArgOrRef(AST ast,NonTerminalNode parent,List list){
-        parent.nodes().stream().filter(n -> !"<(,)>".contains(n.lexeme())).forEach(n -> {
+    private void convertArgOrRef(AST ast,ParseNode parent,List list){
+        List<ParseNode> args = new ArrayList<>();
+        if(parent instanceof TerminalNode){
+            args.add(parent);
+        }else{
+            args.addAll(((NonTerminalNode)parent).nodes());
+        }
+        args.stream().filter(n -> !"<(,)>".contains(n.lexeme())).forEach(n -> {
             if(n.name().equals(Constants.FUNC_HEAD)) return;
             Identifier arg;
             TypeNode typeNode = null;
@@ -87,7 +94,7 @@ public class FunctionConverter implements Converter {
             }else{
                 arg = cast(converted);
             }
-            if(parent.name().equals(Constants.REFERENCES)){
+            if(parent.name().equals(Constants.REFERENCE_TYPE)){
                 list.add(new ReferenceNode(arg, typeNode));
             }else {
                 list.add(new Argument(arg, typeNode));
