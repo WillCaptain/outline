@@ -12,12 +12,11 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class ModuleConverter implements  Converter {
-    private final Map<String, Converter> converters;
-
+public class ModuleConverter extends   Converter {
     public ModuleConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         ParseNode module = ((NonTerminalNode) source).node(1);

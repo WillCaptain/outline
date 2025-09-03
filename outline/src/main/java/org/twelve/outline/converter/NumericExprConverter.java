@@ -13,12 +13,11 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class NumericExprConverter implements Converter{
-    private final Map<String, Converter> converters;
-
-    public NumericExprConverter (Map<String, Converter> converters){
-        this.converters = converters;
+public class NumericExprConverter extends Converter{
+    public NumericExprConverter(Map<String, Converter> converters) {
+        super(converters);
     }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode num = cast(source);

@@ -7,7 +7,13 @@ import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Tool;
 
-public class QuestionTypeConverter implements Converter {
+import java.util.Map;
+
+public class QuestionTypeConverter extends Converter {
+    public QuestionTypeConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         return new Question(ast, Tool.convertStrToken(((TerminalNode) source).token()));

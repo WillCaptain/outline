@@ -13,11 +13,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class ArgumentConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class ArgumentConverter extends Converter {
     public ArgumentConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

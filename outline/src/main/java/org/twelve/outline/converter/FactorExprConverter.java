@@ -9,11 +9,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class FactorExprConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class FactorExprConverter extends Converter {
     public FactorExprConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

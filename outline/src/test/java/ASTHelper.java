@@ -84,7 +84,7 @@ public class ASTHelper {
         String code = """
                 module default
                 
-                var option :100|"some"|String = 100;
+                var option :100|"some"|String|{name="will"}|("will",30) = 100;
                 option++, option = 200;""";
         return parser.parse(code);
     }
@@ -147,6 +147,21 @@ public class ASTHelper {
                 let c: [?] = [...5];
                 let d = [1...6,2,x->x+"2",x->x%2==0];
                 let e = [];""";
+        return parser.parse(code);
+    }
+
+    public static AST mockDictDefinition() {
+        String code = """
+                let a = [{
+                  name = "Will"
+                }:"Male", {
+                  name = "Ivy",
+                  age = 20
+                }:"Female"];
+                let b: [Int : String] = [:];
+                let c = [:];
+                let d: [String : ?] = ["Will":30, 30:30];
+                let e: [? : ?] = ["Male":0];""";
         return parser.parse(code);
     }
 }

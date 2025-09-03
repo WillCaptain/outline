@@ -11,11 +11,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class ArrayRangeConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class ArrayRangeConverter extends Converter {
     public ArrayRangeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

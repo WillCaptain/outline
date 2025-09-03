@@ -14,11 +14,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class ConsequenceConverter implements Converter{
-    private final Map<String, Converter> converters;
-
+public class ConsequenceConverter extends Converter{
     public ConsequenceConverter(Map<String, Converter> converters) {
-       this.converters = converters;
+        super(converters);
     }
 
     public Node convert(AST ast, ParseNode source, Node related) {

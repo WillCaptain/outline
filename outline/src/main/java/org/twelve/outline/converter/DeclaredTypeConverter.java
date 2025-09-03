@@ -15,11 +15,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class DeclaredTypeConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class DeclaredTypeConverter extends Converter {
     public DeclaredTypeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

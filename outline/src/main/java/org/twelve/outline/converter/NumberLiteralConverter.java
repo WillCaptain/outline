@@ -9,9 +9,15 @@ import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Tool;
 
+import java.util.Map;
+
 import static org.twelve.outline.common.Tool.convertNumToken;
 
-public class NumberLiteralConverter implements Converter{
+public class NumberLiteralConverter extends Converter{
+    public NumberLiteralConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         int start=0;

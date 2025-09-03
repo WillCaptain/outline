@@ -63,24 +63,28 @@ return_statement
 declared_outline
     : sum_type
     | func_type
+    | non_func_type
     ;
 sum_type
-    : non_func_type (('|'|'&') non_func_type)*
+    : (non_func_type|literal) (('|'|'&') (non_func_type|literal))+
     ;
 non_func_type
-    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | entity_type | array_type |  '?' | ID | literal | factor_type
+    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | entity_type | array_type | map_type |  '?' | ID | factor_type
     ;
 tuple_type
     : '(' declared_outline (','declared_outline)+ ')'
     ;
 entity_type
-    : '{' (argument (','argument)*)? '}'
+    : '{' (argument (','argument)* ','?)? '}'
     ;
 array_type
     : '[' declared_outline ']'
     ;
+map_type
+    : '[' declared_outline ':' declared_outline ']'
+    ;
 func_type
-    : sum_type '->' declared_outline
+    : (sum_type|non_func_type) '->' declared_outline
     ;
 reference_type
     : Function? '<'argument (','argument)* '>'
@@ -132,8 +136,8 @@ unary_expression
     ;
 factor_expression
     : literal
-    | This
     | ID
+    | block
     | factor_expression '[' expression ']'                           # array_map_accessor
     | factor_expression '.' (ID|INT)                                 # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
@@ -145,7 +149,7 @@ literal
     | STRING
     | entity
     | tuple
-    | block
+    | This
     | array
     | map
     | lambda
@@ -173,7 +177,7 @@ array_iterate_range
     : INT? '...' INT
     ;
 map
-    : '[' expression ':' expression (',' expression ':' expression)* ']'
+    : '[' (':' | ( literal ':' expression (',' literal ':' expression)* )) ']'
     ;
 entity
     : '{' property_assignment (',' property_assignment)* ','? '}'

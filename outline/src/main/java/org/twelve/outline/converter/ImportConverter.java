@@ -18,12 +18,11 @@ import java.util.Map;
 import static org.twelve.outline.common.Tool.cast;
 import static org.twelve.outline.common.Tool.convertStrToken;
 
-public class ImportConverter implements Converter{
-    private final Map<String, Converter> converters;
-
-    public ImportConverter (Map<String, Converter> converters){
-        this.converters = converters;
+public class ImportConverter extends Converter{
+    public ImportConverter(Map<String, Converter> converters) {
+        super(converters);
     }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode imports = cast(source);

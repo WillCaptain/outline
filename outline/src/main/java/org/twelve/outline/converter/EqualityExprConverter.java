@@ -12,11 +12,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class EqualityExprConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class EqualityExprConverter extends Converter {
     public EqualityExprConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

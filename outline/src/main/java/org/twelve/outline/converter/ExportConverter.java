@@ -12,11 +12,16 @@ import org.twelve.outline.common.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 import static org.twelve.outline.common.Tool.convertStrToken;
 
-public class ExportConverter implements Converter{
+public class ExportConverter extends Converter{
+    public ExportConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode exports = cast(source);

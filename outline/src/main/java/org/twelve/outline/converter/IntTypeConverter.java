@@ -7,7 +7,13 @@ import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.typeable.IdentifierTypeNode;
 import org.twelve.msll.parsetree.ParseNode;
 
-public class IntTypeConverter implements Converter{
+import java.util.Map;
+
+public class IntTypeConverter extends Converter{
+    public IntTypeConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         Token token = new Token("Integer", source.location().start());

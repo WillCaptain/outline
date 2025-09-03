@@ -6,12 +6,9 @@ import org.twelve.msll.parsetree.ParseNode;
 
 import java.util.Map;
 
-public class ReferenceTypeConverter implements Converter {
-
-    private final Map<String, Converter> converters;
-
+public class ReferenceTypeConverter extends Converter {
     public ReferenceTypeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

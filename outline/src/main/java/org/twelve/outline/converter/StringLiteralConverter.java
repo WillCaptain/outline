@@ -6,9 +6,15 @@ import org.twelve.gcp.node.expression.LiteralNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.msll.parsetree.TerminalNode;
 
+import java.util.Map;
+
 import static org.twelve.outline.common.Tool.convertStrToken;
 
-public class StringLiteralConverter implements Converter{
+public class StringLiteralConverter extends Converter{
+    public StringLiteralConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         return LiteralNode.parse(ast, convertStrToken(((TerminalNode) source).token()));

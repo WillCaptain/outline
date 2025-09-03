@@ -9,11 +9,9 @@ import org.twelve.msll.parsetree.ParseNode;
 
 import java.util.Map;
 
-public class TupleConverter implements Converter{
-    private final Map<String, Converter> converters;
-
+public class TupleConverter extends Converter{
     public TupleConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

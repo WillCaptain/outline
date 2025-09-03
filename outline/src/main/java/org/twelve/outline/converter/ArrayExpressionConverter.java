@@ -4,7 +4,6 @@ import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.ArrayNode;
 import org.twelve.gcp.node.expression.Expression;
-import org.twelve.gcp.node.expression.todo.Lambda;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 
@@ -12,11 +11,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class ArrayExpressionConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class ArrayExpressionConverter extends Converter {
     public ArrayExpressionConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

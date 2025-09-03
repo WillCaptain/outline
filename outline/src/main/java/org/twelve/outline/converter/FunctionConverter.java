@@ -25,11 +25,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class FunctionConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class FunctionConverter extends Converter {
     public FunctionConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

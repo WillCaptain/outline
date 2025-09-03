@@ -42,10 +42,11 @@ public final class Constants {
     public static final String ENTITY_TYPE = ":entity_type";
     public static final String TUPLE_TYPE = ":tuple_type";
     public static final String ARRAY_TYPE = ":array_type";
+    public static final String MAP_TYPE = ":map_type";
     public static final String QUESTION_TYPE = ":QUESTION";
     public static final String FUNC_TYPE = ":func_type";
     public static final String REFERENCE_TYPE = "reference_type";
-//    public static final String REFERENCES = "references";
+    //    public static final String REFERENCES = "references";
     public static final String FUNC_HEAD = "Function";
     public static final String FLOAT = "FLOAT";
     public static final String DOUBLE = "DOUBLE";
@@ -55,6 +56,8 @@ public final class Constants {
     public static final String AND_ = "$";
     public static final String LITERAL_INT_TYPE = ":INT";
     public static final String LITERAL_STRING_TYPE = ":STRING";
+    public static final String LITERAL_ENTITY_TYPE = ":entity";
+    public static final String LITERAL_TUPLE_TYPE = ":tuple";
     public static final String ASSIGNMENT = "assignment";
     public static final String EXPRESSION_STATEMENT = "expression_statement";
     public static final String UNARY_EXPRESSION = "unary_expression";
@@ -63,11 +66,12 @@ public final class Constants {
     public static final String TERNARY_EXPRESSION = "ternary_expression";
     public static final String TERM_EXPRESSION = "term_expression";
     public static final String EXPRESSION = "expression";
-    public static final String ARRAY = "array";
     public static final String If = "If";
     public static final String Else = "Else";
     public static final String Consequence = "Consequence";
+    public static final String ARRAY = "array";
     public static final String ARRAY_ENUM_ITEMS = "array_enum_items";
     public static final String ARRAY_ITERATE_RANGE = "array_iterate_range";
     public static final String ARRAY_ITERATE_EXPRESSION = "array_iterate_expression";
+    public static final String MAP = "map";
 }

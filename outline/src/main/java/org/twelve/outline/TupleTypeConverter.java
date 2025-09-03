@@ -15,11 +15,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class TupleTypeConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class TupleTypeConverter extends Converter {
     public TupleTypeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

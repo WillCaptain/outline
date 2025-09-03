@@ -15,11 +15,9 @@ import java.util.stream.Collectors;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class EntityTypeConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class EntityTypeConverter extends Converter {
     public EntityTypeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override
@@ -35,6 +33,10 @@ public class EntityTypeConverter implements Converter {
                     }
                 })
                 .collect(Collectors.toUnmodifiableList());
-        return new EntityTypeNode(fields);
+        if(fields.isEmpty()){
+            return new EntityTypeNode(ast);
+        }else {
+            return new EntityTypeNode(fields);
+        }
     }
 }

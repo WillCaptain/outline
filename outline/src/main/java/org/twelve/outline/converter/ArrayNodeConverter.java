@@ -8,11 +8,9 @@ import org.twelve.msll.parsetree.ParseNode;
 
 import java.util.Map;
 
-public class ArrayNodeConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class ArrayNodeConverter extends Converter {
     public ArrayNodeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

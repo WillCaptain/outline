@@ -13,17 +13,14 @@ import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.common.Constants;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class IfConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class IfConverter extends Converter {
     public IfConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

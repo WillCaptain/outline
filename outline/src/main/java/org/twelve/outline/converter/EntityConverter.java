@@ -13,11 +13,9 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class EntityConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class EntityConverter extends Converter {
     public EntityConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

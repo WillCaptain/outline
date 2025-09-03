@@ -245,7 +245,9 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                var option: 100|"some"|String = 100;
+                var option: 100|"some"|String|{
+                  name = "will"
+                }|("will",30) = 100;
                 option++, option = 200;""";
         assertEquals(expected,ast.lexeme());
     }
@@ -318,6 +320,24 @@ public class ParserStructureTest {
                 let c: [?] = [...5];
                 let d = [1...6,2,x->x+"2",x->x%2==0];
                 let e = [];""";
+        assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_dict_definition(){
+        AST ast = ASTHelper.mockDictDefinition();
+        String expected = """
+                module default
+                
+                let a = [{
+                  name = "Will"
+                }:"Male", {
+                  name = "Ivy",
+                  age = 20
+                }:"Female"];
+                let b: [Integer : String] = [:];
+                let c = [:];
+                let d: [String : ?] = ["Will":30, 30:30];
+                let e: [? : ?] = ["Male":0];""";
         assertEquals(expected,ast.lexeme());
     }
 }

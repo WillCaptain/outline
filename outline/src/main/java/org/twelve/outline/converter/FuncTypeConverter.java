@@ -2,25 +2,17 @@ package org.twelve.outline.converter;
 
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
-import org.twelve.gcp.node.expression.body.FunctionBody;
-import org.twelve.gcp.node.expression.referable.ReferenceNode;
 import org.twelve.gcp.node.expression.typeable.FunctionTypeNode;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
-import org.twelve.gcp.node.function.Argument;
-import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.common.Constants;
 
 import java.util.Map;
 
-import static org.twelve.outline.common.Tool.cast;
-
-public class FuncTypeConverter implements Converter {
-    private final Map<String, Converter> converters;
-
+public class FuncTypeConverter extends Converter {
     public FuncTypeConverter(Map<String, Converter> converters) {
-        this.converters = converters;
+        super(converters);
     }
 
     @Override

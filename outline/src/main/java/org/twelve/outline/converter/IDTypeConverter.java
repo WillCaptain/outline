@@ -7,9 +7,15 @@ import org.twelve.gcp.node.expression.typeable.IdentifierTypeNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.msll.parsetree.TerminalNode;
 
+import java.util.Map;
+
 import static org.twelve.outline.common.Tool.convertStrToken;
 
-public class IDTypeConverter implements Converter{
+public class IDTypeConverter extends Converter{
+    public IDTypeConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         return new IdentifierTypeNode(new Identifier(ast, convertStrToken(((TerminalNode) source).token())));
