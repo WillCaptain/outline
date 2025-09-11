@@ -22,8 +22,8 @@ public class ExpressionConverter extends Converter {
     public Node convert(AST ast, ParseNode source, Node related) {
         ParseNode expression = ((NonTerminalNode) source).node(0);
         ParseNode type = ((NonTerminalNode) source).node(2);
-        Expression convertedExpression = cast(converters.get(expression.name()).convert(ast, expression, null));
-        TypeNode convertedType = cast(converters.get(Constants.COLON_ + type.name()).convert(ast, type, null));
+        Expression convertedExpression = cast(converters.get(expression.name()).convert(ast, expression));
+        TypeNode convertedType = cast(converters.get(Constants.COLON_ + type.name()).convert(ast, type));
         return new As(convertedExpression,convertedType);
     }
 }

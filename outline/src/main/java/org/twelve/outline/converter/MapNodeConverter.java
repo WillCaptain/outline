@@ -28,9 +28,9 @@ public class MapNodeConverter extends Converter {
         int i = 1;
         List<Pair<Expression, Expression>> tuples = new ArrayList<>();
         while (i < map.nodes().size()) {
-            Expression key = cast(converters.get(map.node(i).name()).convert(ast, map.node(i), null));
+            Expression key = cast(converters.get(map.node(i).name()).convert(ast, map.node(i)));
             i += 2;
-            Expression value = cast(converters.get(map.node(i).name()).convert(ast, map.node(i), null));
+            Expression value = cast(converters.get(map.node(i).name()).convert(ast, map.node(i)));
             i += 2;
             tuples.add(new Pair<>(key,value));
         }

@@ -33,15 +33,15 @@ public class VarDeclareConverter extends Converter{
         int i = 1;
         while (i < varDel.nodes().size()) {
             if (varDel.node(i).name().equals(Constants.ID)) {
-                var = cast(this.converters.get(varDel.node(i).name()).convert(ast,varDel.node(i),null));
+                var = cast(this.converters.get(varDel.node(i).name()).convert(ast,varDel.node(i)));
                 type = null;
                 value = null;
                 i++;
             }
             if (varDel.node(i).name().equals(Constants.ARGUMENT)) {
                 NonTerminalNode argument = cast(varDel.node(i));
-                var = cast(this.converters.get(argument.node(0).name()).convert(ast,argument.node(0),null));
-                type = cast(this.converters.get(Constants.COLON_ + argument.node(2).name()).convert(ast, argument.node(2), null));
+                var = cast(this.converters.get(argument.node(0).name()).convert(ast,argument.node(0)));
+                type = cast(this.converters.get(Constants.COLON_ + argument.node(2).name()).convert(ast, argument.node(2)));
                 i++;
             }
 //            if (varDel.node(i).name().equals(Constants.COLON)) {
@@ -51,7 +51,7 @@ public class VarDeclareConverter extends Converter{
 //            }
             if (varDel.node(i).name().equals(Constants.EQUAL)) {
                 i++;
-                value = cast(this.converters.get(varDel.node(i).name()).convert(ast, varDel.node(i), null));
+                value = cast(this.converters.get(varDel.node(i).name()).convert(ast, varDel.node(i)));
                 i++;
             }
             if (varDel.node(i).name().equals(Constants.COMMA)) {

@@ -22,8 +22,8 @@ public class AssignmentConverter extends Converter{
         ParseNode left = ((NonTerminalNode)source).node(0);
         AssignableOperator operator = AssignableOperator.from(((NonTerminalNode)source).node(1).lexeme());
         ParseNode right = ((NonTerminalNode)source).node(2);
-        return new Assignment(cast(converters.get(left.name()).convert(ast,left,null)),
-                cast(converters.get(right.name()).convert(ast,right,null)),
+        return new Assignment(cast(converters.get(left.name()).convert(ast,left)),
+                cast(converters.get(right.name()).convert(ast,right)),
                 new OperatorNode<>(ast,operator));
     }
 }

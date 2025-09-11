@@ -21,8 +21,8 @@ public class ArgumentConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode argument = cast(source);
-        Identifier arg = cast(converters.get(argument.node(0).name()).convert(ast, argument.node(0), null));
-        TypeNode typeNode = cast(converters.get(Constants.COLON_+argument.node(2).name()).convert(ast, argument.node(2), null));
+        Identifier arg = cast(converters.get(argument.node(0).name()).convert(ast, argument.node(0)));
+        TypeNode typeNode = cast(converters.get(Constants.COLON_+argument.node(2).name()).convert(ast, argument.node(2)));
         return new ArgumentWrapper(ast,arg,typeNode);
     }
 }

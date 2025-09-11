@@ -32,18 +32,18 @@ public class PropertyAssignmentConverter extends Converter {
             i++;
         }
         if(property.node(i).name().equals(Constants.ID)){
-            name = cast(converters.get(property.node(i).name()).convert(ast,property.node(i),null));
+            name = cast(converters.get(property.node(i).name()).convert(ast,property.node(i)));
             i++;
         }
         if(property.node(i).name().equals(Constants.COLON)){
             i++;
-            declared = cast(converters.get(Constants.COLON_+property.node(i).name()).convert(ast,property.node(i),null));
+            declared = cast(converters.get(Constants.COLON_+property.node(i).name()).convert(ast,property.node(i)));
             i++;
 
         }
         if(property.node(i).name().equals(Constants.EQUAL)){
            i++;
-           expression = cast(converters.get(property.node(i).name()).convert(ast,property.node(i),null));
+           expression = cast(converters.get(property.node(i).name()).convert(ast,property.node(i)));
 
         }
         return new MemberNode(name, declared, expression, mutable);

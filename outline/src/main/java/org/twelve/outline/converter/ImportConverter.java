@@ -52,7 +52,7 @@ public class ImportConverter extends Converter{
             }
             if (imports.node(i).name().equals(Constants.FROM)) {
                 vars.add(new Pair<>(key, value));
-                Node from = converters.get(imports.node(i + 1).name()).convert(ast,imports.node(i + 1),null);
+                Node from = converters.get(imports.node(i + 1).name()).convert(ast,imports.node(i + 1));
                while(from instanceof MemberAccessor){
                    froms.add(0,((MemberAccessor) from).member());
                    from = ((MemberAccessor) from).host();

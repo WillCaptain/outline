@@ -23,7 +23,7 @@ public class EntityConverter extends Converter {
         ParseNode[] properties = ((NonTerminalNode) source).nodes().stream().filter(n -> !"{,}".contains(n.lexeme())).toArray(ParseNode[]::new);
         List<MemberNode> members = new ArrayList<>();
         for (ParseNode property : properties) {
-            members.add(cast(converters.get(property.name()).convert(ast,property,null)));
+            members.add(cast(converters.get(property.name()).convert(ast,property)));
         }
         return new EntityNode(members);
     }

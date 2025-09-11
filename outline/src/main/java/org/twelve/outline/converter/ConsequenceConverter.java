@@ -20,7 +20,7 @@ public class ConsequenceConverter extends Converter{
     }
 
     public Node convert(AST ast, ParseNode source, Node related) {
-        Node converted = converters.get(source.name()).convert(ast,source,null);
+        Node converted = converters.get(source.name()).convert(ast,source);
         Consequence consequence = new Consequence(ast);
         if(converted instanceof Block){
             for (Node node : converted.nodes()) {

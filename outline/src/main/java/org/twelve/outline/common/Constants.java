@@ -36,6 +36,7 @@ public final class Constants {
     public static final String THIS = "This";
     public static final String MEMBER_ACCESSOR = "entity_member_accessor";
     public static final String FUNCTION_CALL = "function_call";
+    public static final String REFERENCE_CALL = "reference_call";
     public static final String ARRAY_MAP_ACCESSOR = "array_map_accessor";
     public static final String TUPLE = "tuple";
     public static final String ARGUMENT = "argument";

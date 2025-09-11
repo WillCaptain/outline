@@ -30,7 +30,7 @@ public class DeclaredTypeConverter extends Converter {
         }
         String flag = isOption ? Constants.OR_ : Constants.AND_;
         TypeNode[] types = type.nodes().stream().filter(n -> !n.lexeme().equals(flag))
-                .map(n -> converters.get(Constants.COLON_+n.name()).convert(ast, n, null))
+                .map(n -> converters.get(Constants.COLON_+n.name()).convert(ast, n))
                 .toArray(TypeNode[]::new);
         if(isOption) {
             return new OptionTypeNode(types);

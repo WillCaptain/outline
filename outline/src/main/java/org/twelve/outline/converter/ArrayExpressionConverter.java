@@ -26,15 +26,15 @@ public class ArrayExpressionConverter extends Converter {
         Expression condition = null;
         NonTerminalNode range = cast(expression.node(0));
         if(range.nodes().size()==2){
-            end = cast(converters.get(range.node(1).name()).convert(ast,range.node(1),null));
+            end = cast(converters.get(range.node(1).name()).convert(ast,range.node(1)));
         }else{
-            begin = cast(converters.get(range.node(0).name()).convert(ast,range.node(0),null));
-            end = cast(converters.get(range.node(2).name()).convert(ast,range.node(2),null));
+            begin = cast(converters.get(range.node(0).name()).convert(ast,range.node(0)));
+            end = cast(converters.get(range.node(2).name()).convert(ast,range.node(2)));
 
         }
-        step = cast(converters.get(expression.node(2).name()).convert(ast,expression.node(2),null));
-        processor = cast(converters.get(expression.node(4).name()).convert(ast,expression.node(4),null));
-        condition = cast(converters.get(expression.node(6).name()).convert(ast,expression.node(6),null));
+        step = cast(converters.get(expression.node(2).name()).convert(ast,expression.node(2)));
+        processor = cast(converters.get(expression.node(4).name()).convert(ast,expression.node(4)));
+        condition = cast(converters.get(expression.node(6).name()).convert(ast,expression.node(6)));
         return new ArrayNode(ast,begin,end,step,processor,condition);
     }
 }

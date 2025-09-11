@@ -100,6 +100,10 @@ public class GCPConverter {
         this.converters.put(Constants.POLY_EXPRESSION, new PolyExprConverter(converters));
         //function call
         this.converters.put(Constants.FUNCTION_CALL, new FunctionCallConverter(converters));
+        //reference call
+        this.converters.put(Constants.REFERENCE_CALL, new ReferenceCallConverter(converters));
+        //array map accessor
+        this.converters.put(Constants.ARRAY_MAP_ACCESSOR, new AccessorConverter(converters));
         //if expression
         this.converters.put(Constants.IF_EXPRESSION, new IfConverter(converters));
         this.converters.put(Constants.Consequence, new ConsequenceConverter(converters));
@@ -112,7 +116,6 @@ public class GCPConverter {
         this.converters.put(Constants.ARRAY_ITERATE_EXPRESSION, new ArrayExpressionConverter(converters));
         //map
         this.converters.put(Constants.MAP, new MapNodeConverter(converters));
-
     }
 
     public GCPConverter() {

@@ -25,7 +25,7 @@ public class EntityTypeConverter extends Converter {
         List<Variable> fields = ((NonTerminalNode) source).nodes().stream().filter(n ->
                         !n.lexeme().equals("{") && !n.lexeme().equals("}") && !n.lexeme().equals(","))
                 .map(n->{
-                    Node converted = converters.get(n.name()).convert(ast,n,null);
+                    Node converted = converters.get(n.name()).convert(ast,n);
                     if(converted instanceof ArgumentWrapper){
                         return new Variable(((ArgumentWrapper) converted).argument(),false,((ArgumentWrapper) converted).typeNode());
                     }else {

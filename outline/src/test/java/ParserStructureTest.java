@@ -23,24 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.twelve.gcp.common.Tool.cast;
 
 public class ParserStructureTest {
-    private AST ast;
 
-    @BeforeEach
-    @SneakyThrows
-    void before() {
-        String code = """
-                module org.twelve.human
-                import grade as level, college as school from education;
-                import * from e.f.g;
-                let age: Int = 10, name = "Will", height: Double = 1.68, grade = level;
-                export height as stature, name;""";
-        this.ast = new OutlineParser().parse(code);
-    }
 
     @Test
     void test_namespace() {
-        assertEquals(7, this.ast.program().namespace().loc().start());
-        assertEquals(16, this.ast.program().namespace().loc().end());
+        AST ast = ASTHelper.mockGeneral();
+        assertEquals(7, ast.program().namespace().loc().start());
+        assertEquals(16, ast.program().namespace().loc().end());
 
         assertEquals("org", ast.program().namespace().nodes().get(0).lexeme());
         assertEquals("twelve", ast.program().namespace().nodes().get(1).lexeme());
@@ -70,10 +59,23 @@ public class ParserStructureTest {
         assertEquals(8, ast.program().namespace().id());
         assertEquals(10, ast.program().namespace().nodes().get(0).id());
         assertEquals(12, ast.program().namespace().nodes().get(1).id());
+
+        String code = """
+                module org.twelve.human
+                
+                import grade as level, college as school from education;
+                
+                import * from e.f.g;
+                
+                let age: Integer = 10, name = "Will", height: Double = 1.68, grade = level;
+                export height as stature, name;
+                """;
+        assertEquals(code,ast.lexeme());
     }
     @Test
     void test_import() {
-        Import imported = this.ast.program().body().imports().getFirst();
+        AST ast = ASTHelper.mockGeneral();
+        Import imported = ast.program().body().imports().getFirst();
         //check to string
         assertEquals("import grade as level, college as school from education;", ast.program().body().imports().getFirst().lexeme());
         //check location
@@ -105,7 +107,7 @@ public class ParserStructureTest {
         assertEquals(52, c.imported().loc().end());
 
         //import * from e
-        imported = this.ast.program().body().imports().getLast();
+        imported = ast.program().body().imports().getLast();
         assertEquals("e.f.g", imported.source().lexeme());
         a = imported.specifiers().getFirst();
         assertEquals("*", a.lexeme());
@@ -116,6 +118,7 @@ public class ParserStructureTest {
     }
     @Test
     void test_export() {
+        AST ast = ASTHelper.mockGeneral();
         Export exported = ast.program().body().exports().getFirst();
         //check to string
         assertEquals("export height as stature, name;", ast.program().body().exports().getFirst().toString());
@@ -144,7 +147,8 @@ public class ParserStructureTest {
     }
     @Test
     void test_variable_declare() {
-        List<Statement> stmts = this.ast.program().body().statements();
+        AST ast = ASTHelper.mockGeneral();
+        List<Statement> stmts = ast.program().body().statements();
         VariableDeclarator var = cast(stmts.getFirst());
         assertEquals(105, var.loc().start());
         assertEquals(170, var.loc().end());
@@ -339,5 +343,35 @@ public class ParserStructureTest {
                 let d: [String : ?] = ["Will":30, 30:30];
                 let e: [? : ?] = ["Male":0];""";
         assertEquals(expected,ast.lexeme());
+    }
+    @Test
+    void test_array_as_argument_definition() {
+        AST ast = ASTHelper.mockArrayAsArgument();
+        String expected = """
+                module default
+                
+                let f = x->x[0];
+                let g = (x: [?])->i->{
+                  let y = x[i];
+                  x = ["will","zhang"];
+                  y
+                };
+                let r = fx<a>(x: [a])->{
+                  var b = [1,2];
+                  b = x;
+                  let c: a = x[0];
+                  c
+                };
+                f([{
+                  name = "Will"
+                }]);
+                f(100);
+                g(["a","b"],0);
+                g([1],"idx");
+                let r1 = r<Integer>;
+                r1([1,2]);
+                let r2 = r<String>;
+                r([1,2]);""";
+        assertEquals(expected, ast.lexeme());
     }
 }

@@ -62,7 +62,7 @@ public class FunctionConverter extends Converter {
 //            }
 //        });
         ParseNode originBody = func.node(i+2);
-        Node statements = converters.get(originBody.name()).convert(ast, originBody, null);
+        Node statements = converters.get(originBody.name()).convert(ast, originBody);
         FunctionBody body = new FunctionBody(ast);
         if(statements instanceof Body){
             for (Node node : statements.nodes()) {
@@ -85,7 +85,7 @@ public class FunctionConverter extends Converter {
             if(n.name().equals(Constants.FUNC_HEAD)) return;
             Identifier arg;
             TypeNode typeNode = null;
-            Node converted = converters.get(n.name()).convert(ast, n, null);
+            Node converted = converters.get(n.name()).convert(ast, n);
             if(converted instanceof ArgumentWrapper){
                 arg = ((ArgumentWrapper) converted).argument();
                 typeNode = ((ArgumentWrapper) converted).typeNode();

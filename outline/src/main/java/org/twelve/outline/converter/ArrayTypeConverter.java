@@ -22,7 +22,7 @@ public class ArrayTypeConverter extends Converter {
 //            return new ArrayTypeNode(ast);
 //        }else{
             ParseNode itemType = ((NonTerminalNode) source).node(1);
-            return new ArrayTypeNode(ast,cast(converters.get(Constants.COLON_+itemType.name()).convert(ast,itemType,null)));
+            return new ArrayTypeNode(ast,cast(converters.get(Constants.COLON_+itemType.name()).convert(ast,itemType)));
 //        }
     }
 }

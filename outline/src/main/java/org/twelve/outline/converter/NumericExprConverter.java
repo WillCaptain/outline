@@ -21,8 +21,8 @@ public class NumericExprConverter extends Converter{
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode num = cast(source);
-        Expression x = cast(converters.get(num.node(0).name()).convert(ast,num.node(0),null));
-        Expression y = cast(converters.get(num.node(2).name()).convert(ast,num.node(2),null));
+        Expression x = cast(converters.get(num.node(0).name()).convert(ast,num.node(0)));
+        Expression y = cast(converters.get(num.node(2).name()).convert(ast,num.node(2)));
         return new BinaryExpression(x, y, new OperatorNode<>(ast,BinaryOperator.parse(num.node(2).lexeme())));
     }
 }

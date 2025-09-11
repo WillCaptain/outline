@@ -23,7 +23,7 @@ public class PolyExprConverter extends Converter {
         if(next instanceof NonTerminalNode && !((NonTerminalNode) next).explain().trim().isEmpty()){
             key = ((NonTerminalNode) next).explain();
         }
-        Node convertedNext = converters.get(key).convert(ast, next, null);
+        Node convertedNext = converters.get(key).convert(ast, next);
         Expression[] rest = null;
         if(convertedNext instanceof PolyNode){
             rest = convertedNext.nodes().toArray(Expression[]::new);

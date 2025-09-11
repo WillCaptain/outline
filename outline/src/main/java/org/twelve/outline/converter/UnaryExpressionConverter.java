@@ -23,10 +23,10 @@ public class UnaryExpressionConverter extends Converter {
         ParseNode left = ((NonTerminalNode)source).node(0);
         ParseNode right = ((NonTerminalNode)source).node(1);
         if(UnaryOperator.from(left.lexeme())==null){//right
-            return new UnaryExpression(cast(converters.get(left.name()).convert(ast,left,null)),
+            return new UnaryExpression(cast(converters.get(left.name()).convert(ast,left)),
                     new OperatorNode<>(ast,UnaryOperator.from(right.lexeme())), UnaryPosition.PREFIX);
         }else{//left
-            return new UnaryExpression(cast(converters.get(right.name()).convert(ast,right,null)),
+            return new UnaryExpression(cast(converters.get(right.name()).convert(ast,right)),
                     new OperatorNode<>(ast,UnaryOperator.from(left.lexeme())), UnaryPosition.POSTFIX);
         }
     }

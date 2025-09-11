@@ -30,19 +30,19 @@ public class IfConverter extends Converter {
         int i = 0;
         if (nodes.get(i).name().equals(Constants.If)) {
             i += 2;
-            Expression test = cast(converters.get(nodes.get(i).name()).convert(ast, nodes.get(i), null));
+            Expression test = cast(converters.get(nodes.get(i).name()).convert(ast, nodes.get(i)));
             i += 2;
-            Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(i), null));
+            Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(i)));
             ifs.addArm(new Arm(test, consequence));
             i++;
         }
         if (nodes.get(i).name().equals(Constants.Else)) {
             i++;
-            Node other = converters.get(nodes.get(i).name()).convert(ast, nodes.get(i), null);
+            Node other = converters.get(nodes.get(i).name()).convert(ast, nodes.get(i));
             if (other instanceof Selections) {
                 ifs.arms().addAll(((Selections) other).arms());
             } else {
-                Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(i), null));
+                Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(i)));
                 ifs.arms().add(new Arm(consequence));
             }
         }

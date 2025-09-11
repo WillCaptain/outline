@@ -20,8 +20,8 @@ public class EqualityExprConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode origin = cast(source);
-        Node left = converters.get(origin.node(0).name()).convert(ast,origin.node(0),null);
-        Node right = converters.get(origin.node(2).name()).convert(ast,origin.node(2),null);
+        Node left = converters.get(origin.node(0).name()).convert(ast,origin.node(0));
+        Node right = converters.get(origin.node(2).name()).convert(ast,origin.node(2));
         BinaryOperator opertor = BinaryOperator.parse(origin.node(1).lexeme());
         BinaryExpression expr = new BinaryExpression(cast(left),cast(right),new OperatorNode<>(ast,opertor));
         return expr;

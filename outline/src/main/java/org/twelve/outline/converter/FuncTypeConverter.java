@@ -20,8 +20,8 @@ public class FuncTypeConverter extends Converter {
         //FunctionNode func = new FunctionNode(FunctionBody funcBody, List< ReferenceNode > refs, List< Argument > arguments)
         ParseNode origin_arg = ((NonTerminalNode) source).node(0);
         ParseNode oirgin_body = ((NonTerminalNode) source).node(2);
-        Node arg = converters.get(Constants.COLON_+origin_arg.name()).convert(ast,origin_arg,null);
-        Node body = converters.get(Constants.COLON_+oirgin_body.name()).convert(ast,oirgin_body,null);
+        Node arg = converters.get(Constants.COLON_+origin_arg.name()).convert(ast,origin_arg);
+        Node body = converters.get(Constants.COLON_+oirgin_body.name()).convert(ast,oirgin_body);
         return new FunctionTypeNode(ast, (TypeNode) body, (TypeNode) arg);
     }
 }

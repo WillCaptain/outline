@@ -26,7 +26,7 @@ public class FunctionCallConverter extends Converter{
             if(all[i] instanceof NonTerminalNode && !((NonTerminalNode) all[i]).explain().trim().isEmpty()){
                 rest = cast(all[i]);
             }else{
-                args.add(cast(converters.get(all[i].name()).convert(ast,all[i],null)));
+                args.add(cast(converters.get(all[i].name()).convert(ast,all[i])));
             }
         }
         FunctionCallNode call = new FunctionCallNode(cast(related), args.toArray(new Expression[0]));

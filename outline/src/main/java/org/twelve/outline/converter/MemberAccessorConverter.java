@@ -22,7 +22,7 @@ public class MemberAccessorConverter extends Converter {
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode accessor = cast(source);
         Expression host = cast(related);
-        Expression member = cast(converters.get(accessor.node(1).name()).convert(ast, accessor.node(1), null));
+        Expression member = cast(converters.get(accessor.node(1).name()).convert(ast, accessor.node(1)));
         if(member instanceof Identifier) {
             host = new MemberAccessor(host, (Identifier) member);
         }

@@ -20,8 +20,8 @@ public class MapTypeConverter extends Converter{
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode mapType = cast(source);
-        TypeNode keyType = cast(converters.get(Constants.COLON_+mapType.node(1).name()).convert(ast,mapType.node(1),null));
-        TypeNode valueType = cast(converters.get(Constants.COLON_+mapType.node(3).name()).convert(ast,mapType.node(3),null));
+        TypeNode keyType = cast(converters.get(Constants.COLON_+mapType.node(1).name()).convert(ast,mapType.node(1)));
+        TypeNode valueType = cast(converters.get(Constants.COLON_+mapType.node(3).name()).convert(ast,mapType.node(3)));
         return new DictTypeNode(ast,keyType,valueType);
     }
 }

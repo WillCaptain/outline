@@ -41,7 +41,7 @@ module_statement
     : 'module' factor_expression
     ;
 import_statement
-    : 'import' ('*' | (ID ('as' ID)? (',' ID ('as' ID)? )*)) 'from' (factor_expression | ID) ';'
+    : 'import' ('*' | (ID ('as' ID)? (',' ID ('as' ID)? )*)) 'from' factor_expression ';'
     ;
 export_statement
     : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
@@ -141,6 +141,7 @@ factor_expression
     | factor_expression '[' expression ']'                           # array_map_accessor
     | factor_expression '.' (ID|INT)                                 # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
+    | factor_expression '<' declared_outline '>'                     # reference_call
     | factor_expression '&' expression                               # poly_expression
     | '(' expression ')'
     ;
@@ -162,7 +163,7 @@ expression_statement
     ;
 
 block
-    : '{' statement*'}'
+    : '{' statement* '}'
     ;
 array
     : '[' (array_enum_items | array_iterate_expression)? ']'

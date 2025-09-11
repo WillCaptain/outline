@@ -22,7 +22,7 @@ public class BlockConverter extends Converter{
         Block block = new Block(ast);
         NonTerminalNode originBlock = cast(source);
         for(int i=1; i<originBlock.nodes().size()-1; i++){
-            Node statement = converters.get(originBlock.node(i).name()).convert(ast,originBlock.node(i),null);
+            Node statement = converters.get(originBlock.node(i).name()).convert(ast,originBlock.node(i));
             if(statement instanceof Statement){
                 block.addStatement(cast(statement));
             }else{

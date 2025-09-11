@@ -162,6 +162,54 @@ public class ASTHelper {
                 let c = [:];
                 let d: [String : ?] = ["Will":30, 30:30];
                 let e: [? : ?] = ["Male":0];""";
+
+
+        /*String code = """
+                let a = [{
+                  name = "Will"
+                }:"Male"];""";*/
+        return parser.parse(code);
+    }
+
+    public static AST mockArrayAsArgument() {
+        String code = """
+                let f = x->x[0];
+                let g = (x: [?])->i->{
+                  let y = x[i];
+                  x = ["will","zhang"];
+                  y
+                };
+                let r = fx<a>(x: [a])->{
+                  var b = [1,2];
+                  b = x;
+                  let c: a = x[0];
+                  c
+                };
+                f([{
+                  name = "Will"
+                }]);
+                f(100);
+                g(["a","b"],0);
+                g([1],"idx");
+                let r1 = r<Int>;
+                r1([1,2]);
+                let r2 = r<String>;
+                r([1,2]);""";
+
+
+//        String code = """
+//                {name="Will"};
+//                10""";
+        return parser.parse(code);
+    }
+
+    public static AST mockGeneral() {
+        String code = """
+                module org.twelve.human
+                import grade as level, college as school from education;
+                import * from e.f.g;
+                let age: Int = 10, name = "Will", height: Double = 1.68, grade = level;
+                export height as stature, name;""";
         return parser.parse(code);
     }
 }

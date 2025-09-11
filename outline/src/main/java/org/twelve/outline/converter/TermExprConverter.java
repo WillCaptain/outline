@@ -21,8 +21,8 @@ public class TermExprConverter extends Converter{
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode term = cast(source);
-        Expression left = cast(converters.get(term.node(0).name()).convert(ast,term.node(0),null));
-        Expression right = cast(converters.get(term.node(2).name()).convert(ast,term.node(2),null));
+        Expression left = cast(converters.get(term.node(0).name()).convert(ast,term.node(0)));
+        Expression right = cast(converters.get(term.node(2).name()).convert(ast,term.node(2)));
         OperatorNode<BinaryOperator> operator = new OperatorNode<>(ast,BinaryOperator.parse(term.node(1).lexeme()));
         return new BinaryExpression(left,right,operator);
     }

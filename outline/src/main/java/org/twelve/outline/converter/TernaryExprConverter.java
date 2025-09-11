@@ -28,10 +28,10 @@ public class TernaryExprConverter extends Converter {
         List<ParseNode> nodes = ((NonTerminalNode) source).nodes();
         Selections ifs = new Selections(SELECTION_TYPE.TERNARY, ast);
         int i=0;
-        Expression test = cast(converters.get(nodes.get(0).name()).convert(ast, nodes.get(i), null));
-        Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(2), null));
+        Expression test = cast(converters.get(nodes.get(0).name()).convert(ast, nodes.get(i)));
+        Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(2)));
         ifs.addArm(new Arm(test, consequence));
-       consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(4), null));
+       consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(4)));
         ifs.arms().add(new Arm(consequence));
         return ifs;
     }

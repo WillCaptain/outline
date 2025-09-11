@@ -21,15 +21,7 @@ public class ModuleConverter extends   Converter {
     public Node convert(AST ast, ParseNode source, Node related) {
         ParseNode module = ((NonTerminalNode) source).node(1);
         Program program = cast(related.parent());
-        Node ns = converters.get(module.name()).convert(ast,module,null);
-//        if(module instanceof NonTerminalNode){
-//            ns = converters.get(((NonTerminalNode) module).explain()).convert(ast,module,null);
-//        }else{
-//            ns = converters.get(module.name()).convert(ast,module,null);
-//        }
-//        List<Identifier> ns = new ArrayList<>(module.nodes().stream().filter(n -> !n.name().equals(Constants.DOT))
-//                .map(n -> new Identifier(ast, convertStrToken(((TerminalNode) n).token())))
-//                .collect(Collectors.toUnmodifiableList()));
+        Node ns = converters.get(module.name()).convert(ast,module);
         if(ns instanceof Identifier) {
             program.setNamespace((Identifier) ns);
         }else{

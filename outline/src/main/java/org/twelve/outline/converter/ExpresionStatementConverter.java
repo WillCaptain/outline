@@ -22,7 +22,9 @@ public class ExpresionStatementConverter extends Converter {
                 .map(n -> converters.get(n.name()).convert(ast, n, null))
                 .toArray(Expression[]::new);
         Statement stat = new ExpressionStatement(expressions);
-        related.addNode(stat);
+        if(related!=null) {
+            related.addNode(stat);
+        }
         return stat;
     }
 }
