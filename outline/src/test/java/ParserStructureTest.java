@@ -1,5 +1,4 @@
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Token;
@@ -182,7 +181,7 @@ public class ParserStructureTest {
     }
     @Test
     void test_entity(){
-        AST ast = ASTHelper.mockSimplePersonEntity();
+        AST ast = ASTHelper.mockRandomPersonEntity();
         String expected = """
                 module test
                 

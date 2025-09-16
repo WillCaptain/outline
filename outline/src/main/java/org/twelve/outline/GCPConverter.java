@@ -84,6 +84,9 @@ public class GCPConverter {
         this.converters.put(Constants.TERM_EXPRESSION, new TermExprConverter(converters));
         //body
         this.converters.put(Constants.BLOCK, new BlockConverter(converters));
+        //complex expression: entity extension
+        this.converters.put(Constants.COMPLEX_EXPRESSION, new EntityExtensionConverter(converters));
+
         //entity
         this.converters.put(Constants.ENTITY, new EntityConverter(converters));
         //entity property assignment
@@ -92,12 +95,16 @@ public class GCPConverter {
         this.converters.put(Constants.TUPLE, new TupleConverter(converters));
         //factor expression
         this.converters.put(Constants.FACTOR_EXPRESSION, new FactorExprConverter(converters));
+        //factor (expression)
+        this.converters.put(Constants.FACTOR, new FactorConverter(converters));
         //this
         this.converters.put(Constants.THIS, new ThisConverter(converters));
+        //base
+        this.converters.put(Constants.BASE, new BaseConverter(converters));
         //member accessor
         this.converters.put(Constants.MEMBER_ACCESSOR, new MemberAccessorConverter(converters));
         //poly expression
-        this.converters.put(Constants.POLY_EXPRESSION, new PolyExprConverter(converters));
+        this.converters.put(Constants.POLY_OPTION_EXPRESSION, new PolyOptionExprConverter(converters));
         //function call
         this.converters.put(Constants.FUNCTION_CALL, new FunctionCallConverter(converters));
         //reference call

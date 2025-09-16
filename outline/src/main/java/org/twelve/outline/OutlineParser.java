@@ -1,5 +1,6 @@
 package org.twelve.outline;
 
+import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.msll.grammar.Grammars;
 import org.twelve.msll.parser.MyParser;
@@ -34,5 +35,9 @@ public class OutlineParser {
     public AST parse(String code) {
         MyParser parser = builder.createParser(code);
         return this.converter.convert(parser.parse());
+    }
+    public AST parse(ASF asf, String code) {
+        MyParser parser = builder.createParser(code);
+        return new GCPConverter(asf).convert(parser.parse());
     }
 }

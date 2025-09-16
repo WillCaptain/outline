@@ -1,6 +1,8 @@
 import lombok.SneakyThrows;
+import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.common.SELECTION_TYPE;
+import org.twelve.outline.GCPConverter;
 import org.twelve.outline.OutlineParser;
 
 import java.io.IOException;
@@ -26,13 +28,25 @@ public class ASTHelper {
         return parser.parse(code);
     }
 
-    public static AST mockSimplePersonEntity() {
+    public static AST mockRandomPersonEntity() {
         String code = """
                 module test
                 let person = {
                   var get_name = ()->this.name.a(x,y).b.c.to_str(),
                   get_my_name = ()->name,
                   name = "Will"
+                };
+                let name_1 = person.name;
+                let name_2 = person.get_name();""";
+        return parser.parse(code);
+    }
+
+    public static AST mockSimplePersonEntity(){
+        String code = """
+                let person = {
+                    name = "Will",
+                    get_name = ()->this.name,
+                    get_my_name = ()->name
                 };
                 let name_1 = person.name;
                 let name_2 = person.get_name();""";
@@ -211,5 +225,117 @@ public class ASTHelper {
                 let age: Int = 10, name = "Will", height: Double = 1.68, grade = level;
                 export height as stature, name;""";
         return parser.parse(code);
+    }
+
+    @SneakyThrows
+    public static ASF educationAndHuman() {
+        ASF asf = new ASF();
+        OutlineParser parser = new OutlineParser(new GCPConverter(asf));
+        String code = """
+                module org.twelve.education
+                let grade: Int = 1, school: String = "NO.1";
+                export grade, school as college;""";
+        parser.parse(code);
+        code = """
+                module org.twelve.human
+                import grade as level, college as school from education;
+                let age: Int, name: String = "Will", height: Double = 1.68, grade: Int = level;
+                export height as stature, name;""";
+        parser.parse(code);
+        return asf;
+    }
+
+    public static AST declaredAssignmentTypeMismatch() {
+        String code = """
+                module me
+                var age: Int = "some";""";
+        return parser.parse(code);
+    }
+
+    public static AST assignMismatch() {
+        String code = """
+                module me
+                var age = "some";
+                age = 100;""";
+        return parser.parse(code);
+    }
+
+    public static AST declaredPolyMismatchAssignment() {
+        String code = """
+                module me
+                var age = "some"&(100|200);
+                age = 100.0;""";
+        return parser.parse(code);
+    }
+
+    public static AST mockErrorAssignOnDefinedPoly() {
+        String code = """
+                module default
+                
+                var poly = 100&"some"&{age=40,name="Will"}&(40,"Will");
+                poly = 10.0f;
+                let poly = 10.0f;""";
+        return parser.parse(code);
+    }
+
+    public static AST mockAssignOnDefinedLiteralUnion() {
+        String code = """
+                module default
+                
+                var option :100|"some"|String|{name="will"}|("will",30) = 100;
+                option++, option = 200;
+                option = 100;
+                option = "some"; """;
+        return parser.parse(code);
+
+    }
+
+    public static AST mockOverrideAddFunc() {
+        String code = """
+                var add = ((x,y)->x+y) & ((x,y,z)->x+y+z);""";
+        return parser.parse(code);
+    }
+
+    public static AST mockGCPTestAst() {
+        String code = """
+                module test
+                let a = 100.0, b = 100, c = "some";
+                a+b;
+                a+c;
+                a-b;
+                a-c;
+                a==b;""";
+        return parser.parse(code);
+    }
+
+    @SneakyThrows
+    public static AST mockSimplePersonEntityWithOverrideMember() {
+        String code = """ 
+                module test
+                let person = {
+                    get_name = ()->this.name,
+                    name = "Will",
+                    var get_name = (()->this.name)&(last_name->this.name+last_name)
+                    //var get_name = (()->this.name)&(last_name->last_name)
+                };
+                let name_1 = person.name;
+                let name_2 = person.get_name();""";
+        return parser.parse(new ASF(),code);
+    }
+
+    public static AST mockInheritedPersonEntity() {
+        String code = """
+                let person = {
+                  get_name = ()->this.name,
+                  get_my_name = ()->name,
+                  name = "Will"
+                };
+                let name_1 = person.name;
+                let name_2 = person.get_name();
+                let me = person{
+                  get_full_name = ()->baseNode.name+"Zhang",
+                  var get_name = ()->"Will Zhang"
+                };""";;
+        return parser.parse(new ASF(),code);
     }
 }

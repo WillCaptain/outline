@@ -23,6 +23,6 @@ public class NumericExprConverter extends Converter{
         NonTerminalNode num = cast(source);
         Expression x = cast(converters.get(num.node(0).name()).convert(ast,num.node(0)));
         Expression y = cast(converters.get(num.node(2).name()).convert(ast,num.node(2)));
-        return new BinaryExpression(x, y, new OperatorNode<>(ast,BinaryOperator.parse(num.node(2).lexeme())));
+        return new BinaryExpression(x, y, new OperatorNode<>(ast,BinaryOperator.parse(num.node(1).lexeme())));
     }
 }

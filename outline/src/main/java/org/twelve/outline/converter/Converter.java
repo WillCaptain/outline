@@ -16,9 +16,6 @@ public abstract class Converter {
     public abstract Node convert(AST ast, ParseNode source, Node related);
     public  Node convert(AST ast, ParseNode source){
         ParseNode parent = source;
-        if(parent instanceof NonTerminalNode){
-
-        }
         return this.convert(ast,parent,null);
     }
 

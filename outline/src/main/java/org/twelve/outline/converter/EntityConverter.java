@@ -13,18 +13,14 @@ import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
 
-public class EntityConverter extends Converter {
+public class EntityConverter extends EntityExtensionConverter {
     public EntityConverter(Map<String, Converter> converters) {
         super(converters);
     }
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        ParseNode[] properties = ((NonTerminalNode) source).nodes().stream().filter(n -> !"{,}".contains(n.lexeme())).toArray(ParseNode[]::new);
-        List<MemberNode> members = new ArrayList<>();
-        for (ParseNode property : properties) {
-            members.add(cast(converters.get(property.name()).convert(ast,property)));
-        }
+        List<MemberNode> members = convertMembers(ast,cast(source));
         return new EntityNode(members);
     }
 }

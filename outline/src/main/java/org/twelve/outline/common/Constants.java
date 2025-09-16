@@ -27,6 +27,7 @@ public final class Constants {
     public static final String SUM_TYPE = ":sum_type";
     public static final String FUNCTION = "lambda";
     public static final String NUMERIC_EXPRESSION = "numeric_expression";
+    public static final String COMPLEX_EXPRESSION = "complex_expression";
     public static final String BLOCK = "block";
     public static final String ENTITY = "entity";
     public static final String PROPERTY_ASSIGNMENT = "property_assignment";
@@ -34,6 +35,7 @@ public final class Constants {
     public static final String LET = "Let";
     public static final String FACTOR_EXPRESSION = "factor_expression";
     public static final String THIS = "This";
+    public static final String BASE = "Base";
     public static final String MEMBER_ACCESSOR = "entity_member_accessor";
     public static final String FUNCTION_CALL = "function_call";
     public static final String REFERENCE_CALL = "reference_call";
@@ -52,7 +54,7 @@ public final class Constants {
     public static final String FLOAT = "FLOAT";
     public static final String DOUBLE = "DOUBLE";
     public static final String INT = "INT";
-    public static final String POLY_EXPRESSION = "poly_expression";
+    public static final String POLY_OPTION_EXPRESSION = "poly_or_option_expression";
     public static final String OR_ = "|";
     public static final String AND_ = "$";
     public static final String LITERAL_INT_TYPE = ":INT";
@@ -75,4 +77,5 @@ public final class Constants {
     public static final String ARRAY_ITERATE_RANGE = "array_iterate_range";
     public static final String ARRAY_ITERATE_EXPRESSION = "array_iterate_expression";
     public static final String MAP = "map";
+    public static final String FACTOR = "factor";
 }

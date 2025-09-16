@@ -51,7 +51,7 @@ comment
     | MultiLineComment
     ;
 variable_declarator
-    : ('let'|'var') {notLineTerminator()} argument '=' expression (',' argument '=' expression)* ';'
+    : ('let'|'var') {notLineTerminator()} argument ('=' expression)? (',' argument ('=' expression)?)* ';'
     ;
 return_statement
     : 'return' expression? ';'
@@ -97,17 +97,20 @@ expression
     : assignment ('as' declared_outline)?
     ;
 assignment
-    : conditional_expression (('='|'+='|'-='|'*='|'/=') assignment)?
+    : complex_expression (('='|'+='|'-='|'*='|'/=') assignment)?
     ;
-conditional_expression
+complex_expression
     : if_expression
-    | ternary_expression
+    | ternary_expression entity?
     ;
 if_expression
     : 'if' '(' expression ')' expression ('else' expression)?
     ;
 ternary_expression
-    : or_expression ('?' expression ':' conditional_expression)?
+    : poly_or_option_expression ('?' expression ':' complex_expression)?
+    ;
+poly_or_option_expression
+    : or_expression (('|' | '&') or_expression)*
     ;
 or_expression
   : and_expression ('||' and_expression)*
@@ -142,8 +145,8 @@ factor_expression
     | factor_expression '.' (ID|INT)                                 # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
     | factor_expression '<' declared_outline '>'                     # reference_call
-    | factor_expression '&' expression                               # poly_expression
-    | '(' expression ')'
+    //| factor_expression '&' expression                               # poly_expression
+    //| '(' expression ')'                                             # factor
     ;
 literal
     : number
@@ -151,9 +154,14 @@ literal
     | entity
     | tuple
     | This
+    | Base
     | array
     | map
     | lambda
+    | factor
+    ;
+factor
+    : '(' expression ')'
     ;
 number
     : INT ('.' INT)? | DOUBLE | FLOAT
@@ -184,7 +192,7 @@ entity
     : '{' property_assignment (',' property_assignment)* ','? '}'
     ;
 tuple
-    : '(' expression (','expression)* ')'
+    : '(' expression (','expression)+ ')'
     ;
 property_assignment
     : (('let'|'var') {notLineTerminator()})? argument '=' expression

@@ -12,7 +12,7 @@ channels{
 
 //-------comments---------
 MultiLineComment           : /"\/\*[\s\S]*?\*\/"/ ->channel(HIDDEN);
-SingleLineComment          : /"\/\/[\s\S]*?"/ -> channel(HIDDEN);
+SingleLineComment          : /"\/\/.*"/ -> channel(HIDDEN);
 
 //-------characters-------
 
@@ -30,7 +30,7 @@ Import                     : 'import';
 Export                     : 'export';
 From                       : 'from';
 As                         : 'as';
-Base                       : 'base';
+Base                       : 'baseNode';
 If                         : 'if';
 Else                       : 'else';
 Sync                       : 'sync';
