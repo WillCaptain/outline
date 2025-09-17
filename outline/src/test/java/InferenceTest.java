@@ -17,6 +17,7 @@ import org.twelve.gcp.outline.primitive.INTEGER;
 import org.twelve.gcp.outline.primitive.STRING;
 import org.twelve.gcp.outline.projectable.FirstOrderFunction;
 import org.twelve.gcp.outline.projectable.Function;
+import org.twelve.gcp.outline.projectable.Genericable;
 
 import java.util.List;
 
@@ -285,5 +286,46 @@ public class InferenceTest {
         assertInstanceOf(Function.class, getFullName.outline());
         assertInstanceOf(STRING.class, ((Function<?, ?>) getFullName.outline()).returns().supposedToBe());
     }
-
+    @Test
+    void test_inherited_person_entity_with_override_member() {
+        /**
+         * let person = {
+         *   get_name = ()->this.name,
+         *   get_my_name = ()->name,
+         *   name = "Will"
+         * };
+         * let name_1 = person.name;
+         * let name_2 = person.get_name();
+         * let me = person{
+         *   get_name = last_name->{
+         *     this.get_name()+last_name;
+         *     100
+         *   },
+         *   get_other_name = ()->{
+         *     get_name();
+         *     get_name("other")
+         *   }
+         * };
+         * me.get_name("Zhang");
+         */
+        AST ast = ASTHelper.mockInheritedPersonEntityWithOverrideMember();
+        ast.asf().infer();
+        Entity person = cast(ast.program().body().statements().get(3).nodes().getFirst().nodes().getFirst().outline());
+        List<EntityMember> members = person.members().stream().filter(m->!m.isDefault()).toList();
+        assertEquals(4, members.size());
+        assertInstanceOf(STRING.class, members.get(1).outline());
+        assertInstanceOf(Poly.class, members.get(2).outline());
+        Poly getName = cast(members.get(2).outline());
+        assertSame(ast.Unit, ((Genericable<?, ?>) ((Function<?, ?>) getName.options().get(0)).argument()).declaredToBe());
+        Function<?, ?> overrides = cast(getName.options().get(1));
+        assertInstanceOf(Option.class, ((Genericable<?, ?>) overrides.argument()).definedToBe());
+        assertInstanceOf(INTEGER.class, overrides.returns().supposedToBe());
+        assertTrue(ast.errors().isEmpty());
+    }
+    @Test
+    void test_declare_infer() {
+        AST ast = ASTHelper.mockDeclare();
+        ast.asf().infer();
+        assertTrue(ast.asf().inferred());
+    }
 }

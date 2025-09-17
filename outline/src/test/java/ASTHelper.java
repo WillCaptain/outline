@@ -128,7 +128,14 @@ public class ASTHelper {
     public static AST mockDeclare() {
         String code = """
          let f = <a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
-        return parser.parse(code);
+
+        /*code = """
+                let f = <a>(x:a->{name:a,age:Int})->{
+                           x("Will").name
+                         };""";
+
+         */
+        return parser.parse(new ASF(),code);
     }
 
     @SneakyThrows
@@ -336,6 +343,30 @@ public class ASTHelper {
                   get_full_name = ()->baseNode.name+"Zhang",
                   var get_name = ()->"Will Zhang"
                 };""";;
+        return parser.parse(new ASF(),code);
+    }
+
+    public static AST mockInheritedPersonEntityWithOverrideMember() {
+
+        String code = """
+                let person = {
+                     get_name = ()->this.name,
+                     get_my_name = ()->name,
+                     name = "Will"
+                };
+                let name_1 = person.name;
+                let name_2 = person.get_name();
+                let me = person{
+                    get_name = last_name->{
+                        this.get_name()+last_name;
+                        100
+                    },
+                    get_other_name = ()->{
+                        get_name();
+                        get_name("other")
+                    }
+                };
+                me.get_name("Zhang");""";;
         return parser.parse(new ASF(),code);
     }
 }
