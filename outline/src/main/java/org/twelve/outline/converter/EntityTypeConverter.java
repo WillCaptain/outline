@@ -6,7 +6,6 @@ import org.twelve.gcp.node.expression.Variable;
 import org.twelve.gcp.node.expression.typeable.EntityTypeNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
-import org.twelve.outline.common.Constants;
 import org.twelve.outline.wrappernode.ArgumentWrapper;
 
 import java.util.List;

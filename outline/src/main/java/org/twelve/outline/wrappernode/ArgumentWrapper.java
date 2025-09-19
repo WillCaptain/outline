@@ -1,11 +1,11 @@
 package org.twelve.outline.wrappernode;
 
 import org.twelve.gcp.ast.AST;
-import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.ast.AbstractNode;
 import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
 
-public class ArgumentWrapper extends Node {
+public class ArgumentWrapper extends AbstractNode {
     private final Identifier argument;
     private final TypeNode typeNode;
 

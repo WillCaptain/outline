@@ -94,7 +94,26 @@ factor_type
     ;
 //------------expressions-------------
 expression
-    : assignment ('as' declared_outline)?
+    : assignment (is_expression | as_expression)?
+    //: assignment ('as' declared_outline)?
+    ;
+ is_expression
+    : 'is' declared_outline ('as' unpack)?
+    ;
+ as_expression
+    : 'as' declared_outline
+    ;
+ unpack
+    : ID
+    | '{' ID (',' ID)* '}'
+    | '(' tuple_unpack' ')'
+    ;
+ ids'
+    : (ID|'_') (',' (ID|'_'))*
+    ;
+tuple_unpack'
+    : ids' '...' ids'?
+    | '...' ids'
     ;
 assignment
     : complex_expression (('='|'+='|'-='|'*='|'/=') assignment)?
@@ -110,7 +129,7 @@ ternary_expression
     : poly_or_option_expression ('?' expression ':' complex_expression)?
     ;
 poly_or_option_expression
-    : or_expression (('|' | '&') or_expression)*
+    : or_expression (('|' | '&' ) or_expression)*
     ;
 or_expression
   : and_expression ('||' and_expression)*
@@ -198,7 +217,7 @@ property_assignment
     : (('let'|'var') {notLineTerminator()})? argument '=' expression
     ;
 lambda
-    : reference_type? lambda_args '->' expression
+    : reference_type? lambda_args '->' expression ('&&&' lambda)*
     ;
 lambda_args
     : ID

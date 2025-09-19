@@ -328,4 +328,47 @@ public class InferenceTest {
         ast.asf().infer();
         assertTrue(ast.asf().inferred());
     }
+
+    @Test
+    void test_as() {
+        AST ast = ASTHelper.mockAs();
+        ast.asf().infer();
+        Assignment a = ((VariableDeclarator) ast.program().body().statements().get(0)).assignments().getFirst();
+        Entity ea = cast(a.lhs().outline());
+        List<EntityMember> ms = ea.members().stream().filter(m -> !m.isDefault()).toList();
+        assertEquals("name", ms.get(0).name());
+        assertEquals("String", ms.get(0).outline().toString());
+        Assignment b = ((VariableDeclarator) ast.program().body().statements().get(1)).assignments().getFirst();
+        Entity eb = cast(b.lhs().outline());
+        ms = eb.members().stream().filter(m -> !m.isDefault()).toList();
+        assertEquals("name", ms.get(0).name());
+        assertEquals("Integer", ms.get(0).outline().toString());
+        assertEquals(1, ast.errors().size());
+        assertEquals(b.rhs(), ast.errors().get(0).node());
+    }
+    @Test
+    void test_option_is_as() {
+        /*let result = {
+            var some:String|Integer = "string";
+            if(some is Integer){
+                some
+            }else if(some is String as str){
+                str
+            }else{100}
+        };*/
+        AST ast = ASTHelper.mockOptionIsAs();
+        ast.asf().infer();
+        Assignment assignment = ((VariableDeclarator) ast.program().body().nodes().getFirst()).assignments().getFirst();
+        Outline result = assignment.lhs().outline();
+        assertInstanceOf(Option.class, result);
+        assertInstanceOf(INTEGER.class, ((Option) result).options().getFirst());
+        assertInstanceOf(STRING.class, ((Option) result).options().getLast());
+        Node rootSome = assignment.rhs().nodes().getFirst().nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(Option.class, rootSome.outline());
+        Node some = assignment.rhs().nodes().get(1).nodes().getFirst().nodes().getFirst().nodes().getLast().nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(INTEGER.class, some.outline());
+        Node str = assignment.rhs().nodes().get(1).nodes().getFirst().nodes().get(1).nodes().getLast().nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(STRING.class, str.outline());
+        assertTrue(ast.errors().isEmpty());
+    }
 }

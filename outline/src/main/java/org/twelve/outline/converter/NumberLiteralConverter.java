@@ -6,12 +6,9 @@ import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.node.expression.LiteralNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
-import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Tool;
 
 import java.util.Map;
-
-import static org.twelve.outline.common.Tool.convertNumToken;
 
 public class NumberLiteralConverter extends Converter{
     public NumberLiteralConverter(Map<String, Converter> converters) {

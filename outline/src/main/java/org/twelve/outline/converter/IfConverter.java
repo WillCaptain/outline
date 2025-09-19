@@ -40,10 +40,13 @@ public class IfConverter extends Converter {
             i++;
             Node other = converters.get(nodes.get(i).name()).convert(ast, nodes.get(i));
             if (other instanceof Selections) {
-                ifs.arms().addAll(((Selections) other).arms());
+                for (Arm arm : ((Selections) other).arms()) {
+                    ifs.addArm(arm);
+                }
+//                ifs.arms().addAll(((Selections) other).arms());
             } else {
                 Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(i)));
-                ifs.arms().add(new Arm(consequence));
+                ifs.addArm(new Arm(consequence));
             }
         }
 

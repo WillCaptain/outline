@@ -11,8 +11,6 @@ import org.twelve.outline.common.Constants;
 
 import java.util.Map;
 
-import static org.twelve.outline.common.Tool.cast;
-
 public class ReferenceCallConverter extends Converter {
     public ReferenceCallConverter(Map<String, Converter> converters) {
         super(converters);

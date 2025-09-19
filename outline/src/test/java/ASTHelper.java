@@ -300,6 +300,8 @@ public class ASTHelper {
     public static AST mockOverrideAddFunc() {
         String code = """
                 var add = ((x,y)->x+y) & ((x,y,z)->x+y+z);""";
+        code = """
+                var add = (x,y)->x+y &&& (x,y,z)->{x+y+z};""";
         return parser.parse(code);
     }
 
@@ -367,6 +369,21 @@ public class ASTHelper {
                     }
                 };
                 me.get_name("Zhang");""";;
+        return parser.parse(new ASF(),code);
+    }
+
+    public static AST mockOptionIsAs() {
+        String code = """
+                let result = {
+                    var some: String|Int = "string";
+                    if(some is Int){
+                        some
+                    } else if(some is String as str){
+                        str
+                    } else {
+                        100
+                    }
+                };""";;
         return parser.parse(new ASF(),code);
     }
 }

@@ -4,6 +4,7 @@ import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.Expression;
 import org.twelve.gcp.node.expression.Identifier;
+import org.twelve.gcp.node.expression.PolyNode;
 import org.twelve.gcp.node.expression.body.Body;
 import org.twelve.gcp.node.expression.body.FunctionBody;
 import org.twelve.gcp.node.expression.referable.ReferenceNode;
@@ -11,13 +12,11 @@ import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.gcp.node.function.Argument;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.statement.ReturnStatement;
-import org.twelve.gcp.outline.projectable.Reference;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Constants;
 import org.twelve.outline.wrappernode.ArgumentWrapper;
-import org.twelve.outline.wrappernode.ReferenceWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,47 +31,40 @@ public class FunctionConverter extends Converter {
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        NonTerminalNode func = cast(source);
-        List<ReferenceNode> refs = new ArrayList<>();
-        List<Argument> args = new ArrayList<>();
-        int i=0;
-        if(func.node(i).name().equals(Constants.REFERENCE_TYPE)){
-            convertArgOrRef(ast,cast(func.node(i)),refs);
-            i++;
-        }
-        convertArgOrRef(ast,cast(func.node(i)),args);
-//        ((NonTerminalNode) func.node(0)).nodes().stream().filter(n -> !"(,)".contains(n.lexeme())).forEach(n -> {
-//            Identifier ref = null;
-//            Identifier arg = null;
-//            TypeNode typeNode = null;
-//            Node converted = converters.get(n.name()).convert(ast, n, null);
-//            if(converted instanceof ReferenceWrapper){
-//                ref = ((ReferenceWrapper) converted).argument();
-//                typeNode = ((ReferenceWrapper) converted).typeNode();
-//            } else if(converted instanceof ArgumentWrapper){
-//                arg = ((ArgumentWrapper) converted).argument();
-//                typeNode = ((ArgumentWrapper) converted).typeNode();
-//            }else{
-//                arg = cast(converted);
-//            }
-//            if(ref==null){
-//                args.add(new Argument(arg,typeNode));
-//            }else{
-//                refs.add(new ReferenceNode(ref,typeNode));
-//            }
-//        });
-        ParseNode originBody = func.node(i+2);
-        Node statements = converters.get(originBody.name()).convert(ast, originBody);
-        FunctionBody body = new FunctionBody(ast);
-        if(statements instanceof Body){
-            for (Node node : statements.nodes()) {
-                body.addStatement(cast(node));
-            }
-        }else{
-            body.addStatement(new ReturnStatement((Expression)statements));
-        }
+        List<ParseNode> nodes = ((NonTerminalNode)source).nodes();
+        List<FunctionNode> functions = new ArrayList<>();
 
-        return FunctionNode.from(body, refs, args);
+        while(!nodes.isEmpty()) {
+            List<ReferenceNode> refs = new ArrayList<>();
+            List<Argument> args = new ArrayList<>();
+            if (nodes.getFirst().name().equals(Constants.REFERENCE_TYPE)) {
+                convertArgOrRef(ast, cast(nodes.removeFirst()), refs);
+            }
+            convertArgOrRef(ast, cast(nodes.removeFirst()), args);
+
+            nodes.removeFirst();
+            ParseNode originBody = nodes.removeFirst();
+            Node statements = converters.get(originBody.name()).convert(ast, originBody);
+            FunctionBody body = new FunctionBody(ast);
+            if (statements instanceof Body) {
+                for (Node node : statements.nodes()) {
+                    body.addStatement(cast(node));
+                }
+            } else {
+                body.addStatement(new ReturnStatement((Expression) statements));
+            }
+
+            functions.add(FunctionNode.from(body, refs, args));
+
+            if(!nodes.isEmpty()){
+                nodes = ((NonTerminalNode)nodes.get(1)).nodes();
+            }
+        }
+        if(functions.size()==1){
+            return functions.getFirst();
+        }else{
+            return new PolyNode(functions.removeFirst(),functions.toArray(new FunctionNode[0]));
+        }
     }
     private void convertArgOrRef(AST ast,ParseNode parent,List list){
         List<ParseNode> args = new ArrayList<>();

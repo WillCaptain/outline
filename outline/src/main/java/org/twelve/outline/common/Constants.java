@@ -56,7 +56,7 @@ public final class Constants {
     public static final String INT = "INT";
     public static final String POLY_OPTION_EXPRESSION = "poly_or_option_expression";
     public static final String OR_ = "|";
-    public static final String AND_ = "$";
+    public static final String AND_ = "&";
     public static final String LITERAL_INT_TYPE = ":INT";
     public static final String LITERAL_STRING_TYPE = ":STRING";
     public static final String LITERAL_ENTITY_TYPE = ":entity";
@@ -78,4 +78,7 @@ public final class Constants {
     public static final String ARRAY_ITERATE_EXPRESSION = "array_iterate_expression";
     public static final String MAP = "map";
     public static final String FACTOR = "factor";
+    public static final String AND_PLUS = "AND_PLUS";
+    public static final String AS_EXPRESSION = "as_expression";
+    public static final String IS_EXPRESSION = "is_expression";
 }

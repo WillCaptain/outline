@@ -29,6 +29,7 @@ Dot                        : '.';
 Import                     : 'import';
 Export                     : 'export';
 From                       : 'from';
+Is                         : 'is';
 As                         : 'as';
 Base                       : 'baseNode';
 If                         : 'if';
@@ -40,6 +41,7 @@ Int_Type                   : 'Int';
 Float_Type                 : 'Float';
 Double_Type                : 'Double';
 DOT_DOT_DOT                : '...';
+AND_PLUS                   : '&&&';
 //-----------literal------------
 INT                    :/"0|[1-9][0-9_]*"/;
 
