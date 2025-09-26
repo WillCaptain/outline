@@ -40,17 +40,14 @@ public class GCPConverter {
         this.converters.put(Constants.ID_TYPE, new IDTypeConverter(converters));
         this.converters.put(Constants.STRING_TYPE, new StringTypeConverter(converters));
         this.converters.put(Constants.INT_TYPE, new IntTypeConverter(converters));
+        this.converters.put(Constants.LONG_TYPE, new LongTypeConverter(converters));
         this.converters.put(Constants.DOUBLE_TYPE, new DoubleTypeConverter(converters));
         this.converters.put(Constants.ENTITY_TYPE, new EntityTypeConverter(converters));
         this.converters.put(Constants.TUPLE_TYPE, new TupleTypeConverter(converters));
         this.converters.put(Constants.QUESTION_TYPE, new QuestionTypeConverter(converters));
-        this.converters.put(Constants.DECLARED_TYPE, new DeclaredTypeConverter(converters));
-        this.converters.put(Constants.SUM_TYPE, new Converter(converters) {
-            @Override
-            public Node convert(AST ast, ParseNode source, Node related) {
-                return this.converters.get(Constants.DECLARED_TYPE).convert(ast, source, related);
-            }
-        });
+        DeclaredTypeConverter declaredTypeConverter = new DeclaredTypeConverter(converters);
+        this.converters.put(Constants.DECLARED_TYPE, declaredTypeConverter);
+        this.converters.put(Constants.SUM_TYPE, declaredTypeConverter);
         this.converters.put(Constants.FUNC_TYPE, new FuncTypeConverter(converters));
         this.converters.put(Constants.ARRAY_TYPE, new ArrayTypeConverter(converters));
         this.converters.put(Constants.MAP_TYPE, new MapTypeConverter(converters));
@@ -60,6 +57,10 @@ public class GCPConverter {
         this.converters.put(Constants.LITERAL_STRING_TYPE, literalTypeConverter);
         this.converters.put(Constants.LITERAL_ENTITY_TYPE, literalTypeConverter);
         this.converters.put(Constants.LITERAL_TUPLE_TYPE, literalTypeConverter);
+        //true, false
+        BoolTypeConverter boolTypeConverter = new BoolTypeConverter(converters);
+        this.converters.put(Constants.True,boolTypeConverter);
+        this.converters.put(Constants.False,boolTypeConverter);
         //wrapper
         this.converters.put(Constants.ARGUMENT, new ArgumentConverter(converters));
         this.converters.put(Constants.REFERENCE_TYPE, new ReferenceTypeConverter(converters));

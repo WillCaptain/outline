@@ -30,7 +30,7 @@ public class TernaryExprConverter extends Converter {
         Consequence consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(2)));
         ifs.addArm(new Arm(test, consequence));
        consequence = cast(converters.get(Constants.Consequence).convert(ast, nodes.get(4)));
-        ifs.arms().add(new Arm(consequence));
+        ifs.addArm(new Arm(consequence));
         return ifs;
     }
 }

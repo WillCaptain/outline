@@ -69,7 +69,7 @@ sum_type
     : (non_func_type|literal) (('|'|'&') (non_func_type|literal))+
     ;
 non_func_type
-    : Number_Type | Int_Type | Float_Type | Double_Type | String_Type | tuple_type | entity_type | array_type | map_type |  '?' | ID | factor_type
+    : Number_Type | Int_Type | Long_Type | Float_Type | Double_Type | String_Type | tuple_type | entity_type | array_type | map_type |  '?' | ID | factor_type
     ;
 tuple_type
     : '(' declared_outline (','declared_outline)+ ')'
@@ -160,20 +160,22 @@ factor_expression
     : literal
     | ID
     | block
-    | factor_expression '[' expression ']'                           # array_map_accessor
-    | factor_expression '.' (ID|INT)                                 # entity_member_accessor
-    | factor_expression '(' (expression (','+ expression)*)? ')'     # function_call
-    | factor_expression '<' declared_outline '>'                     # reference_call
-    //| factor_expression '&' expression                               # poly_expression
-    //| '(' expression ')'                                             # factor
+    | factor_expression '[' expression ']'                                 # array_map_accessor
+    | factor_expression '.' (ID|INT)                                       # entity_member_accessor
+    | factor_expression '(' (expression (','+ expression)*)? ')'           # function_call
+    | factor_expression '<' declared_outline (',' declared_outline)* '>'   # reference_call
+    //| factor_expression '&' expression                                   # poly_expression
+    //| '(' expression ')'                                                 # factor
     ;
 literal
-    : number
+    :This
+    | Base
+    | True
+    | False
+    |number
     | STRING
     | entity
     | tuple
-    | This
-    | Base
     | array
     | map
     | lambda

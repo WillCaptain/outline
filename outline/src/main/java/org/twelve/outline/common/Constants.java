@@ -22,6 +22,7 @@ public final class Constants {
     public static final String ID_TYPE = ":ID";
     public static final String STRING_TYPE = ":String_Type";
     public static final String INT_TYPE = ":Int_Type";
+    public static final String LONG_TYPE = ":Long_Type";
     public static final String DOUBLE_TYPE = ":Double_Type";
     public static final String DECLARED_TYPE = ":declared_outline";
     public static final String SUM_TYPE = ":sum_type";
@@ -81,4 +82,6 @@ public final class Constants {
     public static final String AND_PLUS = "AND_PLUS";
     public static final String AS_EXPRESSION = "as_expression";
     public static final String IS_EXPRESSION = "is_expression";
+    public static final String True = "True";
+    public static final String False = "False";
 }

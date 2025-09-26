@@ -9,7 +9,11 @@ import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.common.Constants;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import static org.twelve.outline.common.Tool.cast;
 
 public class ReferenceCallConverter extends Converter {
     public ReferenceCallConverter(Map<String, Converter> converters) {
@@ -18,8 +22,22 @@ public class ReferenceCallConverter extends Converter {
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        ParseNode originType = ((NonTerminalNode)source).node(1);
-        ReferenceCallNode rCall = new ReferenceCallNode((Expression)related,(TypeNode) converters.get(Constants.COLON_+originType.name()).convert(ast,originType));
-        return rCall;
+        NonTerminalNode refs = (NonTerminalNode) source;
+        List<TypeNode> types = new ArrayList<>();
+        int i = 1;
+        while(true){
+            ParseNode originType = ((NonTerminalNode)source).node(i);
+            types.add(cast(converters.get(Constants.COLON_+originType.name()).convert(ast,originType)));
+            i++;
+            if(refs.node(i).lexeme().equals(">")) break;
+            i++;
+        }
+        Node node = new ReferenceCallNode((Expression)related,types.toArray(new TypeNode[0]) );
+        if(refs.nodes().size()>i+1){
+            NonTerminalNode next = cast(refs.node(i+1));
+            node = converters.get(next.explain()).convert(ast,next,node);
+        }
+
+        return node;
     }
 }

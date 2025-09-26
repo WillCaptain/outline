@@ -1,6 +1,7 @@
 import lombok.SneakyThrows;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.common.SELECTION_TYPE;
 import org.twelve.outline.GCPConverter;
 import org.twelve.outline.OutlineParser;
@@ -41,7 +42,7 @@ public class ASTHelper {
         return parser.parse(code);
     }
 
-    public static AST mockSimplePersonEntity(){
+    public static AST mockSimplePersonEntity() {
         String code = """
                 let person = {
                     name = "Will",
@@ -105,7 +106,7 @@ public class ASTHelper {
 
     public static AST mockIf(SELECTION_TYPE selectionType) {
         String code;
-        if(selectionType== SELECTION_TYPE.IF) {
+        if (selectionType == SELECTION_TYPE.IF) {
             code = """
                     module default
                     
@@ -116,7 +117,7 @@ public class ASTHelper {
                     } else {
                       "Someone"
                     }""";
-        }else{
+        } else {
             code = """
                     module default
                     
@@ -127,7 +128,7 @@ public class ASTHelper {
 
     public static AST mockDeclare() {
         String code = """
-         let f = <a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
+                let f = <a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
 
         /*code = """
                 let f = <a>(x:a->{name:a,age:Int})->{
@@ -135,7 +136,7 @@ public class ASTHelper {
                          };""";
 
          */
-        return parser.parse(new ASF(),code);
+        return parser.parse(new ASF(), code);
     }
 
     @SneakyThrows
@@ -145,7 +146,7 @@ public class ASTHelper {
                   let y: b = 100;
                   y
                 };""";
-        return parser.parse(code);
+        return parser.parse(new ASF(),code);
     }
 
     public static AST mockAs() {
@@ -216,12 +217,7 @@ public class ASTHelper {
                 r1([1,2]);
                 let r2 = r<String>;
                 r([1,2]);""";
-
-
-//        String code = """
-//                {name="Will"};
-//                10""";
-        return parser.parse(code);
+        return parser.parse(new ASF(),code);
     }
 
     public static AST mockGeneral() {
@@ -329,7 +325,7 @@ public class ASTHelper {
                 };
                 let name_1 = person.name;
                 let name_2 = person.get_name();""";
-        return parser.parse(new ASF(),code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockInheritedPersonEntity() {
@@ -344,8 +340,8 @@ public class ASTHelper {
                 let me = person{
                   get_full_name = ()->baseNode.name+"Zhang",
                   var get_name = ()->"Will Zhang"
-                };""";;
-        return parser.parse(new ASF(),code);
+                };""";
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockInheritedPersonEntityWithOverrideMember() {
@@ -368,8 +364,8 @@ public class ASTHelper {
                         get_name("other")
                     }
                 };
-                me.get_name("Zhang");""";;
-        return parser.parse(new ASF(),code);
+                me.get_name("Zhang");""";
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockOptionIsAs() {
@@ -383,7 +379,350 @@ public class ASTHelper {
                     } else {
                         100
                     }
-                };""";;
-        return parser.parse(new ASF(),code);
+                };""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockPolyIsAs() {
+        String code = """
+                let result = {
+                    var some = 100&"string";
+                    let int = some as Int;
+                    let str = some as String;
+                    if(some is Int){
+                       some
+                    }else if(some is String as str){
+                        str
+                    }else{100}
+                };""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGenericIsAs() {
+        String code = """
+                let result = ((some:Int)->{
+                    if(some is Int){
+                         some
+                    }else if(some is String as str){
+                        str
+                    }else{100}
+                })(100);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockReferenceInEntity() {
+        String code = """
+                let g = fx<a,b>()->{
+                  {
+                    z: a = 100,
+                    f = fx<c>(x: b)->(y: c)->y
+                  }
+                };""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockBasicAdtMethods() {
+        String code = """
+                let x = 100;
+                x.to_str();
+                let s = "str";
+                s.to_str();
+                let b = true;
+                b.to_str();""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockArrayMapMethod() {
+        String code = """
+                let x = [1,2];
+                let y = x.map(i->i.to_str());
+                y[0]""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockArrayReduceMethod() {
+        String code = """
+                let x = [1,2];
+                let y = x.reduce((acc,i)->acc+i,0.1);
+                y""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpDeclareToBe() {
+        String code = """
+                let f = (x:Int)->x;
+                f("some");
+                f(100);""";
+        return parser.parse(new ASF(), code);
+    }
+    public static  AST mockGcpExtendToBe() {
+        String code= """
+                let f = x->{
+                  x = 10;
+                  x
+                };
+                f("some");
+                f(100);""";
+        return parser.parse(new ASF(), code);
+    }
+    public static AST mockGcpHasToBe() {
+        String code = """
+                let f = x->{
+                    var y = "str";
+                    y = x;
+                    x
+                };
+                f("some");
+                f(100);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpDefinedToBe() {
+        String code = """
+                let f = x->x+1;
+                f("some");
+                f(100);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpAdd() {
+        String code = """
+                let f = x->y->x+y;
+                f("some",10);
+                f(10,10.0f);
+                let z = f("some");
+                z("people");""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGenericReferEachOther() {
+        String code = """
+                let f = (x,y,z)->{
+                    y = x;
+                    z = y;
+                    x+y+z
+                };
+                f("some","people",10.0f);
+                f(10,10,10);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpHofProjection1() {
+        String code = """
+                let f = (x,y)->y(x);
+                f(10,x->x*5);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpHofProjection2() {
+        String code = """
+                let f = (y,x)->y(x);
+                f(x->x*5,"10");""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpHofProjection3() {
+        String code = """
+                let f = (x,y,z)->z(y(x));
+                f(10,x->x+"some",y->y+100);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockGcpHofProjection4() {
+        String code = """
+                let f = (z,y,x)->z(y(x));
+                f(y->y+100,x->x,10);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockDeclaredHofProjection() {
+        String code = """
+                let f = fx<a>(x:a->{name:a,age:Int})->{
+                    x("Will").name
+                };
+                f<Int>;
+                f(n->{name=n,age=30})""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockExtendHofProjection() {
+        String code = """
+                let f = x->{
+                    x = a->{name=a};
+                    x("Will").name
+                };
+                f(n->{name=n})""";
+        return parser.parse(new ASF(), code);
+    }
+
+    private static String mockEntityProjection_(int i, String append) {
+        String arg1 = "x,y,z";
+        if (i == 1) arg1 = "x,z,y";
+        if (i == 2) arg1 = "z,x,y";
+        String x = "20", y = "{name = \"Will\"}", z = "{combine = (x,y)->{{age = x,name = y.name}}}";
+        String arg2 = x + "," + y + "," + z;
+        if (i == 1) arg2 = x + "," + z + "," + y;
+        if (i == 2) arg2 = z + "," + x + "," + y;
+        return String.format("""
+                let f = (%s)->%s;
+                f(%s)""", arg1, append, arg2);
+
+    }
+
+    public static AST mockEntityProjection1(int i) {
+        String code = mockEntityProjection_(i,"z.combine(x,y)");
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockEntityProjection2(int i) {
+        String code = mockEntityProjection_(i,"z.combine(x,y).name");
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockEntityProjection3(int i) {
+        String code = mockEntityProjection_(i,"z.combine(x,y).gender");
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockEntityProjection4(int i) {
+        String code = mockEntityProjection_(i,"{\n" +
+                "          var w = z;\n" +
+                "          w.combine(x,y)\n" +
+                "        }");
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockEntityProjection5(int i) {
+        String code = mockEntityProjection_(i,"{\n" +
+                "          var w: {combine: Int->{name: Int}->{name: Int}} = z;\n" +
+                "          w.combine(x,y)\n" +
+                "        }");
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockExtendEntityProjection() {
+        String code = """
+                let f = <a>(person,gender:a)-> person{gender = gender};
+                let g = f<String>;
+                g("Will",1);
+                f({name="Will"},1);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockRecursive() {
+        String code = """
+                let factorial = n->n==0? 1: factorial(n-1);
+                factorial(100);
+                factorial("100");""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockComplicatedHofProjection() {
+        String code = """
+                let f = fx<a>(x: a->a)->y->z->{
+                    x = b->b+"some";
+                    y = x;
+                    x = z;
+                    y
+                };
+                f<String>;
+                f<Int>;
+                f(n->"some");""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockExtendHastoDefinedProjection() {
+        String code = """
+                let f = a->x->y->z->{
+                  x = a->{
+                    name = a,
+                    age = 20
+                  };
+                  y = x;
+                  x = z;
+                  x(a).name+x(a).age
+                };
+                let g = f("Will");
+                let h = g(a->{
+                  name = a,
+                  age = 20
+                });
+                let i = h(a->{
+                  name = a,
+                  age = 20
+                });
+                i(a->{
+                  name = a,
+                  gender = "male"
+                })""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockMultiExtendProjection() {
+        String code = """
+                let f = x->y->{
+                  y = "Noble";
+                  y = x;
+                  y
+                };
+                let g = f("Will");
+                g("Zhang");
+                f(20,"Zhang")""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockMultiDefinedProjection() {
+        String code = """
+                let f = x->{
+                  x.name;
+                  x.age;
+                  x
+                };
+                f({
+                  name = "Will",
+                  age = 20,
+                  gender = "Male"
+                });
+                f({
+                  name = "Will"
+                });""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockDictAsArgument() {
+        String code = """
+                let f = x->y->x[y];
+                let g = (x: [?:?])->i->{
+                  let y = x[i];
+                  x = ["Will":"Zhang"];
+                  y
+                };
+                let r = fx<a>(x: [String : a])->{
+                  let b = ["Will":30];
+                  b = x;
+                  let c: a = x["Will"];
+                  c
+                };
+                f(["Will":"Zhang"],"Will");
+                f(["Will"],0);
+                f(["Will":"Zhang"],0);
+                g(["Will":"Zhang"],0);
+                let r1 = r<Int>;
+                r1(["Will":30]);
+                let r2 = r<String>;
+                r([1:2]);""";
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockReferenceInEntity1() {
+        String code = """
+                let g = <a,b>()->{
+                  z: a = 100,
+                  f = <c>(x: b)->(y: c)->y
+                };
+                let f1 = g<Int,String>().f;
+                let f2 = f1<Long>;""";
+        return parser.parse(new ASF(), code);
     }
 }

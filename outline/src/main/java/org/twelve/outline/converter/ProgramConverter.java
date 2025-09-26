@@ -3,6 +3,9 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.base.Program;
+import org.twelve.gcp.node.expression.Expression;
+import org.twelve.gcp.node.statement.ReturnStatement;
+import org.twelve.gcp.node.statement.Statement;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 
@@ -20,7 +23,12 @@ public class ProgramConverter extends Converter{
         NonTerminalNode root = cast(source);
         Program program = cast(related);
         for (ParseNode node : root.nodes()) {
-            converters.get(node.name()).convert(ast, node, program.body());
+//            converters.get(node.name()).convert(ast, node, program.body());
+            Node converted = converters.get(node.name()).convert(ast, node,program.body());
+            if(converted instanceof Expression){
+                program.body().addStatement(new ReturnStatement((Expression) converted));
+//
+            }
         }
         return program;
     }

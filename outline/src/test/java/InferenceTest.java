@@ -2,8 +2,13 @@ import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.builder.ASTBuilder;
+import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.node.expression.*;
+import org.twelve.gcp.node.expression.accessor.MemberAccessor;
+import org.twelve.gcp.node.function.FunctionCallNode;
+import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.imexport.Export;
 import org.twelve.gcp.node.imexport.Import;
 import org.twelve.gcp.node.statement.Assignment;
@@ -18,6 +23,7 @@ import org.twelve.gcp.outline.primitive.STRING;
 import org.twelve.gcp.outline.projectable.FirstOrderFunction;
 import org.twelve.gcp.outline.projectable.Function;
 import org.twelve.gcp.outline.projectable.Genericable;
+import org.twelve.gcp.outline.projectable.Reference;
 
 import java.util.List;
 
@@ -370,5 +376,184 @@ public class InferenceTest {
         Node str = assignment.rhs().nodes().get(1).nodes().getFirst().nodes().get(1).nodes().getLast().nodes().getFirst().nodes().getFirst();
         assertInstanceOf(STRING.class, str.outline());
         assertTrue(ast.errors().isEmpty());
+    }
+    @Test
+    void test_poly_is_as() {
+        /*let result = {
+            var some = 100&"string";
+            if(some is Integer){
+                some
+            }else if(some is String as str){
+                str
+            }else{100}
+        };*/
+        AST ast = ASTHelper.mockPolyIsAs();
+        ast.asf().infer();
+        Assignment assignment = ((VariableDeclarator) ast.program().body().nodes().getFirst()).assignments().getFirst();
+        Outline result = assignment.lhs().outline();
+        assertInstanceOf(Option.class, result);
+        assertInstanceOf(INTEGER.class, ((Option) result).options().getFirst());
+        assertInstanceOf(STRING.class, ((Option) result).options().getLast());
+        Node rootSome = assignment.rhs().nodes().getFirst().nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(Poly.class, rootSome.outline());
+        Node some = assignment.rhs().nodes().get(3).nodes().getFirst().nodes().getFirst().nodes().getLast().nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(INTEGER.class, some.outline());
+        Node str = assignment.rhs().nodes().get(3).nodes().getFirst().nodes().get(1).nodes().getLast().nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(STRING.class, str.outline());
+        assertTrue(ast.errors().isEmpty());
+
+        Outline i = assignment.rhs().nodes().get(1).nodes().get(0).nodes().get(0).outline();
+        assertInstanceOf(INTEGER.class,i);
+        Outline s = assignment.rhs().nodes().get(2).nodes().get(0).nodes().get(0).outline();
+        assertInstanceOf(STRING.class,s);
+    }
+
+    @Test
+    void test_generic_is_as() {
+        /*let result = some->{
+            if(some is Integer){
+                some
+            }else if(some is String as str){
+                str
+            }else{100}
+        }(100);*/
+        AST ast = ASTHelper.mockGenericIsAs();
+        ast.asf().infer();
+        Assignment assignment = ((VariableDeclarator) ast.program().body().nodes().getFirst()).assignments().getFirst();
+        Outline result = assignment.lhs().outline();
+        assertInstanceOf(Option.class, result);
+        assertInstanceOf(INTEGER.class, ((Option) result).options().getFirst());
+        assertInstanceOf(STRING.class, ((Option) result).options().getLast());
+
+        FunctionNode function = cast(((FunctionCallNode) assignment.rhs()).function());
+        assertEquals(1, ast.errors().size());
+    }
+    @Test
+    void test_inference_of_reference_in_function() {
+        /*
+        let f = fx<a,b>(x:a)->{
+           let y:b = 100;
+           y
+        }*/
+        AST ast = ASTHelper.mockReferenceInFunction();
+        ast.infer();
+        Assignment assignment = ((VariableDeclarator) ast.program().body().statements().getFirst()).assignments().getFirst();
+        FirstOrderFunction f = cast(assignment.lhs().outline());
+        assertInstanceOf(Reference.class, f.argument());
+        assertEquals("a", f.argument().name());
+        assertInstanceOf(Reference.class, f.returns().supposedToBe());
+        assertEquals("b", f.returns().supposedToBe().name());
+        assertInstanceOf(INTEGER.class, ((Reference) f.returns().supposedToBe()).extendToBe());
+    }
+    @Test
+    void test_inference_of_reference_in_entity() {
+        /*
+        let g = fx<a,b>()->{
+           {
+                z:a = 100,
+                f = fx<c>(x:b,y:c)->y
+            }
+        }*/
+        AST ast = ASTHelper.mockReferenceInEntity();
+        ast.infer();
+        Function<?, ?> g = cast(((VariableDeclarator) ast.program().body().get(0)).assignments().get(0).rhs().outline());
+        Entity entity = cast(g.returns().supposedToBe());
+        Reference z = cast(entity.members().getLast().node().outline());
+        List<EntityMember> ms = entity.members().stream().filter(m->!m.isDefault()).toList();
+        //(x,y)->y
+        Function<?, Genericable<?, ?>> f = cast(ms.getFirst().outline());
+        assertEquals("a", z.name());
+        assertInstanceOf(INTEGER.class, z.extendToBe());
+        assertEquals("b", f.argument().name());
+        f = cast(f.returns().supposedToBe());
+        assertEquals("c", f.argument().name());
+        assertEquals("c", f.returns().supposedToBe().name());
+    }
+    @Test
+    void test_inference_of_basic_adt() {
+        /**
+         * let x = 100;
+         * x.to_str()
+         * let s = "str"
+         * s.to_str()
+         * let b = true;
+         * b.to_str()
+         */
+        AST ast = ASTHelper.mockBasicAdtMethods();
+        assertTrue(ast.asf().infer());
+        assertEquals("Integer",ast.program().body().statements().get(0).get(0).get(0).outline().toString());
+        assertEquals("String",ast.program().body().statements().get(1).get(0).outline().toString());
+        assertEquals("String",ast.program().body().statements().get(2).get(0).get(0).outline().toString());
+        assertEquals("String",ast.program().body().statements().get(3).get(0).outline().toString());
+        assertEquals("Bool",ast.program().body().statements().get(4).get(0).get(0).outline().toString());
+        assertEquals("String",ast.program().body().statements().get(5).get(0).outline().toString());
+    }
+    @Test
+    void test_inference_of_array_map(){
+        /*
+         * let x = [1,2];
+         * let y = x.map(i->i.to_str())
+         * y[0]
+         */
+        AST ast = ASTHelper.mockArrayMapMethod();
+        assertTrue(ast.asf().infer());
+        ast.program().body().statements().get(1).get(0).get(1).inferred();
+        Outline y = ast.program().body().statements().get(1).get(0).get(0).outline();
+        assertEquals("[String]",y.toString());
+        Outline y0 = ast.program().body().statements().get(2).get(0).outline();
+        assertEquals("String",y0.toString());
+        assertTrue(ast.errors().isEmpty());
+    }
+    @Test
+    void test_inference_of_array_reduce(){
+        /*
+         * let x = [1,2];
+         * let y = x.reduce((acc,i)->acc+i,0.1)
+         */
+        AST ast = ASTHelper.mockArrayReduceMethod();
+        assertTrue(ast.asf().infer());
+        Outline y = ast.program().body().statements().get(2).get(0).outline();
+        assertEquals("Double",y.toString());
+        assertTrue(ast.errors().isEmpty());
+    }
+    @Test
+    void test_inference_of_array_definition() {
+        AST ast = ASTHelper.mockArrayDefinition();
+        assertTrue(ast.asf().infer());
+        assertEquals(0, ast.errors().size());
+//        assertEquals(GCPErrCode.AMBIGUOUS_DECLARATION,ast.errors().getFirst().errorCode());
+        //let a = [1,2,3,4];
+        Variable a = cast(((VariableDeclarator) ast.program().body().statements().get(0)).assignments().getFirst().lhs());
+        assertEquals("[Integer]", a.outline().toString());
+        //let b: [String] = [];
+        Variable b = cast(((VariableDeclarator) ast.program().body().statements().get(1)).assignments().getFirst().lhs());
+        assertEquals("[String]", b.outline().toString());
+        //let c: [] = [...5];
+        Variable c = cast(((VariableDeclarator) ast.program().body().statements().get(2)).assignments().getFirst().lhs());
+        assertEquals("[any]", c.outline().toString());
+        //let d = [1...6,2,x->x+"2",x->x%2==0];""";
+        Variable d = cast(((VariableDeclarator) ast.program().body().statements().get(3)).assignments().getFirst().lhs());
+        assertEquals("[String]", d.outline().toString());
+        //let e = [];
+        Variable e = cast(((VariableDeclarator) ast.program().body().statements().get(4)).assignments().getFirst().lhs());
+        assertEquals("[any]",e.outline().toString());
+    }
+    @Test
+    void test_inference_of_dict_definition(){
+        AST ast =  ASTHelper.mockDictDefinition();
+        assertTrue(ast.asf().infer());
+
+        //let a = [{name = "Will"}:"Male", {name = "Ivy",age = 20}:"Female"];
+        Variable a = cast(((VariableDeclarator) ast.program().body().statements().get(0)).assignments().getFirst().lhs());
+        assertEquals("[{name: String} : String]", a.outline().toString());
+        //let b: [Integer:String] = [:];
+        Variable b = cast(((VariableDeclarator) ast.program().body().statements().get(1)).assignments().getFirst().lhs());
+        assertEquals("[Integer : String]", b.outline().toString());
+        //let c = [:];
+        Variable c = cast(((VariableDeclarator) ast.program().body().statements().get(2)).assignments().getFirst().lhs());
+        assertEquals("[any : any]", c.outline().toString());
+        //let d: [String:?] = [”Will":30,30:30];
+        Variable d = cast(((VariableDeclarator) ast.program().body().statements().get(3)).assignments().getFirst().lhs());
+        assertEquals("[String : any]", d.outline().toString());
     }
 }

@@ -20,14 +20,12 @@ public class FactorExprConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode factor = cast(source);
-        if(factor.nodes().stream().anyMatch(n->n.flag().isAmbiguous())){
-            List<ParseNode> nodes = factor.nodes();
-            Optional<ParseNode> found = nodes.stream().filter(n -> n.name().equals(Constants.ENTITY)).findFirst();
-            if(found.isPresent()){
-                NonTerminalNode ent = cast(found.get());
-                return converters.get(ent.name()).convert(ast, ent);
-            }
-            return null;
+        //so far, only one member entity and block have ambiguous conflict
+        Optional<ParseNode> entity = factor.nodes().stream().filter(n -> n.flag().isAmbiguous() &&
+                n.name().equals(Constants.ENTITY)).findFirst();
+        if(entity.isPresent()){
+            NonTerminalNode ent = cast(entity.get());
+            return converters.get(ent.name()).convert(ast, ent);
         }else {
             Node head = converters.get(factor.node(0).name()).convert(ast, factor.node(0));
             NonTerminalNode next = cast(factor.node(1));

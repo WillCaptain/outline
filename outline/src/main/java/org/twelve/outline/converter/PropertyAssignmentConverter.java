@@ -9,6 +9,7 @@ import org.twelve.gcp.node.statement.MemberNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.common.Constants;
+import org.twelve.outline.wrappernode.ArgumentWrapper;
 
 import java.util.Map;
 
@@ -31,16 +32,14 @@ public class PropertyAssignmentConverter extends Converter {
             mutable = property.node(i).name().equals(Constants.VAR);
             i++;
         }
-        if(property.node(i).name().equals(Constants.ID)){
-            name = cast(converters.get(property.node(i).name()).convert(ast,property.node(i)));
-            i++;
+        Node argument = converters.get(property.node(i).name()).convert(ast,property.node(i));
+        if(argument instanceof ArgumentWrapper){
+            name = ((ArgumentWrapper) argument).argument();
+            declared = ((ArgumentWrapper) argument).typeNode();
+        }else{
+            name = cast(argument);
         }
-        if(property.node(i).name().equals(Constants.COLON)){
-            i++;
-            declared = cast(converters.get(Constants.COLON_+property.node(i).name()).convert(ast,property.node(i)));
-            i++;
-
-        }
+        i++;
         if(property.node(i).name().equals(Constants.EQUAL)){
            i++;
            expression = cast(converters.get(property.node(i).name()).convert(ast,property.node(i)));

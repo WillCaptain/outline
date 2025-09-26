@@ -50,14 +50,16 @@ public class IfConverter extends Converter {
             }
         }
 
-        if (related != null) {
-           if(related.parent().nodes().getLast()==related) {
-               related.addNode(new ReturnStatement(ifs));
-           }else{
-               related.addNode(new ExpressionStatement(ifs));
-           }
-        }
-
         return ifs;
+//        if (related != null) {
+//           if(related.parent().nodes().getLast()==related) {
+//               related.addNode(new ReturnStatement(ifs));
+//           }else{
+//               related.addNode(new ExpressionStatement(ifs));
+//           }
+//           return null;
+//        }else {
+//            return ifs;
+//        }
     }
 }
