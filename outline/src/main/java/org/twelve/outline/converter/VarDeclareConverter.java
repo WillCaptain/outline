@@ -3,6 +3,7 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.common.VariableKind;
+import org.twelve.gcp.node.expression.Assignable;
 import org.twelve.gcp.node.expression.Expression;
 import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.body.Body;
@@ -27,12 +28,12 @@ public class VarDeclareConverter extends Converter{
         NonTerminalNode varDel = cast(source);
         TerminalNode kind = cast(varDel.node(0));
         VariableDeclarator declarator = new VariableDeclarator(ast, VariableKind.valueOf(kind.name().toUpperCase()));
-        Identifier var = null;
+        Assignable var = null;
         TypeNode type = null;
         Expression value = null;
         int i = 1;
         while (i < varDel.nodes().size()) {
-            if (varDel.node(i).name().equals(Constants.ID)) {
+            if (varDel.node(i).name().equals(Constants.ID) || varDel.node(i).name().contains("_unpack")) {
                 var = cast(this.converters.get(varDel.node(i).name()).convert(ast,varDel.node(i)));
                 type = null;
                 value = null;

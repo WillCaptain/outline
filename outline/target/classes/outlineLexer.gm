@@ -45,6 +45,7 @@ DOT_DOT_DOT                : '...';
 AND_PLUS                   : '&&&';
 True                       : 'true';
 False                      : 'false';
+With                       : 'with';
 //-----------literal------------
 INT                    :/"0|[1-9][0-9_]*"/;
 

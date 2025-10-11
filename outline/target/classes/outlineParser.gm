@@ -17,6 +17,7 @@ statement
     | variable_declarator
     | expression_statement
     | return_statement
+    | with_statement
 //    | module_statement
 //    | import_statement
 //    | export_statement
@@ -26,9 +27,7 @@ statement
 //    | iterationStatement
 //    | continueStatement
 //    | breakStatement
-//    | returnStatement
 //    | yieldStatement
-//    | withStatement
 //    | labelledStatement
 //    | switchStatement
 //    | throwStatement
@@ -46,20 +45,24 @@ import_statement
 export_statement
     : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
     ;
+with_statement
+    : 'with' expression 'as' ID block
+    ;
 comment
     : SingleLineComment
     | MultiLineComment
     ;
 variable_declarator
-    : ('let'|'var') {notLineTerminator()} argument ('=' expression)? (',' argument ('=' expression)?)* ';'
+    : ('let'|'var') {notLineTerminator()} assignment' (',' assignment')* ';'
+    ;
+assignment'
+    : argument ('=' expression)?
+    | unpack '=' expression
     ;
 return_statement
     : 'return' expression? ';'
     ;
 //---------------type-----------------
-//declared_outline
-//    : fix_outline (('|'|'&') fix_outline)*
-//    ;
 declared_outline
     : sum_type
     | func_type
@@ -95,25 +98,28 @@ factor_type
 //------------expressions-------------
 expression
     : assignment (is_expression | as_expression)?
-    //: assignment ('as' declared_outline)?
     ;
- is_expression
-    : 'is' declared_outline ('as' unpack)?
+is_expression
+    : 'is' declared_outline ('as' (ID | unpack))?
     ;
- as_expression
+as_expression
     : 'as' declared_outline
     ;
- unpack
-    : ID
-    | '{' ID (',' ID)* '}'
-    | '(' tuple_unpack' ')'
+unpack
+    : entity_unpack
+    | tuple_unpack
     ;
- ids'
-    : (ID|'_') (',' (ID|'_'))*
+tuple_ids'
+    : ID|'_'|'...'|unpack
     ;
-tuple_unpack'
-    : ids' '...' ids'?
-    | '...' ids'
+entity_ids'
+    : ID (('as' ID)|(':' unpack))?
+    ;
+entity_unpack
+    : '{' entity_ids' (',' entity_ids')* '}'
+    ;
+tuple_unpack
+    : '(' tuple_ids' (',' tuple_ids')* ')'
     ;
 assignment
     : complex_expression (('='|'+='|'-='|'*='|'/=') assignment)?

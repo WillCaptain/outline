@@ -70,9 +70,9 @@ public final class Constants {
     public static final String TERNARY_EXPRESSION = "ternary_expression";
     public static final String TERM_EXPRESSION = "term_expression";
     public static final String EXPRESSION = "expression";
-    public static final String If = "If";
-    public static final String Else = "Else";
-    public static final String Consequence = "Consequence";
+    public static final String IF = "If";
+    public static final String ELSE = "Else";
+    public static final String CONSEQUENCE = "Consequence";
     public static final String ARRAY = "array";
     public static final String ARRAY_ENUM_ITEMS = "array_enum_items";
     public static final String ARRAY_ITERATE_RANGE = "array_iterate_range";
@@ -82,6 +82,10 @@ public final class Constants {
     public static final String AND_PLUS = "AND_PLUS";
     public static final String AS_EXPRESSION = "as_expression";
     public static final String IS_EXPRESSION = "is_expression";
-    public static final String True = "True";
-    public static final String False = "False";
+    public static final String TRUE = "True";
+    public static final String FALSE = "False";
+    public static final String TUPLE_UNPACK = "tuple_unpack";
+    public static final String ENTITY_UNPACK = "entity_unpack";
+    public static final String UNDER_LINE = "UNDER_LINE";
+    public static final String DOT_DOT_DOT_ = "...";
 }

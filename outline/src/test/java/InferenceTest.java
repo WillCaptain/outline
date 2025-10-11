@@ -119,6 +119,7 @@ public class InferenceTest {
         assertEquals(1, ast.errors().size());
         assertEquals(GCPErrCode.OUTLINE_MISMATCH, ast.errors().getFirst().errorCode());
     }
+
     @Test
     void test_explicit_poly_inference() {
         /*
@@ -149,6 +150,7 @@ public class InferenceTest {
 
         assertInstanceOf(ERROR.class, p2);
     }
+
     @Test
     void test_literal_inference() {
         AST ast = ASTHelper.mockDefinedLiteralUnion();
@@ -164,6 +166,7 @@ public class InferenceTest {
         assertEquals(2, ast.errors().size());
         assertEquals(ast.program().body().statements().get(1).get(0), ast.errors().getFirst().node().parent());
     }
+
     @Test
     void test_function_definition_inference() {
         AST ast = ASTHelper.mockAddFunc();
@@ -172,6 +175,7 @@ public class InferenceTest {
         Assignment assign = declare.assignments().getFirst();
         assertInstanceOf(FirstOrderFunction.class, assign.lhs().outline());
     }
+
     @Test
     void test_override_function_definition_inference() {
         /*
@@ -185,6 +189,7 @@ public class InferenceTest {
         assertEquals(2, ((Poly) add.outline()).options().size());
         assertTrue(((Poly) add.outline()).options().getFirst() instanceof Function<?, ?>);
     }
+
     @Test
     void test_binary_expression() {
         /*
@@ -206,6 +211,7 @@ public class InferenceTest {
         assertEquals(1, ast.errors().size());
         assertEquals(sts.get(4).get(0), ast.errors().getFirst().node());
     }
+
     @Test
     void test_simple_person_entity() {
         /*
@@ -221,7 +227,7 @@ public class InferenceTest {
         assertTrue(ast.asf().infer());
         VariableDeclarator var = cast(ast.program().body().statements().getFirst());
         Entity person = cast(var.assignments().getFirst().lhs().outline());
-        List<EntityMember> ms = person.members().stream().filter(m->!m.isDefault()).toList();
+        List<EntityMember> ms = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(3, ms.size());
         EntityMember name = ms.get(0);
         EntityMember getName = ms.get(1);
@@ -236,13 +242,14 @@ public class InferenceTest {
         assertInstanceOf(STRING.class, name1.assignments().getFirst().lhs().outline());
         assertInstanceOf(STRING.class, name2.assignments().getFirst().lhs().outline());
     }
+
     @Test
     void test_tuple() {
         AST ast = ASTHelper.mockSimpleTuple();
         assertTrue(ast.asf().infer());
         VariableDeclarator var = cast(ast.program().body().statements().getFirst());
         Tuple person = cast(var.assignments().getFirst().lhs().outline());
-        List<EntityMember> ms = person.members().stream().filter(m->!m.isDefault()).toList();
+        List<EntityMember> ms = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(2, ms.size());
         EntityMember name = ms.get(0);
         EntityMember getName = ms.get(1);
@@ -253,6 +260,7 @@ public class InferenceTest {
         assertInstanceOf(STRING.class, name1.assignments().getFirst().lhs().outline());
         assertInstanceOf(STRING.class, name2.assignments().getFirst().lhs().outline());
     }
+
     @Test
     void test_simple_person_entity_with_override_member() {
         /*
@@ -269,7 +277,7 @@ public class InferenceTest {
         assertTrue(ast.asf().infer());
         VariableDeclarator var = cast(ast.program().body().statements().getFirst());
         Entity person = cast(var.assignments().getFirst().lhs().outline());
-        List<EntityMember> ms =  person.members().stream().filter(m->!m.isDefault()).toList();
+        List<EntityMember> ms = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(2, ms.size());
         EntityMember getName = ms.get(1);
         assertInstanceOf(Poly.class, getName.outline());
@@ -286,12 +294,13 @@ public class InferenceTest {
         AST ast = ASTHelper.mockInheritedPersonEntity();
         ast.asf().infer();
         Entity person = cast(ast.program().body().statements().get(3).nodes().get(0).nodes().get(0).outline());
-        List<EntityMember> ms =  person.members().stream().filter(m->!m.isDefault()).toList();
+        List<EntityMember> ms = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(4, ms.size());
         EntityMember getFullName = ms.getFirst();
         assertInstanceOf(Function.class, getFullName.outline());
         assertInstanceOf(STRING.class, ((Function<?, ?>) getFullName.outline()).returns().supposedToBe());
     }
+
     @Test
     void test_inherited_person_entity_with_override_member() {
         /**
@@ -317,7 +326,7 @@ public class InferenceTest {
         AST ast = ASTHelper.mockInheritedPersonEntityWithOverrideMember();
         ast.asf().infer();
         Entity person = cast(ast.program().body().statements().get(3).nodes().getFirst().nodes().getFirst().outline());
-        List<EntityMember> members = person.members().stream().filter(m->!m.isDefault()).toList();
+        List<EntityMember> members = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(4, members.size());
         assertInstanceOf(STRING.class, members.get(1).outline());
         assertInstanceOf(Poly.class, members.get(2).outline());
@@ -328,6 +337,7 @@ public class InferenceTest {
         assertInstanceOf(INTEGER.class, overrides.returns().supposedToBe());
         assertTrue(ast.errors().isEmpty());
     }
+
     @Test
     void test_declare_infer() {
         AST ast = ASTHelper.mockDeclare();
@@ -352,6 +362,7 @@ public class InferenceTest {
         assertEquals(1, ast.errors().size());
         assertEquals(b.rhs(), ast.errors().get(0).node());
     }
+
     @Test
     void test_option_is_as() {
         /*let result = {
@@ -377,6 +388,7 @@ public class InferenceTest {
         assertInstanceOf(STRING.class, str.outline());
         assertTrue(ast.errors().isEmpty());
     }
+
     @Test
     void test_poly_is_as() {
         /*let result = {
@@ -403,9 +415,9 @@ public class InferenceTest {
         assertTrue(ast.errors().isEmpty());
 
         Outline i = assignment.rhs().nodes().get(1).nodes().get(0).nodes().get(0).outline();
-        assertInstanceOf(INTEGER.class,i);
+        assertInstanceOf(INTEGER.class, i);
         Outline s = assignment.rhs().nodes().get(2).nodes().get(0).nodes().get(0).outline();
-        assertInstanceOf(STRING.class,s);
+        assertInstanceOf(STRING.class, s);
     }
 
     @Test
@@ -428,6 +440,7 @@ public class InferenceTest {
         FunctionNode function = cast(((FunctionCallNode) assignment.rhs()).function());
         assertEquals(1, ast.errors().size());
     }
+
     @Test
     void test_inference_of_reference_in_function() {
         /*
@@ -445,6 +458,7 @@ public class InferenceTest {
         assertEquals("b", f.returns().supposedToBe().name());
         assertInstanceOf(INTEGER.class, ((Reference) f.returns().supposedToBe()).extendToBe());
     }
+
     @Test
     void test_inference_of_reference_in_entity() {
         /*
@@ -459,7 +473,7 @@ public class InferenceTest {
         Function<?, ?> g = cast(((VariableDeclarator) ast.program().body().get(0)).assignments().get(0).rhs().outline());
         Entity entity = cast(g.returns().supposedToBe());
         Reference z = cast(entity.members().getLast().node().outline());
-        List<EntityMember> ms = entity.members().stream().filter(m->!m.isDefault()).toList();
+        List<EntityMember> ms = entity.members().stream().filter(m -> !m.isDefault()).toList();
         //(x,y)->y
         Function<?, Genericable<?, ?>> f = cast(ms.getFirst().outline());
         assertEquals("a", z.name());
@@ -469,6 +483,7 @@ public class InferenceTest {
         assertEquals("c", f.argument().name());
         assertEquals("c", f.returns().supposedToBe().name());
     }
+
     @Test
     void test_inference_of_basic_adt() {
         /**
@@ -481,15 +496,16 @@ public class InferenceTest {
          */
         AST ast = ASTHelper.mockBasicAdtMethods();
         assertTrue(ast.asf().infer());
-        assertEquals("Integer",ast.program().body().statements().get(0).get(0).get(0).outline().toString());
-        assertEquals("String",ast.program().body().statements().get(1).get(0).outline().toString());
-        assertEquals("String",ast.program().body().statements().get(2).get(0).get(0).outline().toString());
-        assertEquals("String",ast.program().body().statements().get(3).get(0).outline().toString());
-        assertEquals("Bool",ast.program().body().statements().get(4).get(0).get(0).outline().toString());
-        assertEquals("String",ast.program().body().statements().get(5).get(0).outline().toString());
+        assertEquals("Integer", ast.program().body().statements().get(0).get(0).get(0).outline().toString());
+        assertEquals("String", ast.program().body().statements().get(1).get(0).outline().toString());
+        assertEquals("String", ast.program().body().statements().get(2).get(0).get(0).outline().toString());
+        assertEquals("String", ast.program().body().statements().get(3).get(0).outline().toString());
+        assertEquals("Bool", ast.program().body().statements().get(4).get(0).get(0).outline().toString());
+        assertEquals("String", ast.program().body().statements().get(5).get(0).outline().toString());
     }
+
     @Test
-    void test_inference_of_array_map(){
+    void test_inference_of_array_map() {
         /*
          * let x = [1,2];
          * let y = x.map(i->i.to_str())
@@ -499,13 +515,14 @@ public class InferenceTest {
         assertTrue(ast.asf().infer());
         ast.program().body().statements().get(1).get(0).get(1).inferred();
         Outline y = ast.program().body().statements().get(1).get(0).get(0).outline();
-        assertEquals("[String]",y.toString());
+        assertEquals("[String]", y.toString());
         Outline y0 = ast.program().body().statements().get(2).get(0).outline();
-        assertEquals("String",y0.toString());
+        assertEquals("String", y0.toString());
         assertTrue(ast.errors().isEmpty());
     }
+
     @Test
-    void test_inference_of_array_reduce(){
+    void test_inference_of_array_reduce() {
         /*
          * let x = [1,2];
          * let y = x.reduce((acc,i)->acc+i,0.1)
@@ -513,9 +530,10 @@ public class InferenceTest {
         AST ast = ASTHelper.mockArrayReduceMethod();
         assertTrue(ast.asf().infer());
         Outline y = ast.program().body().statements().get(2).get(0).outline();
-        assertEquals("Double",y.toString());
+        assertEquals("Double", y.toString());
         assertTrue(ast.errors().isEmpty());
     }
+
     @Test
     void test_inference_of_array_definition() {
         AST ast = ASTHelper.mockArrayDefinition();
@@ -536,11 +554,12 @@ public class InferenceTest {
         assertEquals("[String]", d.outline().toString());
         //let e = [];
         Variable e = cast(((VariableDeclarator) ast.program().body().statements().get(4)).assignments().getFirst().lhs());
-        assertEquals("[any]",e.outline().toString());
+        assertEquals("[any]", e.outline().toString());
     }
+
     @Test
-    void test_inference_of_dict_definition(){
-        AST ast =  ASTHelper.mockDictDefinition();
+    void test_inference_of_dict_definition() {
+        AST ast = ASTHelper.mockDictDefinition();
         assertTrue(ast.asf().infer());
 
         //let a = [{name = "Will"}:"Male", {name = "Ivy",age = 20}:"Female"];
@@ -555,5 +574,24 @@ public class InferenceTest {
         //let d: [String:?] = [”Will":30,30:30];
         Variable d = cast(((VariableDeclarator) ast.program().body().statements().get(3)).assignments().getFirst().lhs());
         assertEquals("[String : any]", d.outline().toString());
+    }
+
+    @Test
+    void test_inference_of_unpack() {
+        AST ast = ASTHelper.mockUnpack();
+        assertTrue(ast.asf().infer());
+        int size = ast.program().body().statements().size();
+        Node first = ast.program().body().get(size - 6);
+        assertInstanceOf(STRING.class, first.outline());
+        Node g = ast.program().body().get(size - 5);
+        assertInstanceOf(STRING.class, g.outline());
+        Node lastName = ast.program().body().get(size - 4);
+        assertInstanceOf(STRING.class, lastName.outline());
+        Node name = ast.program().body().get(size - 3);
+        assertInstanceOf(STRING.class, name.outline());
+        Node gender = ast.program().body().get(size - 2);
+        assertInstanceOf(STRING.class, gender.outline());
+        Node age = ast.program().body().get(size - 1);
+        assertInstanceOf(INTEGER.class, age.outline());
     }
 }

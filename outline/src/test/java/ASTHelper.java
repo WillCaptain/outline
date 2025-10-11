@@ -725,4 +725,22 @@ public class ASTHelper {
                 let f2 = f1<Long>;""";
         return parser.parse(new ASF(), code);
     }
+
+    public static AST mockUnpack() {
+        String code = """
+                let tuple = (("Will","Zhang"),"Male",20);
+                let ent = {name = {last_name = "Will", first_name = "Zhang"}, gender = "Male", age = 20};
+                let ((name,_),gender) = tuple;
+                let ((last,first),...,age) = tuple;
+                let {name:{last_name}, gender as g} = ent;
+                last
+                first
+                g
+                last_name
+                name
+                gender
+                age
+                """;
+        return parser.parse(new ASF(), code);
+    }
 }

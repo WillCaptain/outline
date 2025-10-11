@@ -59,8 +59,8 @@ public class GCPConverter {
         this.converters.put(Constants.LITERAL_TUPLE_TYPE, literalTypeConverter);
         //true, false
         BoolTypeConverter boolTypeConverter = new BoolTypeConverter(converters);
-        this.converters.put(Constants.True,boolTypeConverter);
-        this.converters.put(Constants.False,boolTypeConverter);
+        this.converters.put(Constants.TRUE,boolTypeConverter);
+        this.converters.put(Constants.FALSE,boolTypeConverter);
         //wrapper
         this.converters.put(Constants.ARGUMENT, new ArgumentConverter(converters));
         this.converters.put(Constants.REFERENCE_TYPE, new ReferenceTypeConverter(converters));
@@ -70,6 +70,8 @@ public class GCPConverter {
         this.converters.put(Constants.FLOAT, new FloatLiteralConverter(converters));
         this.converters.put(Constants.INT, new IntLiteralConverter(converters));
         this.converters.put(Constants.NUMBER, new NumberLiteralConverter(converters));
+        this.converters.put(Constants.UNDER_LINE, new UnderlineConverter(converters));
+
         //id
         this.converters.put(Constants.ID, new Converter(converters) {
             @Override
@@ -114,7 +116,7 @@ public class GCPConverter {
         this.converters.put(Constants.ARRAY_MAP_ACCESSOR, new AccessorConverter(converters));
         //if expression
         this.converters.put(Constants.IF_EXPRESSION, new IfConverter(converters));
-        this.converters.put(Constants.Consequence, new ConsequenceConverter(converters));
+        this.converters.put(Constants.CONSEQUENCE, new ConsequenceConverter(converters));
         this.converters.put(Constants.EQUALITY_EXPRESSION, new EqualityExprConverter(converters));
         this.converters.put(Constants.TERNARY_EXPRESSION, new TernaryExprConverter(converters));
         //array
@@ -124,6 +126,10 @@ public class GCPConverter {
         this.converters.put(Constants.ARRAY_ITERATE_EXPRESSION, new ArrayExpressionConverter(converters));
         //map
         this.converters.put(Constants.MAP, new MapNodeConverter(converters));
+        //unpack
+        this.converters.put(Constants.TUPLE_UNPACK, new TupleUnpackNodeConverter(converters));
+        this.converters.put(Constants.ENTITY_UNPACK, new EntityUnpackNodeConverter(converters));
+
     }
 
     public GCPConverter() {
