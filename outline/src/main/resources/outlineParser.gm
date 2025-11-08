@@ -121,11 +121,24 @@ entity_unpack
 tuple_unpack
     : '(' tuple_ids' (',' tuple_ids')* ')'
     ;
+match_expression
+    : 'match' ID '{' match_arms' '}'
+    ;
+match_arms'
+    : match_arm (',' match_arm)* ','?
+    ;
+match_arm
+    : (unpack | ID | number | STRING | '_') match_if? '->' expression
+    ;
+match_if
+    : 'if' or_expression
+    ;
 assignment
     : complex_expression (('='|'+='|'-='|'*='|'/=') assignment)?
     ;
 complex_expression
     : if_expression
+    | match_expression
     | ternary_expression entity?
     ;
 if_expression

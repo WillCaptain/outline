@@ -46,6 +46,7 @@ AND_PLUS                   : '&&&';
 True                       : 'true';
 False                      : 'false';
 With                       : 'with';
+Match                      : 'match';
 //-----------literal------------
 INT                    :/"0|[1-9][0-9_]*"/;
 

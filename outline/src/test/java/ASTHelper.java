@@ -1,8 +1,6 @@
 import lombok.SneakyThrows;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
-import org.twelve.gcp.ast.Node;
-import org.twelve.gcp.common.SELECTION_TYPE;
 import org.twelve.outline.GCPConverter;
 import org.twelve.outline.OutlineParser;
 
@@ -104,9 +102,42 @@ public class ASTHelper {
         return parser.parse(code);
     }
 
-    public static AST mockIf(SELECTION_TYPE selectionType) {
+    public static AST mockMatch(){
+        String code = """
+                let num = 10;
+                let converted = match num{
+                    m if m>9  -> m,
+                    8 -> 7,
+                    _ -> num
+                };
+                let ent = {name = {last="Will",first="Zhang"}, age = 48};
+                let tpl = (("Will","Zhang"),48);
+                
+                let name_1 = match tpl {
+                    (name,age) if age>40 -> name.0,
+                    ((last,first),...) -> last
+                };
+                
+                let name_2 = match ent {
+                    {name,age} if age>40 -> name.last,
+                    {name:{last}, age} -> last+age
+                };
+                
+                """;
+//        code = """
+//                let tpl = (("Will","Zhang"),48);
+//                let n = match tpl {
+//                    (name,age) if age>40 -> name.0
+//                };
+//                """;
+        return parser.parse(code);
+    }
+    public static AST mockSymbol(){
+        return null;//todo
+    }
+    public static AST mockIf(boolean isIf) {
         String code;
-        if (selectionType == SELECTION_TYPE.IF) {
+        if (isIf) {
             code = """
                     module default
                     

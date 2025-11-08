@@ -2,7 +2,6 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Token;
-import org.twelve.gcp.common.SELECTION_TYPE;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.imexport.Export;
 import org.twelve.gcp.node.imexport.ExportSpecifier;
@@ -256,7 +255,7 @@ public class ParserStructureTest {
     }
     @Test
     void test_if(){
-        AST ast = ASTHelper.mockIf(SELECTION_TYPE.IF);
+        AST ast = ASTHelper.mockIf(true);
         String expected = """
                     module default
                     
@@ -268,7 +267,7 @@ public class ParserStructureTest {
                       "Someone"
                     }""";
         assertEquals(expected,ast.lexeme());
-        ast = ASTHelper.mockIf(SELECTION_TYPE.TERNARY);
+        ast = ASTHelper.mockIf(false);
         assertEquals("module default\n\nlet n = name==\"Will\"? name: \"Someone\";",ast.lexeme());
     }
     @Test

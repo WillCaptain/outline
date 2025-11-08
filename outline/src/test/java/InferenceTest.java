@@ -594,4 +594,10 @@ public class InferenceTest {
         Node age = ast.program().body().get(size - 1);
         assertInstanceOf(INTEGER.class, age.outline());
     }
+    @Test
+    void test_match(){
+        AST ast = ASTHelper.mockMatch();
+        assertTrue(ast.asf().infer());
+
+    }
 }
