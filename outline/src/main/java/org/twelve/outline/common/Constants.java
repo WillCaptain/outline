@@ -88,4 +88,6 @@ public final class Constants {
     public static final String ENTITY_UNPACK = "entity_unpack";
     public static final String UNDER_LINE = "UNDER_LINE";
     public static final String DOT_DOT_DOT_ = "...";
+    public static final String MATCH_EXPRESSION = "match_expression";
+    public static final String MATCH_ARM = "match_arm";
 }

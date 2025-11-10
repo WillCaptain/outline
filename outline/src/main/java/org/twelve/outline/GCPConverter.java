@@ -129,6 +129,8 @@ public class GCPConverter {
         //unpack
         this.converters.put(Constants.TUPLE_UNPACK, new TupleUnpackNodeConverter(converters));
         this.converters.put(Constants.ENTITY_UNPACK, new EntityUnpackNodeConverter(converters));
+        //match
+        this.converters.put(Constants.MATCH_EXPRESSION,new MatchExprConverter(converters));
 
     }
 
