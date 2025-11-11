@@ -600,9 +600,12 @@ public class InferenceTest {
     }
     @Test
     void test_inference_if() {
-        AST ast = ASTHelper.mockIf(true);
+        AST ast = ASTHelper.mockIf();
+        ast.infer();
+        ast.inferred();
         assertTrue(ast.asf().infer());
-        //todo
+        Node get = ast.program().body().get(3);
+        assertEquals("( String, Integer)|String|Integer",get.outline().toString());
     }
 
     @Test

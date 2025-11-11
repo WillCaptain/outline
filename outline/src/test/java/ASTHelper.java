@@ -102,7 +102,7 @@ public class ASTHelper {
         return parser.parse(code);
     }
 
-    public static AST mockMatch(){
+    public static AST mockMatch() {
         String code = """
                 let num = 10;
                 let ent = {name = {last="Will",first="Zhang"}, age = 48};
@@ -131,11 +131,13 @@ public class ASTHelper {
 //                    (name,age) if age>40 -> name.0
 //                };
 //                """;
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
-    public static AST mockSymbol(){
+
+    public static AST mockSymbol() {
         return null;//todo
     }
+
     public static AST mockIf(boolean isIf) {
         String code;
         if (isIf) {
@@ -155,6 +157,27 @@ public class ASTHelper {
                     
                     let n = name=="Will"? name: "Someone";""";
         }
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockIf() {
+        String code = """
+                let name = "Will";
+                let age = 30;
+                
+                let get = () ->{
+                    if(age is Int as a){
+                        (name,a)
+                    }
+                    if(name=="Will"){
+                      name
+                    } else if(name=="Evan"){
+                      age
+                    } else {
+                      "Someone"
+                    }
+                };
+                get()""";
         return parser.parse(new ASF(), code);
     }
 
@@ -178,7 +201,7 @@ public class ASTHelper {
                   let y: b = 100;
                   y
                 };""";
-        return parser.parse(new ASF(),code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockAs() {
@@ -249,7 +272,7 @@ public class ASTHelper {
                 r1([1,2]);
                 let r2 = r<String>;
                 r([1,2]);""";
-        return parser.parse(new ASF(),code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockGeneral() {
@@ -487,8 +510,9 @@ public class ASTHelper {
                 f(100);""";
         return parser.parse(new ASF(), code);
     }
-    public static  AST mockGcpExtendToBe() {
-        String code= """
+
+    public static AST mockGcpExtendToBe() {
+        String code = """
                 let f = x->{
                   x = 10;
                   x
@@ -497,6 +521,7 @@ public class ASTHelper {
                 f(100);""";
         return parser.parse(new ASF(), code);
     }
+
     public static AST mockGcpHasToBe() {
         String code = """
                 let f = x->{
@@ -602,22 +627,22 @@ public class ASTHelper {
     }
 
     public static AST mockEntityProjection1(int i) {
-        String code = mockEntityProjection_(i,"z.combine(x,y)");
+        String code = mockEntityProjection_(i, "z.combine(x,y)");
         return parser.parse(new ASF(), code);
     }
 
     public static AST mockEntityProjection2(int i) {
-        String code = mockEntityProjection_(i,"z.combine(x,y).name");
+        String code = mockEntityProjection_(i, "z.combine(x,y).name");
         return parser.parse(new ASF(), code);
     }
 
     public static AST mockEntityProjection3(int i) {
-        String code = mockEntityProjection_(i,"z.combine(x,y).gender");
+        String code = mockEntityProjection_(i, "z.combine(x,y).gender");
         return parser.parse(new ASF(), code);
     }
 
     public static AST mockEntityProjection4(int i) {
-        String code = mockEntityProjection_(i,"{\n" +
+        String code = mockEntityProjection_(i, "{\n" +
                 "          var w = z;\n" +
                 "          w.combine(x,y)\n" +
                 "        }");
@@ -625,7 +650,7 @@ public class ASTHelper {
     }
 
     public static AST mockEntityProjection5(int i) {
-        String code = mockEntityProjection_(i,"{\n" +
+        String code = mockEntityProjection_(i, "{\n" +
                 "          var w: {combine: Int->{name: Int}->{name: Int}} = z;\n" +
                 "          w.combine(x,y)\n" +
                 "        }");

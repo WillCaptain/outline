@@ -32,7 +32,7 @@ public class IfConverter extends Converter {
             ifs.addArm(new IfArm(test, consequence));
             i++;
         }
-        if (nodes.get(i).name().equals(Constants.ELSE)) {
+        if (i< nodes.size() && nodes.get(i).name().equals(Constants.ELSE)) {
             i++;
             Node other = converters.get(nodes.get(i).name()).convert(ast, nodes.get(i));
             if (other instanceof Selections) {
