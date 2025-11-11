@@ -82,6 +82,8 @@ public class GCPConverter {
 
         //function
         this.converters.put(Constants.FUNCTION, new FunctionConverter(converters));
+        //relational_expression
+        this.converters.put(Constants.RELATION_EXPRESSION, new BinaryExpressionConverter(converters));
         //numeric expression
         this.converters.put(Constants.NUMERIC_EXPRESSION, new NumericExprConverter(converters));
         this.converters.put(Constants.TERM_EXPRESSION, new TermExprConverter(converters));

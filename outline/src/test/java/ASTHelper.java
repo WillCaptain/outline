@@ -59,7 +59,7 @@ public class ASTHelper {
                 let person = ("Will",()->this.0);
                 let name_1 = person.0;
                 let name_2 = person.1();""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockGenericTupleProjection() {
@@ -70,7 +70,7 @@ public class ASTHelper {
                 let h = f(("Will",30));
                 let will = h.1;
                 let age = h.0;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockTupleProjection() {
@@ -82,7 +82,7 @@ public class ASTHelper {
                 let g = f("Will",(("Will","Zhang"),30));
                 let will = g.0.0;
                 let age = g.1;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockDefinedPoly() {
@@ -105,14 +105,14 @@ public class ASTHelper {
     public static AST mockMatch(){
         String code = """
                 let num = 10;
-                let converted = match num{
-                    m if m>9  -> m,
-                    8 -> 7,
-                    _ -> num
-                };
                 let ent = {name = {last="Will",first="Zhang"}, age = 48};
                 let tpl = (("Will","Zhang"),48);
                 
+                let converted = match num{
+                    m if m>9  -> m,
+                    8 -> 7,
+                    _ -> "str"
+                };
                 let name_1 = match tpl {
                     (name,age) if age>40 -> name.0,
                     ((last,first),...) -> last
@@ -120,7 +120,8 @@ public class ASTHelper {
                 
                 let name_2 = match ent {
                     {name,age} if age>40 -> name.last,
-                    {name:{last}, age} -> last+age
+                    {name:{last}, age} -> last+age,
+                    _ -> (ent.age, ent.name.last)
                 };
                 
                 """;
@@ -154,7 +155,7 @@ public class ASTHelper {
                     
                     let n = name=="Will"? name: "Someone";""";
         }
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockDeclare() {

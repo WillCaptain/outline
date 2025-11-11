@@ -7,6 +7,9 @@ import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.node.expression.*;
 import org.twelve.gcp.node.expression.accessor.MemberAccessor;
+import org.twelve.gcp.node.expression.conditions.Arm;
+import org.twelve.gcp.node.expression.conditions.MatchArm;
+import org.twelve.gcp.node.expression.conditions.MatchExpression;
 import org.twelve.gcp.node.function.FunctionCallNode;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.imexport.Export;
@@ -14,6 +17,7 @@ import org.twelve.gcp.node.imexport.Import;
 import org.twelve.gcp.node.statement.Assignment;
 import org.twelve.gcp.node.statement.Statement;
 import org.twelve.gcp.node.statement.VariableDeclarator;
+import org.twelve.gcp.node.unpack.TupleUnpackNode;
 import org.twelve.gcp.outline.Outline;
 import org.twelve.gcp.outline.adt.*;
 import org.twelve.gcp.outline.builtin.ERROR;
@@ -595,9 +599,51 @@ public class InferenceTest {
         assertInstanceOf(INTEGER.class, age.outline());
     }
     @Test
+    void test_inference_if() {
+        AST ast = ASTHelper.mockIf(true);
+        assertTrue(ast.asf().infer());
+        //todo
+    }
+
+    @Test
     void test_match(){
         AST ast = ASTHelper.mockMatch();
         assertTrue(ast.asf().infer());
-
+        VariableDeclarator converted = cast(ast.program().body().get(3));
+        Outline convertedOutline = converted.assignments().getFirst().lhs().outline();
+       assertEquals("Integer|String",convertedOutline.toString());
+        VariableDeclarator name1 = cast(ast.program().body().get(4));
+        Outline name1Outline = name1.assignments().getFirst().lhs().outline();
+        VariableDeclarator name2 = cast(ast.program().body().get(5));
+        Outline name2Outline = name2.assignments().getFirst().lhs().outline();
+        //check return of match
+        assertInstanceOf(STRING.class,name1Outline);
+        assertEquals("String|( Integer, String)",name2Outline.toString());
+        assertEquals(1,ast.errors().size());
+        assertEquals(name1.assignments().getFirst(),ast.errors().getFirst().node());
+        //check match pattern type
+        //tuple match
+        List<MatchArm> arms1 = ((MatchExpression) name1.assignments().getFirst().rhs()).arms();
+        //(name,age)
+        Node name = arms1.getFirst().test().pattern().get(0);
+        Node age = arms1.getFirst().test().pattern().get(1);
+        assertEquals("( String, String)",name.outline().toString());
+        assertInstanceOf(INTEGER.class,age.outline());
+        //((last,first))
+        TupleUnpackNode fullName = cast(arms1.getLast().test().pattern().get(0));
+        Node last = fullName.get(0);
+        Node first = fullName.get(1);
+        assertInstanceOf(STRING.class,last.outline());
+        assertInstanceOf(STRING.class,first.outline());
+        //entity match
+        List<MatchArm> arms2 = ((MatchExpression) name2.assignments().getFirst().rhs()).arms();
+        name = arms2.get(0).test().pattern().get(0);
+        age = arms2.get(0).test().pattern().get(1);
+        assertEquals("{last: String,first: String}",name.outline().toString());
+        assertInstanceOf(INTEGER.class,age.outline());
+        last = arms2.get(1).test().pattern().get(0).get(0);
+        age = arms2.get(1).test().pattern().get(1);
+        assertInstanceOf(STRING.class,last.outline());
+        assertInstanceOf(INTEGER.class,age.outline());
     }
 }
