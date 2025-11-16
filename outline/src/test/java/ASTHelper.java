@@ -800,4 +800,23 @@ public class ASTHelper {
                 """;
         return parser.parse(new ASF(), code);
     }
+
+    public static AST mockWith() {
+        String code = """
+                let resource = {
+                    create = ()-> {
+                        return {
+                            open=()->{}, 
+                            close=()->{},
+                            done=true 
+                        };
+                    }
+                };
+                let result = with resource.create() as r{
+                    r.done
+                };
+                result
+                """;
+        return parser.parse(new ASF(), code);
+    }
 }

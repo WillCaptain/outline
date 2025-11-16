@@ -89,6 +89,10 @@ public class GCPConverter {
         this.converters.put(Constants.TERM_EXPRESSION, new TermExprConverter(converters));
         //body
         this.converters.put(Constants.BLOCK, new BlockConverter(converters));
+        //with
+        this.converters.put(Constants.WITH_EXPRESSION, new WithConverter(converters));
+        //return statement
+        this.converters.put(Constants.RETURN_STATEMENT, new ReturnConverter(converters));
         //complex expression: entity extension
         this.converters.put(Constants.COMPLEX_EXPRESSION, new EntityExtensionConverter(converters));
 

@@ -21,6 +21,7 @@ import org.twelve.gcp.node.unpack.TupleUnpackNode;
 import org.twelve.gcp.outline.Outline;
 import org.twelve.gcp.outline.adt.*;
 import org.twelve.gcp.outline.builtin.ERROR;
+import org.twelve.gcp.outline.primitive.BOOL;
 import org.twelve.gcp.outline.primitive.DOUBLE;
 import org.twelve.gcp.outline.primitive.INTEGER;
 import org.twelve.gcp.outline.primitive.STRING;
@@ -648,5 +649,14 @@ public class InferenceTest {
         age = arms2.get(1).test().pattern().get(1);
         assertInstanceOf(STRING.class,last.outline());
         assertInstanceOf(INTEGER.class,age.outline());
+    }
+
+    @Test
+    void test_with(){
+        AST ast = ASTHelper.mockWith();
+        assertTrue(ast.asf().infer());
+        List<Statement> statements = ast.program().body().statements();
+        assertInstanceOf(BOOL.class,statements.getLast().outline());
+        assertTrue(ast.errors().isEmpty());
     }
 }

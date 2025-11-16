@@ -91,4 +91,6 @@ public final class Constants {
     public static final String MATCH_EXPRESSION = "match_expression";
     public static final String MATCH_ARM = "match_arm";
     public static final String RELATION_EXPRESSION = "relational_expression";
+    public static final String WITH_EXPRESSION = "with_expression";
+    public static final String RETURN_STATEMENT = "return_statement";
 }

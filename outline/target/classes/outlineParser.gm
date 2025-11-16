@@ -17,7 +17,6 @@ statement
     | variable_declarator
     | expression_statement
     | return_statement
-    | with_statement
 //    | module_statement
 //    | import_statement
 //    | export_statement
@@ -44,9 +43,6 @@ import_statement
     ;
 export_statement
     : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
-    ;
-with_statement
-    : 'with' expression 'as' ID block
     ;
 comment
     : SingleLineComment
@@ -178,7 +174,9 @@ unary_expression
 factor_expression
     : literal
     | ID
+    | Symbol
     | block
+    | with_expression
     | factor_expression '[' expression ']'                                 # array_map_accessor
     | factor_expression '.' (ID|INT)                                       # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'           # function_call
@@ -209,7 +207,9 @@ number
 expression_statement
     : expression ((',' expression)* ';')?
     ;
-
+with_expression
+    : 'with' expression ('as' ID)? block
+    ;
 block
     : '{' statement* '}'
     ;
