@@ -4,7 +4,7 @@ import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.inference.operator.AssignableOperator;
 import org.twelve.gcp.node.operator.OperatorNode;
-import org.twelve.gcp.node.statement.Assignment;
+import org.twelve.gcp.node.expression.Assignment;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 

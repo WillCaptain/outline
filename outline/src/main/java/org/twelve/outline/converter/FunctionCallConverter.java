@@ -3,9 +3,12 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.Expression;
+import org.twelve.gcp.node.expression.SymbolIdentifier;
 import org.twelve.gcp.node.function.FunctionCallNode;
+import org.twelve.gcp.node.unpack.SymbolTupleUnpackNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
+import org.twelve.outline.common.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,11 @@ public class FunctionCallConverter extends Converter{
     }
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
+        if(related instanceof SymbolIdentifier){
+            SymbolIdentifier symbolNode = cast(related);
+            return new TupleExtensionConverter(converters).convert(ast,source,related);
+//            return new SymbolTupleUnpackNode(ast,symbolNode,cast(unpackNode));
+        }
         ParseNode[] all = ((NonTerminalNode) source).nodes().stream().filter(n -> !"(,)".contains(n.lexeme())).toArray(ParseNode[]::new);
         List<Expression> args = new ArrayList<>();
         NonTerminalNode rest = null;

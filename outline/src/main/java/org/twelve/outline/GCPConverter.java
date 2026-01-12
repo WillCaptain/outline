@@ -51,6 +51,7 @@ public class GCPConverter {
         this.converters.put(Constants.FUNC_TYPE, new FuncTypeConverter(converters));
         this.converters.put(Constants.ARRAY_TYPE, new ArrayTypeConverter(converters));
         this.converters.put(Constants.MAP_TYPE, new MapTypeConverter(converters));
+        this.converters.put(Constants.OTHERS_TYPE, new OtherTypeConverter(converters));
         //literal
         LiteralTypeConverter literalTypeConverter = new LiteralTypeConverter(converters);
         this.converters.put(Constants.LITERAL_INT_TYPE, literalTypeConverter);
@@ -59,8 +60,8 @@ public class GCPConverter {
         this.converters.put(Constants.LITERAL_TUPLE_TYPE, literalTypeConverter);
         //true, false
         BoolTypeConverter boolTypeConverter = new BoolTypeConverter(converters);
-        this.converters.put(Constants.TRUE,boolTypeConverter);
-        this.converters.put(Constants.FALSE,boolTypeConverter);
+        this.converters.put(Constants.TRUE, boolTypeConverter);
+        this.converters.put(Constants.FALSE, boolTypeConverter);
         //wrapper
         this.converters.put(Constants.ARGUMENT, new ArgumentConverter(converters));
         this.converters.put(Constants.REFERENCE_TYPE, new ReferenceTypeConverter(converters));
@@ -135,8 +136,16 @@ public class GCPConverter {
         //unpack
         this.converters.put(Constants.TUPLE_UNPACK, new TupleUnpackNodeConverter(converters));
         this.converters.put(Constants.ENTITY_UNPACK, new EntityUnpackNodeConverter(converters));
+        this.converters.put(Constants.SYMBOL_UNPACK, new SymbolUnpackNodeConverter(converters));
         //match
-        this.converters.put(Constants.MATCH_EXPRESSION,new MatchExprConverter(converters));
+        this.converters.put(Constants.MATCH_EXPRESSION, new MatchExprConverter(converters));
+        //outline
+        this.converters.put(Constants.OUTLINE_DECLARATOR, new OutlineDefinitionConverter(converters));
+        //symbol identifier
+        this.converters.put(Constants.SYMBOL, new SymbolIndentifierConverter(converters));
+        //symbol type
+        this.converters.put(Constants.SYMBOL_TYPE, new SymbolTypeConverter(converters));
+        this.converters.put(Constants.COLON_ + Constants.SYMBOL, new SymbolTypeConverter(converters));
 
     }
 

@@ -54,18 +54,16 @@ public class ASTHelper {
 
     public static AST mockSimpleTuple() {
         String code = """
-                module default
-                
-                let person = ("Will",()->this.0);
+                let person = ("Will",()->this.0,40);
                 let name_1 = person.0;
-                let name_2 = person.1();""";
+                let name_2 = person.1();
+                outline Human = (String,...,Int);
+                """;
         return parser.parse(new ASF(), code);
     }
 
     public static AST mockGenericTupleProjection() {
         String code = """
-                module default
-                
                 let f = (x: (?, ?))->(x.1,x.0);
                 let h = f(("Will",30));
                 let will = h.1;
@@ -75,8 +73,6 @@ public class ASTHelper {
 
     public static AST mockTupleProjection() {
         String code = """
-                module default
-                
                 let f =fx<a,b>(x: a)->(y: ((a, String), b))->y;
                 let h = f(100,(("Will","Zhang"),"male"));
                 let g = f("Will",(("Will","Zhang"),30));
@@ -115,7 +111,7 @@ public class ASTHelper {
                 };
                 let name_1 = match tpl {
                     (name,age) if age>40 -> name.0,
-                    ((last,first),...) -> last
+                    ((last,String),...) -> last
                 };
                 
                 let name_2 = match ent {
@@ -125,17 +121,7 @@ public class ASTHelper {
                 };
                 
                 """;
-//        code = """
-//                let tpl = (("Will","Zhang"),48);
-//                let n = match tpl {
-//                    (name,age) if age>40 -> name.0
-//                };
-//                """;
         return parser.parse(new ASF(), code);
-    }
-
-    public static AST mockSymbol() {
-        return null;//todo
     }
 
     public static AST mockIf(boolean isIf) {
@@ -816,6 +802,26 @@ public class ASTHelper {
                     r.done
                 };
                 result
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockSymbolMatch() {
+        String code = """
+                outline Human = Male{name:String, age:Int}|Female(Int, String), Pet = Dog|Cat;
+                let will = Male{name="will",age=40};
+                let ivy = Female("ivy",40);
+                let pet = Dog;
+                let get_name = someone->{
+                    match someone {
+                        Male{name} -> name,
+                        {name} -> name,
+                        (_,age) -> age,
+                        Female(_,age) ->age,
+                        _ -> 100
+                    }
+                };
+                (get_name(will),get_name(ivy),get_name(pet))
                 """;
         return parser.parse(new ASF(), code);
     }

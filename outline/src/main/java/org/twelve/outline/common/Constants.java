@@ -26,6 +26,7 @@ public final class Constants {
     public static final String DOUBLE_TYPE = ":Double_Type";
     public static final String DECLARED_TYPE = ":declared_outline";
     public static final String SUM_TYPE = ":sum_type";
+    public static final String OTHERS_TYPE = ":DOT_DOT_DOT";
     public static final String FUNCTION = "lambda";
     public static final String NUMERIC_EXPRESSION = "numeric_expression";
     public static final String COMPLEX_EXPRESSION = "complex_expression";
@@ -93,4 +94,8 @@ public final class Constants {
     public static final String RELATION_EXPRESSION = "relational_expression";
     public static final String WITH_EXPRESSION = "with_expression";
     public static final String RETURN_STATEMENT = "return_statement";
+    public static final String OUTLINE_DECLARATOR = "outline_declarator";
+    public static final String SYMBOL = "Symbol";
+    public static final String SYMBOL_TYPE = ":symbol_type";
+    public static final String SYMBOL_UNPACK = "symbol_unpack";
 }

@@ -199,9 +199,10 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                let person = ("Will",()->this.0);
+                let person = ("Will",()->this.0,40);
                 let name_1 = person.0;
-                let name_2 = person.1();""";
+                let name_2 = person.1();
+                outline Human = (String, ..., Integer);""";
         assertEquals(expected,ast.lexeme());
 
         ast = ASTHelper.mockGenericTupleProjection();

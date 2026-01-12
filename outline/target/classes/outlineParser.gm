@@ -17,9 +17,7 @@ statement
     | variable_declarator
     | expression_statement
     | return_statement
-//    | module_statement
-//    | import_statement
-//    | export_statement
+    | outline_declarator
 //    | classDeclaration
 //    | functionDeclaration
 //    | expressionStatement
@@ -44,6 +42,9 @@ import_statement
 export_statement
     : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
     ;
+outline_declarator
+    : 'outline' Symbol '=' declared_outline (',' Symbol '=' declared_outline)* ';'
+    ;
 comment
     : SingleLineComment
     | MultiLineComment
@@ -53,7 +54,7 @@ variable_declarator
     ;
 assignment'
     : argument ('=' expression)?
-    | unpack '=' expression
+    | (entity_unpack | tuple_unpack) '=' expression
     ;
 return_statement
     : 'return' expression? ';'
@@ -68,13 +69,16 @@ sum_type
     : (non_func_type|literal) (('|'|'&') (non_func_type|literal))+
     ;
 non_func_type
-    : Number_Type | Int_Type | Long_Type | Float_Type | Double_Type | String_Type | tuple_type | entity_type | array_type | map_type |  '?' | ID | factor_type
+    : Number_Type | Int_Type | Long_Type | Float_Type | Double_Type | String_Type | symbol_type | tuple_type | entity_type | array_type | map_type |  '?' | ID | factor_type
     ;
 tuple_type
-    : '(' declared_outline (','declared_outline)+ ')'
+    : '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
     ;
 entity_type
     : '{' (argument (','argument)* ','?)? '}'
+    ;
+symbol_type
+    : Symbol (tuple_type | entity_type)?
     ;
 array_type
     : '[' declared_outline ']'
@@ -96,20 +100,22 @@ expression
     : assignment (is_expression | as_expression)?
     ;
 is_expression
-    : 'is' declared_outline ('as' (ID | unpack))?
+    : 'is' declared_outline ('as' (ID | symbol_unpack))?
     ;
 as_expression
     : 'as' declared_outline
     ;
-unpack
-    : entity_unpack
-    | tuple_unpack
+symbol_unpack
+    : Symbol? (entity_unpack | tuple_unpack)
+    ;
+unpack_fragment'
+    :symbol_unpack|Number_Type | Int_Type | Long_Type | Float_Type | Double_Type | String_Type
     ;
 tuple_ids'
-    : ID|'_'|'...'|unpack
+    : ID|'_'|'...'|unpack_fragment'
     ;
 entity_ids'
-    : ID (('as' ID)|(':' unpack))?
+    : ID (('as' ID)|(':' unpack_fragment'))?
     ;
 entity_unpack
     : '{' entity_ids' (',' entity_ids')* '}'
@@ -124,7 +130,7 @@ match_arms'
     : match_arm (',' match_arm)* ','?
     ;
 match_arm
-    : (unpack | ID | number | STRING | '_') match_if? '->' expression
+    : (symbol_unpack | ID | number | STRING | '_') match_if? '->' expression
     ;
 match_if
     : 'if' or_expression
@@ -185,11 +191,11 @@ factor_expression
     //| '(' expression ')'                                                 # factor
     ;
 literal
-    :This
+    : This
     | Base
     | True
     | False
-    |number
+    | number
     | STRING
     | entity
     | tuple

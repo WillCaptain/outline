@@ -47,6 +47,7 @@ True                       : 'true';
 False                      : 'false';
 With                       : 'with';
 Match                      : 'match';
+Outline                    : 'outline';
 //-----------literal------------
 INT                    :/"0|[1-9][0-9_]*"/;
 

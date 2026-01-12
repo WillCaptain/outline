@@ -4,13 +4,12 @@ import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.exception.GCPErrCode;
+import org.twelve.gcp.node.expression.Assignment;
 import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.LiteralNode;
-import org.twelve.gcp.node.expression.accessor.MemberAccessor;
 import org.twelve.gcp.node.expression.body.FunctionBody;
 import org.twelve.gcp.node.expression.referable.ReferenceCallNode;
 import org.twelve.gcp.node.expression.typeable.IdentifierTypeNode;
-import org.twelve.gcp.node.function.Argument;
 import org.twelve.gcp.node.function.FunctionCallNode;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.statement.*;
@@ -682,13 +681,13 @@ public class GCPInference {
     void test_tuple_projection() {
         AST ast = ASTHelper.mockTupleProjection();
         assertTrue(ast.asf().infer());
-        Node g = ast.program().body().statements().get(1).nodes().getFirst().nodes().getFirst();
-        Node h = ast.program().body().statements().get(2).nodes().getFirst().nodes().getFirst();
+        Node h = ast.program().body().statements().get(1).nodes().getFirst().nodes().getFirst();
+        Node g = ast.program().body().statements().get(2).nodes().getFirst().nodes().getFirst();
         Node will = ast.program().body().statements().get(3).nodes().getFirst().nodes().getFirst();
         Node age = ast.program().body().statements().get(4).nodes().getFirst().nodes().getFirst();
 
-        assertEquals("{0: {0: Integer,1: String},1: <b>}",g.outline().toString());
-        assertEquals("{0: {0: String,1: String},1: Integer}",h.outline().toString());
+        assertEquals("((Integer,String),<b>)",h.outline().toString());
+        assertEquals("((String,String),Integer)",g.outline().toString());
         assertEquals("String",will.outline().toString());
         assertEquals("Integer",age.outline().toString());
         assertEquals(1,ast.errors().size());
