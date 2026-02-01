@@ -818,7 +818,7 @@ public class ASTHelper {
                         {name} -> name,
                         (_,age) -> age,
                         Female(_,age) ->age,
-                        _ -> 100
+                        _ -> {other=100f}
                     }
                 };
                 (get_name(will),get_name(ivy),get_name(pet))

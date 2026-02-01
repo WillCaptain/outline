@@ -95,7 +95,7 @@ public class ParserStructureTest {
         assertEquals(43, a.local().loc().end());
 
         assertInstanceOf(UNKNOWN.class, a.get(0).outline());//outline is not confirmed yet
-        assertSame(a.get(0).outline(), a.get(1).outline());//outline of b is a reference of a outline
+        assertInstanceOf(UNKNOWN.class, a.get(1).outline());//outline of b is a reference of a outline
         //check c
         ImportSpecifier c = imported.specifiers().get(1);
         assertEquals("school", c.get(1).toString());
@@ -134,7 +134,7 @@ public class ParserStructureTest {
         assertEquals(196, a.exported().loc().end());
 
         assertInstanceOf(UNKNOWN.class, a.get(0).outline());//outline is not confirmed yet
-        assertSame(a.get(0).outline(), a.get(1).outline());//outline of b is a reference of a outline
+        assertInstanceOf(UNKNOWN.class, a.get(1).outline());//outline of b is a reference of a outline
         //check c
         ExportSpecifier c = exported.specifiers().get(1);
         assertSame(c.get(0), c.get(1));

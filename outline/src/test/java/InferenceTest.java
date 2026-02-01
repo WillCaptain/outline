@@ -331,10 +331,10 @@ public class InferenceTest {
         ast.asf().infer();
         Entity person = cast(ast.program().body().statements().get(3).nodes().getFirst().nodes().getFirst().outline());
         List<EntityMember> members = person.members().stream().filter(m -> !m.isDefault()).toList();
-        assertEquals(4, members.size());
-        assertInstanceOf(STRING.class, members.get(1).outline());
-        assertInstanceOf(Poly.class, members.get(2).outline());
-        Poly getName = cast(members.get(2).outline());
+        assertEquals(5, members.size());
+        assertInstanceOf(STRING.class, members.get(2).outline());
+        assertInstanceOf(Poly.class, members.get(3).outline());
+        Poly getName = cast(members.get(3).outline());
         assertSame(ast.Unit, ((Genericable<?, ?>) ((Function<?, ?>) getName.options().get(0)).argument()).declaredToBe());
         Function<?, ?> overrides = cast(getName.options().get(1));
         assertInstanceOf(Option.class, ((Genericable<?, ?>) overrides.argument()).definedToBe());
@@ -669,13 +669,33 @@ public class InferenceTest {
         List<Statement> statements = ast.program().body().statements();
         OutlineDeclarator s1 = cast(statements.get(0));
         OutlineDefinition human = s1.definitions().getFirst();
-        assertEquals("Male{name: String,age: Integer}|Female( String, Integer)", human.symbolNode().outline().toString());
+        assertEquals("Male{name: String,age: Integer}|Female(Integer,String)", human.symbolNode().outline().toString());
         OutlineDefinition pet = s1.definitions().getLast();
         assertEquals("Dog|Cat", pet.symbolNode().outline().toString());
 
         Outline tuple = statements.get(5).get(0).outline();
-        assertEquals("(String,Integer,Dog|Cat)", tuple.toString());
+        assertEquals("(String|{other: Float},Integer|{other: Float},{other: Float})", tuple.toString());
 
+
+    }
+
+    @Test
+    void test_complex_literal() {
+
+    }
+
+    @Test
+    void test_import_outline() {
+
+    }
+
+    @Test
+    void test_outline_mutual_reference(){
+
+    }
+
+    @Test
+    void test_future_reference(){
 
     }
 
