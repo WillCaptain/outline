@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
@@ -29,6 +30,7 @@ import org.twelve.gcp.outline.projectable.Genericable;
 import org.twelve.gcp.outline.projectable.Reference;
 
 import javax.swing.plaf.nimbus.State;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -675,7 +677,18 @@ public class InferenceTest {
 
         Outline tuple = statements.get(5).get(0).outline();
         assertEquals("(String|{other: Float},Integer|{other: Float},{other: Float})", tuple.toString());
+    }
 
+    @Test
+    void test_future_reference_from_entity() throws IOException {
+        AST ast = ASTHelper.mockFutureReferenceFromEntity();
+        ast.asf().infer();
+        Outline rt = ast.program().body().statements().getLast().outline();
+        assertInstanceOf(STRING.class,rt);
+    }
+
+    @Test
+    void test_future_reference_from_outline(){
 
     }
 
@@ -691,11 +704,6 @@ public class InferenceTest {
 
     @Test
     void test_outline_mutual_reference(){
-
-    }
-
-    @Test
-    void test_future_reference(){
 
     }
 

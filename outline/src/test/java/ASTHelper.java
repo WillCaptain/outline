@@ -825,4 +825,20 @@ public class ASTHelper {
                 """;
         return parser.parse(new ASF(), code);
     }
+
+    public static AST mockFutureReferenceFromEntity() throws IOException {
+        String code = """
+                let animal = {
+                    walk = ()-> this,
+                    age = 40
+                };
+                let person = animal {
+                    talk = ()->this,
+                    name = "Will"
+                };
+                //animal.walk().age
+                person.walk().talk().name
+                """;
+        return new OutlineParser().parse(new ASF(), code);
+    }
 }
