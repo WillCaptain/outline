@@ -169,7 +169,7 @@ public class ASTHelper {
 
     public static AST mockDeclare() {
         String code = """
-                let f = <a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
+                let f = fx<a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
 
         /*code = """
                 let f = <a>(x:a->{name:a,age:Int})->{
@@ -645,7 +645,7 @@ public class ASTHelper {
 
     public static AST mockExtendEntityProjection() {
         String code = """
-                let f = <a>(person,gender:a)-> person{gender = gender};
+                let f = fx<a>(person,gender:a)-> person{gender = gender};
                 let g = f<String>;
                 g("Will",1);
                 f({name="Will"},1);
@@ -653,7 +653,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    public static AST mockRecursive() {
+    public static AST mockSelfRecursive() {
         String code = """
                 let factorial = n->n==0? 1: factorial(n-1);
                 factorial(100);
@@ -760,9 +760,9 @@ public class ASTHelper {
 
     public static AST mockReferenceInEntity1() {
         String code = """
-                let g = <a,b>()->{
+                let g = fx<a,b>()->{
                   z: a = 100,
-                  f = <c>(x: b)->(y: c)->y
+                  f = fx<c>(x: b)->(y: c)->y
                 };
                 let f1 = g<Int,String>().f;
                 let f2 = f1<Long>;""";
@@ -836,9 +836,183 @@ public class ASTHelper {
                     talk = ()->this,
                     name = "Will"
                 };
-                //animal.walk().age
-                person.walk().talk().name
+                (person.walk().talk().name,person.talk().walk().name)
                 """;
         return new OutlineParser().parse(new ASF(), code);
+    }
+
+    public static AST mockFutureReferenceFromOutline() {
+        String code = """
+                
+                //system
+                outline Aggregator = <a>{
+                    // Intermediate: Add a metric to the collection
+                    count: Unit -> ~this,
+                    sum: (a -> Number) -> ~this,
+                    avg: (a -> Number) -> ~this,
+                    min: (a -> Number) -> ~this,
+                    max: (a -> Number) -> ~this,
+                
+                    // Terminal: Executes the combined metrics
+                    // Returns a Record where keys match the requested metrics
+                    compute: Unit -> [String:Number]
+                };
+                
+                outline GroupBy = <k,a>{
+                    // Intermediate: Apply logic to each bucket
+                    // For example: Employees.group_by(e -> e.gender).filter(set -> set.count() > 10)
+                    filter: (a -> Bool) -> ~this,
+                
+                    // Terminal: Return the results as a Map
+                    // Result: { "Male": 50, "Female": 60 }
+                    count: Unit -> [k:Integer],
+                
+                    // Terminal: Run aggregations per group
+                    // Result: { "Engineering": { "avg_age": 32, "count": 100 } }
+                    aggregate: <b>(Aggregator<a> -> b) -> [k:b],
+                
+                    // Terminal: Get the sets themselves (Lazy)
+                    to_map: Unit -> [k:VirtualSet<a>]
+                };
+                
+                outline VirtualSet = <a>{
+                    //non-terminal operators
+                    filter: (a->Bool) -> ~this,
+                    order_by: (a -> ?) -> ~this,
+                    take: Integer -> Integer -> ~this,
+                    map: fx<b> a -> ~this<b>,
+                    type:#"me",
+                
+                     //terminal operators
+                     first: Unit -> a,
+                     last: Unit -> a,
+                     count: Unit -> Integer,
+                     exists: Unit -> Bool,
+                     sum: (a->Number) -> Number,
+                     avg: (a->Number) -> Number,
+                     min: fx<b>(a -> b) -> b,
+                     max: fx<b>(a -> b) -> b,
+                     reduce: fx<b>b->(a->b)->b,
+                     for_each: (a -> Unit) -> Unit,
+                     aggregate: <b>(Aggregator<a> -> b) -> b,
+                     group_by: <b>(a->b)->GroupBy<b,a>
+                };
+                
+                //ontology
+                outline Employee = {
+                  //attributes
+                  id: String,
+                  name: Name,
+                  age: Integer,
+                  birthday: Date,
+                  gender: Gender,
+                
+                  //edges
+                  report_to: Unit -> Employee,
+                  is_reported_by:Unit -> Employees,
+                  live_in: Unit -> Address,
+                
+                  //single or both actions
+                  send_birthday_greeting: String -> Unit,
+                  action_both: Unit -> String
+                };
+                
+                outline Employees  = VirtualSet<Employee>{
+                  //edges
+                  report_to: Unit-> Employees,//edge
+                  is_reported_by: Unit->Employees,
+                  live_in: Unit->Address,
+                
+                  //both actions
+                  action_both: Unit->String //action for single and both
+                };
+                
+                let employees = __ontology_repo__<Employees>;
+                let employee = __ontology_mem__<Employee>;
+                let count_1 = employees
+                    .filter(e->e.age>30)
+                    .is_reported_by()
+                    .count();
+                
+                let agg = employees
+                    .aggregate(agg->{
+                        agg
+                        .count()
+                        .avg(e->e.age)
+                        .compute()
+                    });
+                
+                let count_2 = employee.is_reported_by().count();
+                (count_1, agg, count_2)
+                """;
+        code = """
+                outline Son = {father:Father};
+                outline Father = {son:Son};
+                let son = __a__<Son>;
+                son.father//.son.father
+                """;
+        code = """
+                let create_son = ()->{
+                     return {
+                         father = create_father()
+                     };
+                };
+                let create_father = ()->{
+                     return {
+                         son = create_son()
+                     };
+                };
+                let son = create_son();
+                son.father.son
+                """;
+
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockInterInvoke() {
+        String code = """
+             
+               let create_son = ()->{
+                    return {
+                        age = 20,
+                        father = create_father(this)
+                    };
+               };
+               let create_father = son->{
+                    return {
+                        name = "father",
+                        son = son
+                    };
+               };
+               let son = create_son();
+
+               outline Son = {
+                    name: String,
+                    father: Father
+               };
+               outline Father = {
+                    age: Int,
+                    son: Son
+               };
+               let father = __constructor__<Father>;
+         
+              (son.father.name, son.father.son.age, father.son.name, father.son.father.age)
+               """;
+
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockMoreReference() throws IOException {
+        String code = """
+                outline O1 = fx<a> a->a;
+                outline O11 = fx<a> a->a;
+                
+                outline O2 = <a,b>{name:a,age:b};
+                outline O3 = <a,b>(a,b);
+                outline O4 = O1<String>;
+                outline O5 = O2<String,Int>;
+                outline O6 = O3<Int,String>;
+                """;
+        return parser.parse(new ASF(), code);
     }
 }

@@ -7,7 +7,6 @@ import org.twelve.msll.parser.MyParser;
 import org.twelve.msll.parserbuilder.MyParserBuilder;
 import org.twelve.msll.parsetree.LexerRuleTree;
 import org.twelve.msll.parsetree.ParserGrammarTree;
-import org.twelve.msll.parsetree.ParserTree;
 
 import java.io.IOException;
 

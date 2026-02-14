@@ -43,7 +43,10 @@ export_statement
     : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
     ;
 outline_declarator
-    : 'outline' Symbol '=' declared_outline (',' Symbol '=' declared_outline)* ';'
+    : 'outline' Symbol '=' extend_outline (',' Symbol '=' extend_outline)* ';'
+    ;
+extend_outline
+    : declared_outline entity_type?
     ;
 comment
     : SingleLineComment
@@ -61,24 +64,39 @@ return_statement
     ;
 //---------------type-----------------
 declared_outline
-    : sum_type
-    | func_type
-    | non_func_type
-    ;
-sum_type
-    : (non_func_type|literal) (('|'|'&') (non_func_type|literal))+
+    : func_type | non_func_type
     ;
 non_func_type
-    : Number_Type | Int_Type | Long_Type | Float_Type | Double_Type | String_Type | symbol_type | tuple_type | entity_type | array_type | map_type |  '?' | ID | factor_type
+    : adt_type | factor_type |symbol_type
     ;
+reference_call
+    : reference_parameters'
+    ;
+
+reference_parameters'
+    : '<' declared_outline (',' declared_outline)* '>'
+    ;
+adt_type
+    : (factor_type|literal|symbol_type) (('|'|'&') (factor_type|literal|symbol_type))+
+    ;
+factor_type
+    : (Number_Type | Int_Type | Long_Type | Float_Type | Unit_Type
+    | Double_Type | String_Type | tuple_type | THIS | literal_type
+    | entity_type | array_type | map_type |  '?' | ID | Symbol
+    | '(' declared_outline ')') reference_call?
+    ;
+literal_type
+    : '#' literal
+    ;
+
 tuple_type
-    : '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
+    : reference_type? '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
     ;
 entity_type
-    : '{' (argument (','argument)* ','?)? '}'
+    : reference_type? '{' (argument (','argument)* ','?)? '}'
     ;
 symbol_type
-    : Symbol (tuple_type | entity_type)?
+    : Symbol (tuple_type | entity_type)
     ;
 array_type
     : '[' declared_outline ']'
@@ -87,13 +105,10 @@ map_type
     : '[' declared_outline ':' declared_outline ']'
     ;
 func_type
-    : (sum_type|non_func_type) '->' declared_outline
+    : reference_type? non_func_type '->' declared_outline
     ;
 reference_type
     : Function? '<'argument (','argument)* '>'
-    ;
-factor_type
-    : '(' declared_outline ')'
     ;
 //------------expressions-------------
 expression
@@ -186,7 +201,8 @@ factor_expression
     | factor_expression '[' expression ']'                                 # array_map_accessor
     | factor_expression '.' (ID|INT)                                       # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'           # function_call
-    | factor_expression '<' declared_outline (',' declared_outline)* '>'   # reference_call
+    | factor_expression reference_parameters'                              # reference_call
+    //| factor_expression '<' declared_outline (',' declared_outline)* '>' # reference_call
     //| factor_expression '&' expression                                   # poly_expression
     //| '(' expression ')'                                                 # factor
     ;

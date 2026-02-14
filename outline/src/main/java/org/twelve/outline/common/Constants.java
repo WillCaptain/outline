@@ -20,12 +20,29 @@ public final class Constants {
     public static final String NUMBER = "number";
     public static final String COLON_ = ":";
     public static final String ID_TYPE = ":ID";
+    public static final String UNIT_TYPE = ":Unit_Type";
+    public static final String NUMBER_TYPE = ":Number_Type";
     public static final String STRING_TYPE = ":String_Type";
     public static final String INT_TYPE = ":Int_Type";
     public static final String LONG_TYPE = ":Long_Type";
     public static final String DOUBLE_TYPE = ":Double_Type";
     public static final String DECLARED_TYPE = ":declared_outline";
-    public static final String SUM_TYPE = ":sum_type";
+    public static final String ADT_TYPE = ":adt_type";
+    public static final String FACTOR_TYPE = ":factor_type";
+    public static final String THIS = ":THIS";
+    public static final String LITERAL_INT_TYPE = ":INT";
+    public static final String LITERAL_STRING_TYPE = ":STRING";
+    public static final String LITERAL_ENTITY_TYPE = ":entity";
+    public static final String LITERAL_TUPLE_TYPE = ":tuple";
+    public static final String ENTITY_TYPE = ":entity_type";
+    public static final String TUPLE_TYPE = ":tuple_type";
+    public static final String ARRAY_TYPE = ":array_type";
+    public static final String MAP_TYPE = ":map_type";
+    public static final String QUESTION_TYPE = ":QUESTION";
+    public static final String FUNC_TYPE = ":func_type";
+    public static final String LITERAL_TYPE_ = "literal_type";
+    public static final String LITERAL_TYPE = ":" + LITERAL_TYPE_;
+
     public static final String OTHERS_TYPE = ":DOT_DOT_DOT";
     public static final String FUNCTION = "lambda";
     public static final String NUMERIC_EXPRESSION = "numeric_expression";
@@ -36,7 +53,7 @@ public final class Constants {
     public static final String VAR = "Var";
     public static final String LET = "Let";
     public static final String FACTOR_EXPRESSION = "factor_expression";
-    public static final String THIS = "This";
+    public static final String This = "This";
     public static final String BASE = "Base";
     public static final String MEMBER_ACCESSOR = "entity_member_accessor";
     public static final String FUNCTION_CALL = "function_call";
@@ -44,14 +61,8 @@ public final class Constants {
     public static final String ARRAY_MAP_ACCESSOR = "array_map_accessor";
     public static final String TUPLE = "tuple";
     public static final String ARGUMENT = "argument";
-    public static final String ENTITY_TYPE = ":entity_type";
-    public static final String TUPLE_TYPE = ":tuple_type";
-    public static final String ARRAY_TYPE = ":array_type";
-    public static final String MAP_TYPE = ":map_type";
-    public static final String QUESTION_TYPE = ":QUESTION";
-    public static final String FUNC_TYPE = ":func_type";
+
     public static final String REFERENCE_TYPE = "reference_type";
-    //    public static final String REFERENCES = "references";
     public static final String FUNC_HEAD = "Function";
     public static final String FLOAT = "FLOAT";
     public static final String DOUBLE = "DOUBLE";
@@ -59,10 +70,7 @@ public final class Constants {
     public static final String POLY_OPTION_EXPRESSION = "poly_or_option_expression";
     public static final String OR_ = "|";
     public static final String AND_ = "&";
-    public static final String LITERAL_INT_TYPE = ":INT";
-    public static final String LITERAL_STRING_TYPE = ":STRING";
-    public static final String LITERAL_ENTITY_TYPE = ":entity";
-    public static final String LITERAL_TUPLE_TYPE = ":tuple";
+
     public static final String ASSIGNMENT = "assignment";
     public static final String EXPRESSION_STATEMENT = "expression_statement";
     public static final String UNARY_EXPRESSION = "unary_expression";
@@ -95,7 +103,10 @@ public final class Constants {
     public static final String WITH_EXPRESSION = "with_expression";
     public static final String RETURN_STATEMENT = "return_statement";
     public static final String OUTLINE_DECLARATOR = "outline_declarator";
+//    public static final String OUTLINE_DECLARATOR_SYMBOL = "outline_declarator_symbol";
     public static final String SYMBOL = "Symbol";
     public static final String SYMBOL_TYPE = ":symbol_type";
     public static final String SYMBOL_UNPACK = "symbol_unpack";
+
+    public static final String EXTEND_OUTLINE = ":extend_outline";
 }

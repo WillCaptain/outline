@@ -5,7 +5,7 @@ import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.node.expression.Assignment;
-import org.twelve.gcp.node.expression.Identifier;
+import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.expression.LiteralNode;
 import org.twelve.gcp.node.expression.body.FunctionBody;
 import org.twelve.gcp.node.expression.referable.ReferenceCallNode;
@@ -412,7 +412,7 @@ public class GCPInference {
         factorial(100);
         factorial("100");
          */
-        AST ast = ASTHelper.mockRecursive();
+        AST ast = ASTHelper.mockSelfRecursive();
         ast.asf().infer();
         VariableDeclarator declarator = cast(ast.program().body().statements().getFirst());
         Function<?,?> f = cast(declarator.assignments().getFirst().lhs().outline());

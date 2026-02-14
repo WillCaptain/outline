@@ -3,7 +3,7 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.base.Program;
-import org.twelve.gcp.node.expression.Identifier;
+import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.expression.accessor.MemberAccessor;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;

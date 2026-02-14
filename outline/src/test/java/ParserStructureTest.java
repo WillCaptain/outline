@@ -276,7 +276,7 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                let f = fx<a:{gender: "male"|"female", age}>(x: a->String->Integer->{name: String, age: Integer})->(y: String)->(z: Integer)->x({
+                let f = fx<a:{gender: "male"|"female",age}>(x: a->String->Integer->{name: String,age: Integer})->(y: String)->(z: Integer)->x({
                   gender = "male",
                   age = 30 
                 },y,z);""";

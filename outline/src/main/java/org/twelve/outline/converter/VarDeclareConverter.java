@@ -5,7 +5,6 @@ import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.node.expression.Assignable;
 import org.twelve.gcp.node.expression.Expression;
-import org.twelve.gcp.node.expression.Identifier;
 import org.twelve.gcp.node.expression.body.Body;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.gcp.node.statement.VariableDeclarator;

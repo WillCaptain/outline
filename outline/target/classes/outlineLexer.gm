@@ -22,6 +22,7 @@ Arrow                      : '->';
 Let                        : 'let';
 Var                        : 'var';
 This                       : 'this';
+THIS                       : '~this';
 Return                     : 'return';
 Function                   : 'fx';
 Module                     : 'module';
@@ -41,6 +42,7 @@ Int_Type                   : 'Int';
 Long_Type                  : 'Long';
 Float_Type                 : 'Float';
 Double_Type                : 'Double';
+Unit_Type                  : 'Unit';
 DOT_DOT_DOT                : '...';
 AND_PLUS                   : '&&&';
 True                       : 'true';
@@ -48,6 +50,8 @@ False                      : 'false';
 With                       : 'with';
 Match                      : 'match';
 Outline                    : 'outline';
+Macro                      : 'macro';
+Sharp                      : '#';
 //-----------literal------------
 INT                    :/"0|[1-9][0-9_]*"/;
 

@@ -3,12 +3,10 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.Expression;
-import org.twelve.gcp.node.expression.SymbolIdentifier;
+import org.twelve.gcp.node.expression.identifier.SymbolIdentifier;
 import org.twelve.gcp.node.function.FunctionCallNode;
-import org.twelve.gcp.node.unpack.SymbolTupleUnpackNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
-import org.twelve.outline.common.Constants;
 
 import java.util.ArrayList;
 import java.util.List;

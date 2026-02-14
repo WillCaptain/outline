@@ -3,7 +3,7 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.OutlineDefinition;
-import org.twelve.gcp.node.expression.SymbolIdentifier;
+import org.twelve.gcp.node.expression.identifier.SymbolIdentifier;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.gcp.node.statement.OutlineDeclarator;
 import org.twelve.msll.parsetree.NonTerminalNode;
@@ -28,8 +28,8 @@ public class OutlineDefinitionConverter extends Converter {
         int index = 1;
         while (index < parent.nodes().size()) {
             ParseNode node = parent.node(index);
-            if (node.name().equals(Constants.SYMBOL)) {
-                SymbolIdentifier name = cast(converters.get(Constants.SYMBOL).convert(ast, node));
+            SymbolIdentifier name = cast(converters.get(node.name()).convert(ast, node));
+            if(name!=null){
                 index += 2;
                 String typeName = Constants.COLON_ + parent.node(index).name();
                 TypeNode typeNode = cast(converters.get(typeName).convert(ast, parent.node(index)));

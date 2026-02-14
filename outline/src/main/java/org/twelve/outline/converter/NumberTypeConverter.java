@@ -9,14 +9,14 @@ import org.twelve.msll.parsetree.ParseNode;
 
 import java.util.Map;
 
-public class LongTypeConverter extends Converter {
-    public LongTypeConverter(Map<String, Converter> converters) {
+public class NumberTypeConverter extends Converter {
+    public NumberTypeConverter(Map<String, Converter> converters) {
         super(converters);
     }
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        Token token = new Token("Long", source.location().start());
+        Token token = new Token("Number", source.location().start());
         return new IdentifierTypeNode(new Identifier(ast, token));
     }
 }

@@ -5,7 +5,7 @@ import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.converter.*;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
-import org.twelve.gcp.node.expression.Identifier;
+import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.msll.parsetree.ParserTree;
 import org.twelve.msll.parsetree.TerminalNode;
 import org.twelve.outline.common.Constants;
@@ -38,6 +38,8 @@ public class GCPConverter {
         this.converters.put(Constants.UNARY_EXPRESSION, new UnaryExpressionConverter(converters));
         //type
         this.converters.put(Constants.ID_TYPE, new IDTypeConverter(converters));
+        this.converters.put(Constants.UNIT_TYPE, new UnitTypeConverter(converters));
+        this.converters.put(Constants.NUMBER_TYPE, new NumberTypeConverter(converters));
         this.converters.put(Constants.STRING_TYPE, new StringTypeConverter(converters));
         this.converters.put(Constants.INT_TYPE, new IntTypeConverter(converters));
         this.converters.put(Constants.LONG_TYPE, new LongTypeConverter(converters));
@@ -47,24 +49,31 @@ public class GCPConverter {
         this.converters.put(Constants.QUESTION_TYPE, new QuestionTypeConverter(converters));
         DeclaredTypeConverter declaredTypeConverter = new DeclaredTypeConverter(converters);
         this.converters.put(Constants.DECLARED_TYPE, declaredTypeConverter);
-        this.converters.put(Constants.SUM_TYPE, declaredTypeConverter);
+        this.converters.put(Constants.ADT_TYPE, declaredTypeConverter);
         this.converters.put(Constants.FUNC_TYPE, new FuncTypeConverter(converters));
         this.converters.put(Constants.ARRAY_TYPE, new ArrayTypeConverter(converters));
         this.converters.put(Constants.MAP_TYPE, new MapTypeConverter(converters));
         this.converters.put(Constants.OTHERS_TYPE, new OtherTypeConverter(converters));
+        this.converters.put(Constants.COLON_+Constants.REFERENCE_CALL, new ReferenceCallTypeConverter(converters));
+        this.converters.put(Constants.FACTOR_TYPE, new FactorTypeConverter(converters));
+        this.converters.put(Constants.THIS, new ThisTypeConverter(converters));
+
         //literal
         LiteralTypeConverter literalTypeConverter = new LiteralTypeConverter(converters);
         this.converters.put(Constants.LITERAL_INT_TYPE, literalTypeConverter);
         this.converters.put(Constants.LITERAL_STRING_TYPE, literalTypeConverter);
         this.converters.put(Constants.LITERAL_ENTITY_TYPE, literalTypeConverter);
         this.converters.put(Constants.LITERAL_TUPLE_TYPE, literalTypeConverter);
+        this.converters.put(Constants.LITERAL_TYPE, literalTypeConverter);
         //true, false
         BoolTypeConverter boolTypeConverter = new BoolTypeConverter(converters);
         this.converters.put(Constants.TRUE, boolTypeConverter);
         this.converters.put(Constants.FALSE, boolTypeConverter);
         //wrapper
         this.converters.put(Constants.ARGUMENT, new ArgumentConverter(converters));
-        this.converters.put(Constants.REFERENCE_TYPE, new ReferenceTypeConverter(converters));
+        ReferenceTypeConverter refConverter = new ReferenceTypeConverter(converters);
+        this.converters.put(Constants.REFERENCE_TYPE,refConverter );
+        this.converters.put(Constants.COLON_+Constants.REFERENCE_TYPE,refConverter );
         //literal
         this.converters.put(Constants.STRING, new StringLiteralConverter(converters));
         this.converters.put(Constants.DOUBLE, new DoubleLiteralConverter(converters));
@@ -108,7 +117,7 @@ public class GCPConverter {
         //factor (expression)
         this.converters.put(Constants.FACTOR, new FactorConverter(converters));
         //this
-        this.converters.put(Constants.THIS, new ThisConverter(converters));
+        this.converters.put(Constants.This, new ThisConverter(converters));
         //base
         this.converters.put(Constants.BASE, new BaseConverter(converters));
         //member accessor
@@ -139,13 +148,17 @@ public class GCPConverter {
         this.converters.put(Constants.SYMBOL_UNPACK, new SymbolUnpackNodeConverter(converters));
         //match
         this.converters.put(Constants.MATCH_EXPRESSION, new MatchExprConverter(converters));
-        //outline
+        //outline declarator
         this.converters.put(Constants.OUTLINE_DECLARATOR, new OutlineDefinitionConverter(converters));
+//        this.converters.put(Constants.OUTLINE_DECLARATOR_SYMBOL, new OutlineDeclaratorSymbolConverter(converters));
         //symbol identifier
         this.converters.put(Constants.SYMBOL, new SymbolIndentifierConverter(converters));
         //symbol type
         this.converters.put(Constants.SYMBOL_TYPE, new SymbolTypeConverter(converters));
         this.converters.put(Constants.COLON_ + Constants.SYMBOL, new SymbolTypeConverter(converters));
+        //extend outline
+        this.converters.put(Constants.EXTEND_OUTLINE, new ExtendOutlineConverter(converters));
+
 
     }
 

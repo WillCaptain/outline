@@ -1,4 +1,3 @@
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
@@ -7,13 +6,13 @@ import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.node.expression.*;
 import org.twelve.gcp.node.expression.conditions.MatchArm;
 import org.twelve.gcp.node.expression.conditions.MatchExpression;
+import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.function.FunctionCallNode;
 import org.twelve.gcp.node.function.FunctionNode;
 import org.twelve.gcp.node.imexport.Export;
 import org.twelve.gcp.node.imexport.Import;
 import org.twelve.gcp.node.expression.Assignment;
 import org.twelve.gcp.node.statement.OutlineDeclarator;
-import org.twelve.gcp.node.statement.ReturnStatement;
 import org.twelve.gcp.node.statement.Statement;
 import org.twelve.gcp.node.statement.VariableDeclarator;
 import org.twelve.gcp.node.unpack.TupleUnpackNode;
@@ -29,7 +28,6 @@ import org.twelve.gcp.outline.projectable.Function;
 import org.twelve.gcp.outline.projectable.Genericable;
 import org.twelve.gcp.outline.projectable.Reference;
 
-import javax.swing.plaf.nimbus.State;
 import java.io.IOException;
 import java.util.List;
 
@@ -239,9 +237,11 @@ public class InferenceTest {
         EntityMember getName = ms.get(1);
         EntityMember getName2 = ms.get(2);
         assertInstanceOf(STRING.class, name.outline());
-        assertInstanceOf(Function.class, getName.outline());
-        assertInstanceOf(STRING.class, ((Function<?, ?>) getName.outline()).returns().supposedToBe());
-        assertInstanceOf(STRING.class, ((Function<?, ?>) getName2.outline()).returns().supposedToBe());
+        Outline getNameOutline = getName.outline().eventual();
+        Outline getName2Outline = getName2.outline().eventual();
+        assertInstanceOf(Function.class, getNameOutline);
+        assertInstanceOf(STRING.class, ((Function<?, ?>) getNameOutline).returns().supposedToBe());
+        assertInstanceOf(STRING.class, ((Function<?, ?>) getName2Outline).returns().supposedToBe());
 
         VariableDeclarator name1 = cast(ast.program().body().statements().get(1));
         VariableDeclarator name2 = cast(ast.program().body().statements().get(2));
@@ -260,7 +260,7 @@ public class InferenceTest {
         EntityMember name = ms.get(0);
         EntityMember getName = ms.get(1);
         assertInstanceOf(STRING.class, name.outline());
-        assertInstanceOf(Function.class, getName.outline());
+        assertInstanceOf(Function.class, getName.outline().eventual());
         VariableDeclarator name1 = cast(ast.program().body().statements().get(1));
         VariableDeclarator name2 = cast(ast.program().body().statements().get(2));
         assertInstanceOf(STRING.class, name1.assignments().getFirst().lhs().outline());
@@ -303,8 +303,9 @@ public class InferenceTest {
         List<EntityMember> ms = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(4, ms.size());
         EntityMember getFullName = ms.getFirst();
-        assertInstanceOf(Function.class, getFullName.outline());
-        assertInstanceOf(STRING.class, ((Function<?, ?>) getFullName.outline()).returns().supposedToBe());
+        Outline nameOutline = getFullName.outline().eventual();
+        assertInstanceOf(Function.class, nameOutline);
+        assertInstanceOf(STRING.class, ((Function<?, ?>) nameOutline).returns().supposedToBe());
     }
 
     @Test
@@ -586,7 +587,7 @@ public class InferenceTest {
     void test_inference_of_unpack() {
         AST ast = ASTHelper.mockUnpack();
         ast.asf().infer();
-        assertTrue(ast.asf().infer());
+        assertTrue(ast.inferred());
         int size = ast.program().body().statements().size();
         Node first = ast.program().body().get(size - 6);
         assertInstanceOf(STRING.class, first.outline());
@@ -666,7 +667,6 @@ public class InferenceTest {
     @Test
     void test_symbol_match() {
         AST ast = ASTHelper.mockSymbolMatch();
-        ast.asf().infer();
         assertTrue(ast.asf().infer());
         List<Statement> statements = ast.program().body().statements();
         OutlineDeclarator s1 = cast(statements.get(0));
@@ -682,14 +682,28 @@ public class InferenceTest {
     @Test
     void test_future_reference_from_entity() throws IOException {
         AST ast = ASTHelper.mockFutureReferenceFromEntity();
-        ast.asf().infer();
-        Outline rt = ast.program().body().statements().getLast().outline();
-        assertInstanceOf(STRING.class,rt);
+        assertTrue(ast.asf().infer());
+        Tuple rt = cast(ast.program().body().statements().getLast().outline());
+        assertInstanceOf(STRING.class,rt.get(0));
+        assertInstanceOf(STRING.class,rt.get(1));
     }
 
     @Test
     void test_future_reference_from_outline(){
+        AST ast = ASTHelper.mockFutureReferenceFromOutline();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
 
+
+    }
+
+    @Test
+    void test_inter_invoke(){
+        AST ast = ASTHelper.mockInterInvoke();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        Outline outline = ast.program().get(1).get(6).outline();
+        assertEquals("(String,Integer,String,Integer)",outline);
     }
 
     @Test
