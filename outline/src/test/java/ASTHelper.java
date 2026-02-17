@@ -830,13 +830,31 @@ public class ASTHelper {
         String code = """
                 let animal = {
                     walk = ()-> this,
-                    age = 40
+                    age = 40,
+                    me = this
                 };
                 let person = animal {
                     talk = ()->this,
-                    name = "Will"
+                    name = "Will",
+                    gender = Male
                 };
-                (person.walk().talk().name,person.talk().walk().name)
+                let create_a = c->{
+                    c = c,
+                    me = this,
+                    him = ()->{
+                        return {
+                            me = this,
+                            name = c
+                        };
+                    },
+                    get_me  = ()->this
+                };
+                let b = {
+                    a = create_a(123),
+                    d = "Test"
+                };
+                let a = create_a("aaa");
+                (person.walk().talk().name,person.talk().walk().name, a.get_me().c, a.me.c,person.me.age,person.me.gender,b.d,b.a.c,b.a.d,a.him().me.name)
                 """;
         return new OutlineParser().parse(new ASF(), code);
     }
@@ -865,7 +883,7 @@ public class ASTHelper {
                 
                     // Terminal: Return the results as a Map
                     // Result: { "Male": 50, "Female": 60 }
-                    count: Unit -> [k:Integer],
+                    count: Unit -> [k:Int],
                 
                     // Terminal: Run aggregations per group
                     // Result: { "Engineering": { "avg_age": 32, "count": 100 } }
@@ -880,7 +898,7 @@ public class ASTHelper {
                     filter: (a->Bool) -> ~this,
                     order_by: (a -> ?) -> ~this,
                     take: Integer -> Integer -> ~this,
-                    map: fx<b> a -> ~this<b>,
+                    map: fx<b> (a->b) -> VirtualSet<b>,
                     type:#"me",
                 
                      //terminal operators
@@ -945,58 +963,97 @@ public class ASTHelper {
                 let count_2 = employee.is_reported_by().count();
                 (count_1, agg, count_2)
                 """;
+
         code = """
-                outline Son = {father:Father};
-                outline Father = {son:Son};
-                let son = __a__<Son>;
-                son.father//.son.father
+               outline A = <c>{
+                b:~this<c>,
+                c:c
+               };
                 """;
-        code = """
-                let create_son = ()->{
-                     return {
-                         father = create_father()
-                     };
+
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockReferCallLazyOrThis(){
+        String code = """
+               outline A = <c,e>{
+                b:B<String,e>,
+                c:c,
+                e:e,
+                g:<d>(c->d)->A<d,e>,
+                t:~this
+               };
+               outline B = <e>A<e>{
+                d:e
+               };
+               let fa = <a>(a:a)->{
+                return {
+                    a = a,
+                    b = fb<a>
                 };
-                let create_father = ()->{
-                     return {
-                         son = create_son()
-                     };
-                };
-                let son = create_son();
-                son.father.son
-                """;
+               };
+               let fb = <a>(a:a)->a;
+               
+               let a = __sys__<A<Int,Int>>;
+               let c_1 = a.b.c;
+               let c_2 = a.t.c;
+               let d_1 = a.b.d;
+               let d_2 = a.t.d;
+               let g_1 = a.b.g(x->x).c;
+               let g_2 = a.t.g(x->x).c;
+               let f = fa(100);
+               
+               (c_1,c_2,d_1,d_2,g_1,g_2,f.a,f.b(10),f.b("some"))
+               
+               """;
 
         return parser.parse(new ASF(), code);
     }
 
     public static AST mockInterInvoke() {
         String code = """
-             
-               let create_son = ()->{
+               outline Blood = A|B|C;
+               outline Region = Asia|Africa|America;
+               
+               let create_wife = husband ->{
+                    return{ 
+                        husband = husband,
+                        family_name = husband.family_name
+                    };
+               };
+               
+               let create_son = origin->{
                     return {
                         age = 20,
+                        origin = origin,
+                        myself = this,
                         father = create_father(this)
                     };
                };
+               
                let create_father = son->{
                     return {
                         name = "father",
-                        son = son
+                        family_name = "Zhang",
+                        son = son,
+                        wife = create_wife(this)
                     };
                };
-               let son = create_son();
-
-               outline Son = {
+               let son = create_son(Asia);
+               
+               outline Son = <a>{
                     name: String,
-                    father: Father
+                    origin: a,
+                    father: Father<a>
                };
-               outline Father = {
+               outline Father = <b>{
                     age: Int,
-                    son: Son
+                    origin: b,
+                    son: Son<b>
                };
-               let father = __constructor__<Father>;
+               let father = __constructor__<Father<Blood>>;
          
-              (son.father.name, son.father.son.age, father.son.name, father.son.father.age)
+              (son.origin, son.father.name, son.father.son.age, son.father.son.origin, son.father.wife.family_name,father.son.name, father.son.father.origin, father.son.origin)
                """;
 
         return parser.parse(new ASF(), code);

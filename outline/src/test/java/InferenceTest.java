@@ -332,6 +332,7 @@ public class InferenceTest {
          */
         AST ast = ASTHelper.mockInheritedPersonEntityWithOverrideMember();
         ast.asf().infer();
+        assertTrue(ast.inferred());
         Entity person = cast(ast.program().body().statements().get(3).nodes().getFirst().nodes().getFirst().outline());
         List<EntityMember> members = person.members().stream().filter(m -> !m.isDefault()).toList();
         assertEquals(5, members.size());
@@ -667,7 +668,8 @@ public class InferenceTest {
     @Test
     void test_symbol_match() {
         AST ast = ASTHelper.mockSymbolMatch();
-        assertTrue(ast.asf().infer());
+        ast.asf().infer();
+        assertTrue(ast.inferred());
         List<Statement> statements = ast.program().body().statements();
         OutlineDeclarator s1 = cast(statements.get(0));
         OutlineDefinition human = s1.definitions().getFirst();
@@ -684,8 +686,9 @@ public class InferenceTest {
         AST ast = ASTHelper.mockFutureReferenceFromEntity();
         assertTrue(ast.asf().infer());
         Tuple rt = cast(ast.program().body().statements().getLast().outline());
-        assertInstanceOf(STRING.class,rt.get(0));
-        assertInstanceOf(STRING.class,rt.get(1));
+        assertEquals("(String,String,String,String,Integer,Male,String,Integer,Error,String)",rt.toString());
+//        assertInstanceOf(STRING.class,rt.get(0));
+//        assertInstanceOf(STRING.class,rt.get(1));
     }
 
     @Test
@@ -693,8 +696,6 @@ public class InferenceTest {
         AST ast = ASTHelper.mockFutureReferenceFromOutline();
         ast.asf().infer();
         assertTrue(ast.inferred());
-
-
     }
 
     @Test
@@ -702,8 +703,17 @@ public class InferenceTest {
         AST ast = ASTHelper.mockInterInvoke();
         ast.asf().infer();
         assertTrue(ast.inferred());
-        Outline outline = ast.program().get(1).get(6).outline();
-        assertEquals("(String,Integer,String,Integer)",outline);
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("(Asia,String,Integer,Asia,String,String,A|B|C,A|B|C)",outline.toString());
+    }
+
+    @Test
+    void test_reference_call_Lazy_or_this(){
+        AST ast = ASTHelper.mockReferCallLazyOrThis();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("(String,Integer,Integer,Error)",outline.toString());
     }
 
     @Test

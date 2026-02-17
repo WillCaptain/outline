@@ -47,6 +47,7 @@ outline_declarator
     ;
 extend_outline
     : declared_outline entity_type?
+    | reference_type Symbol reference_call? entity_type?
     ;
 comment
     : SingleLineComment
