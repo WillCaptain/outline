@@ -986,27 +986,38 @@ public class ASTHelper {
                outline B = <e>A<e>{
                 d:e
                };
+               
+               let fb = <a>(a:a)->a;
                let fa = <a>(a:a)->{
                 return {
                     a = a,
                     b = fb<a>
                 };
                };
-               let fb = <a>(a:a)->a;
                
-               let a = __sys__<A<Int,Int>>;
+               
+               let a = __sys__<B<Int,Int>>;
                let c_1 = a.b.c;
                let c_2 = a.t.c;
                let d_1 = a.b.d;
                let d_2 = a.t.d;
                let g_1 = a.b.g(x->x).c;
-               let g_2 = a.t.g(x->x).c;
+               let g_2 = a.t.g(x->"will").c;
                let f = fa(100);
                
                (c_1,c_2,d_1,d_2,g_1,g_2,f.a,f.b(10),f.b("some"))
                
                """;
-
+//        code = """
+//           let fb = <a>(a:a)->a;
+//           let fa = <a>(a:a)->{
+//            return {
+//                a = a,
+//                b = fb<a>
+//            };
+//           };
+//           fa(100).b(100)
+//            """;
         return parser.parse(new ASF(), code);
     }
 

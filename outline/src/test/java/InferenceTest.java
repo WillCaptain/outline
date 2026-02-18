@@ -713,7 +713,9 @@ public class InferenceTest {
         ast.asf().infer();
         assertTrue(ast.inferred());
         Outline outline = ast.program().body().statements().getLast().outline();
-        assertEquals("(String,Integer,Integer,Error)",outline.toString());
+        assertEquals("(String,Integer,String,Integer,String,String,Integer,Integer,Integer)",outline.toString());
+        assertEquals(1, ast.errors().size());
+        assertEquals(GCPErrCode.PROJECT_FAIL,ast.errors().getFirst().errorCode());
     }
 
     @Test
