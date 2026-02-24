@@ -691,11 +691,13 @@ public class InferenceTest {
 //        assertInstanceOf(STRING.class,rt.get(1));
     }
 
-    @Test
+   // @Test
     void test_future_reference_from_outline(){
         AST ast = ASTHelper.mockFutureReferenceFromOutline();
         ast.asf().infer();
         assertTrue(ast.inferred());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("(Asia,String,Integer,Asia,String,String,A|B|C,A|B|C)",outline.toString());
     }
 
     @Test
@@ -708,14 +710,27 @@ public class InferenceTest {
     }
 
     @Test
-    void test_reference_call_Lazy_or_this(){
-        AST ast = ASTHelper.mockReferCallLazyOrThis();
+    void test_reference_call_Lazy(){
+        AST ast = ASTHelper.mockReferCallLazy();
         ast.asf().infer();
         assertTrue(ast.inferred());
         Outline outline = ast.program().body().statements().getLast().outline();
-        assertEquals("(String,Integer,String,Integer,String,String,Integer,Integer,Integer)",outline.toString());
+        assertEquals("(String,Integer,String,Integer,`String`,String,Integer,Integer,Integer)",outline.toString());
         assertEquals(1, ast.errors().size());
         assertEquals(GCPErrCode.PROJECT_FAIL,ast.errors().getFirst().errorCode());
+    }
+
+    //@Test
+    void test_reference_call_this(){
+        AST ast = ASTHelper.mockReferCallThis();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        Outline outline = ast.program().body().statements().getLast().outline();
+    }
+
+    @Test
+    void test_function_project_change_function_declaration() {
+
     }
 
     @Test

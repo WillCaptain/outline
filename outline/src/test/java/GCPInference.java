@@ -700,4 +700,15 @@ public class GCPInference {
         assertEquals("String",will.outline().toString());
         assertEquals("Integer",age.outline().toString());
     }
+
+    @Test
+    void test_self_return_gcp(){
+        AST ast = ASTHelper.mockTypeSelfReturn();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("[String : Number]",outline.toString());
+        assertFalse(ast.errors().isEmpty());
+        assertEquals(GCPErrCode.OUTLINE_MISMATCH,ast.errors().getFirst().errorCode());
+    }
 }

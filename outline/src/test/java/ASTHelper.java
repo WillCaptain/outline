@@ -864,47 +864,33 @@ public class ASTHelper {
                 
                 //system
                 outline Aggregator = <a>{
-                    // Intermediate: Add a metric to the collection
-                    count: Unit -> ~this,
-                    sum: (a -> Number) -> ~this,
-                    avg: (a -> Number) -> ~this,
-                    min: (a -> Number) -> ~this,
-                    max: (a -> Number) -> ~this,
+                      count: Unit -> ~this,
+                      sum: (a -> Number) -> ~this,
+                      avg: (a -> Number) -> ~this,
+                      min: (a -> Number) -> ~this,
+                      max: (a -> Number) -> ~this,
+                      compute: Unit -> [String:Number]
+                  };
                 
-                    // Terminal: Executes the combined metrics
-                    // Returns a Record where keys match the requested metrics
-                    compute: Unit -> [String:Number]
-                };
-                
-                outline GroupBy = <k,a>{
-                    // Intermediate: Apply logic to each bucket
-                    // For example: Employees.group_by(e -> e.gender).filter(set -> set.count() > 10)
-                    filter: (a -> Bool) -> ~this,
-                
-                    // Terminal: Return the results as a Map
-                    // Result: { "Male": 50, "Female": 60 }
-                    count: Unit -> [k:Int],
-                
-                    // Terminal: Run aggregations per group
-                    // Result: { "Engineering": { "avg_age": 32, "count": 100 } }
-                    aggregate: <b>(Aggregator<a> -> b) -> [k:b],
-                
-                    // Terminal: Get the sets themselves (Lazy)
-                    to_map: Unit -> [k:VirtualSet<a>]
-                };
+                  outline GroupBy = <k, a>{
+                      filter: (a -> Bool) -> ~this,
+                      count: Unit -> [k:Int],
+                      aggregate: <b>(Aggregator<a> -> b) -> [k:b],
+                      to_map: Unit -> [k:VirtualSet<a>]
+                  };
                 
                 outline VirtualSet = <a>{
                     //non-terminal operators
                     filter: (a->Bool) -> ~this,
                     order_by: (a -> ?) -> ~this,
-                    take: Integer -> Integer -> ~this,
+                    take: Int -> Int -> ~this,
                     map: fx<b> (a->b) -> VirtualSet<b>,
                     type:#"me",
                 
                      //terminal operators
                      first: Unit -> a,
                      last: Unit -> a,
-                     count: Unit -> Integer,
+                     count: Unit -> Int,
                      exists: Unit -> Bool,
                      sum: (a->Number) -> Number,
                      avg: (a->Number) -> Number,
@@ -921,7 +907,7 @@ public class ASTHelper {
                   //attributes
                   id: String,
                   name: Name,
-                  age: Integer,
+                  age: Int,
                   birthday: Date,
                   gender: Gender,
                 
@@ -939,10 +925,9 @@ public class ASTHelper {
                   //edges
                   report_to: Unit-> Employees,//edge
                   is_reported_by: Unit->Employees,
-                  live_in: Unit->Address,
                 
                   //both actions
-                  action_both: Unit->String //action for single and both
+                  action_both: Unit->VirtualSet<String> //action for single and both
                 };
                 
                 let employees = __ontology_repo__<Employees>;
@@ -965,16 +950,32 @@ public class ASTHelper {
                 """;
 
         code = """
-               outline A = <c>{
-                b:~this<c>,
-                c:c
-               };
+               outline Aggregator = <a>{
+                      count: Unit -> ~this,
+                      compute: Unit -> [String:Number]
+                  };
+                
+                outline VirtualSet = <a>{
+                     aggregate: <b>(Aggregator<a> -> b) -> b
+                };
+
+                outline Employee = {
+                  name: Name
+                };
+ 
+                let employees = __ontology_repo__<VirtualSet<Employee>>;
+
+                let agg = employees
+                    .aggregate(agg->{
+                        agg.count().compute()
+                    });
+                agg
                 """;
 
         return parser.parse(new ASF(), code);
     }
 
-    public static AST mockReferCallLazyOrThis(){
+    public static AST mockReferCallLazy(){
         String code = """
                outline A = <c,e>{
                 b:B<String,e>,
@@ -1081,6 +1082,65 @@ public class ASTHelper {
                 outline O5 = O2<String,Int>;
                 outline O6 = O3<Int,String>;
                 """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockReferCallThis() {
+        String code = """
+                let mono = fx<a>(a:a)->{
+                    map = <b>(x:(a->b))->{
+                        return builder
+                    }
+                };
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockTypeSelfReturn() {
+        String code = """
+                outline Aggregator = <a>{
+                      count: Unit -> ~this,
+                      avg: (a -> Number) -> ~this,
+                      sum: (a->Number) -> ~this,
+                      compute: Unit -> [String:Number]
+                  };
+                
+                outline VirtualSet = <a>{
+                     aggregate: <b>(Aggregator<a> -> b) -> b
+                };
+
+                outline Employee = {
+                  name: String,
+                  age: Int
+                };
+ 
+                let employees = __ontology_repo__<VirtualSet<Employee>>;
+
+
+                let agg = employees
+                    .aggregate(agg->{
+                        agg.avg(e->e.age).avg(e->e.name).compute()//avg(e->e.name) error seems hidden by the first avg: .avg(e->e.age)
+                    });
+                agg
+                """;
+//        code = """
+//                outline Aggregator = <a>{
+//                    count: (a->Int) -> ~this,
+//                    avg: (a -> Number) -> ~this,
+//                    compute: Unit->[String:Number]
+//                };
+//
+//                outline Employees = <b>{
+//                    aggregate: <a>(Aggregator<b>->a)->a
+//                };
+//
+//                let employees = __sys__<Employees<{name:String,age:Int}>>;
+//
+////                employees.aggregate(agg->agg.count().avg(e->e.name).compute())
+//employees.aggregate(agg->agg.count(i->0))
+//
+//                """;
+
         return parser.parse(new ASF(), code);
     }
 }
