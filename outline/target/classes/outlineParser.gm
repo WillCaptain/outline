@@ -37,10 +37,10 @@ module_statement
     : 'module' factor_expression
     ;
 import_statement
-    : 'import' ('*' | (ID ('as' ID)? (',' ID ('as' ID)? )*)) 'from' factor_expression ';'
+    : 'import' ('*' | ((ID|Symbol) ('as' (ID|Symbol))? (',' (ID|Symbol) ('as' (ID|Symbol))? )*)) 'from' factor_expression ';'
     ;
 export_statement
-    : 'export' ID ('as' ID)? ','+ ID ('as' ID)? ';'
+    : 'export' (ID|Symbol) ('as' (ID|Symbol))? ','+ (ID|Symbol) ('as' (ID|Symbol))? ';'
     ;
 outline_declarator
     : 'outline' Symbol '=' extend_outline (',' Symbol '=' extend_outline)* ';'
@@ -68,7 +68,7 @@ declared_outline
     : func_type | non_func_type
     ;
 non_func_type
-    : adt_type | factor_type |symbol_type
+    : adt_type | factor_type
     ;
 reference_call
     : reference_parameters'

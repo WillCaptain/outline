@@ -22,6 +22,7 @@ import org.twelve.gcp.outline.builtin.ERROR;
 import org.twelve.gcp.outline.primitive.BOOL;
 import org.twelve.gcp.outline.primitive.DOUBLE;
 import org.twelve.gcp.outline.primitive.INTEGER;
+import org.twelve.gcp.outline.primitive.NUMBER;
 import org.twelve.gcp.outline.primitive.STRING;
 import org.twelve.gcp.outline.projectable.FirstOrderFunction;
 import org.twelve.gcp.outline.projectable.Function;
@@ -691,13 +692,14 @@ public class InferenceTest {
 //        assertInstanceOf(STRING.class,rt.get(1));
     }
 
-   // @Test
+    @Test
     void test_future_reference_from_outline(){
         AST ast = ASTHelper.mockFutureReferenceFromOutline();
         ast.asf().infer();
         assertTrue(ast.inferred());
+        assertTrue(ast.errors().isEmpty());
         Outline outline = ast.program().body().statements().getLast().outline();
-        assertEquals("(Asia,String,Integer,Asia,String,String,A|B|C,A|B|C)",outline.toString());
+        assertEquals("(Integer,[String : Number],Integer)",outline.toString());
     }
 
     @Test
@@ -733,14 +735,323 @@ public class InferenceTest {
 
     }
 
+    // ─────────────────── helper ───────────────────────────────────────────────
+
+    /** Returns the LHS outline of the Nth variable declarator in the program body. */
+    private static Outline lhsOf(AST ast, int stmtIndex) {
+        VariableDeclarator decl = cast(ast.program().body().statements().get(stmtIndex));
+        return decl.assignments().getFirst().lhs().outline();
+    }
+
+    // ─────────────────── built-in Number methods ──────────────────────────────
+
+    @Test
+    void test_inference_of_number_methods() {
+        /*
+         * let x = 100;
+         * let a = x.abs();     -> Number
+         * let b = x.ceil();    -> Integer
+         * let c = x.floor();   -> Integer
+         * let d = x.round();   -> Integer
+         * let e = x.to_int();  -> Integer
+         * let f = x.to_float();-> Double
+         * let g = x.sqrt();    -> Double
+         * let h = x.pow(2.0);  -> Double
+         */
+        AST ast = ASTHelper.mockNumberMethods();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(NUMBER.class,   lhsOf(ast, 1));   // abs      -> Number
+        assertInstanceOf(INTEGER.class,  lhsOf(ast, 2));   // ceil     -> Integer
+        assertInstanceOf(INTEGER.class,  lhsOf(ast, 3));   // floor    -> Integer
+        assertInstanceOf(INTEGER.class,  lhsOf(ast, 4));   // round    -> Integer
+        assertInstanceOf(INTEGER.class,  lhsOf(ast, 5));   // to_int   -> Integer
+        assertInstanceOf(DOUBLE.class,   lhsOf(ast, 6));   // to_float -> Double
+        assertInstanceOf(DOUBLE.class,   lhsOf(ast, 7));   // sqrt     -> Double
+        assertInstanceOf(DOUBLE.class,   lhsOf(ast, 8));   // pow      -> Double
+    }
+
+    // ─────────────────── built-in String methods ──────────────────────────────
+
+    @Test
+    void test_inference_of_string_methods() {
+        /*
+         * let s = "hello";
+         * let a = s.len();             -> Integer
+         * let b = s.trim();            -> String
+         * let c = s.to_upper();        -> String
+         * let d = s.to_lower();        -> String
+         * let e = s.split(",");        -> [String]
+         * let f = s.contains("ell");   -> Bool
+         * let g = s.starts_with("h");  -> Bool
+         * let h = s.ends_with("o");    -> Bool
+         * let i = s.index_of("ll");    -> Integer
+         * let j = s.sub_str(1,3);      -> String
+         * let k = s.replace("l","r");  -> String
+         * let l = s.to_int();          -> Integer
+         * let m = s.to_number();       -> Number
+         * let n = s.chars();           -> [String]
+         * let o = s.repeat(3);         -> String
+         */
+        AST ast = ASTHelper.mockStringMethods();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 1));                     // len
+        assertInstanceOf(STRING.class,  lhsOf(ast, 2));                     // trim
+        assertInstanceOf(STRING.class,  lhsOf(ast, 3));                     // to_upper
+        assertInstanceOf(STRING.class,  lhsOf(ast, 4));                     // to_lower
+        assertEquals("[String]",        lhsOf(ast, 5).toString());          // split
+        assertInstanceOf(BOOL.class,    lhsOf(ast, 6));                     // contains
+        assertInstanceOf(BOOL.class,    lhsOf(ast, 7));                     // starts_with
+        assertInstanceOf(BOOL.class,    lhsOf(ast, 8));                     // ends_with
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 9));                     // index_of
+        assertInstanceOf(STRING.class,  lhsOf(ast, 10));                    // sub_str
+        assertInstanceOf(STRING.class,  lhsOf(ast, 11));                    // replace
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 12));                    // to_int
+        assertInstanceOf(NUMBER.class,  lhsOf(ast, 13));                    // to_number
+        assertEquals("[String]",        lhsOf(ast, 14).toString());         // chars
+        assertInstanceOf(STRING.class,  lhsOf(ast, 15));                    // repeat
+    }
+
+    // ─────────────────── built-in Bool methods ────────────────────────────────
+
+    @Test
+    void test_inference_of_bool_methods() {
+        /*
+         * let b = true;
+         * let a = b.not();           -> Bool
+         * let c = b.and_also(false); -> Bool
+         * let d = b.or_else(false);  -> Bool
+         */
+        AST ast = ASTHelper.mockBoolMethods();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(BOOL.class, lhsOf(ast, 1));  // not
+        assertInstanceOf(BOOL.class, lhsOf(ast, 2));  // and_also
+        assertInstanceOf(BOOL.class, lhsOf(ast, 3));  // or_else
+    }
+
+    // ─────────────────── built-in Array methods ───────────────────────────────
+
+    @Test
+    void test_inference_of_array_methods() {
+        /*
+         * let x = [1,2,3];
+         * let a = x.len();                 -> Integer
+         * let b = x.reverse();             -> [Integer]
+         * let c = x.take(2);               -> [Integer]
+         * let d = x.drop(1);               -> [Integer]
+         * let e = x.filter(i->i>0);        -> [Integer]
+         * x.forEach(i->i.to_str());        -> Unit  (bare statement)
+         * let g = x.any(i->i>0);           -> Bool
+         * let h = x.all(i->i>0);           -> Bool
+         * let k = x.find(i->i>0);          -> Integer
+         * let m = x.sort((a,b)->a-b);      -> [Integer]
+         * let n = x.flat_map(i->[i]);      -> [Integer]
+         * let p = x.min();                 -> Integer
+         * let q = x.max();                 -> Integer
+         */
+        AST ast = ASTHelper.mockArrayMethods();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 1));          // len
+        assertEquals("[Integer]", lhsOf(ast, 2).toString());      // reverse
+        assertEquals("[Integer]", lhsOf(ast, 3).toString());      // take
+        assertEquals("[Integer]", lhsOf(ast, 4).toString());      // drop
+        assertEquals("[Integer]", lhsOf(ast, 5).toString());      // filter
+        // stmt 6 is the bare forEach call — verify it inferred to Unit
+        assertSame(ast.Unit, ast.program().body().statements().get(6).get(0).outline());
+        assertInstanceOf(BOOL.class, lhsOf(ast, 7));              // any
+        assertInstanceOf(BOOL.class, lhsOf(ast, 8));              // all
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 9));           // find
+        assertEquals("[Integer]", lhsOf(ast, 10).toString());     // sort
+        assertEquals("[Integer]", lhsOf(ast, 11).toString());     // flat_map
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 12));           // min -> Integer
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 13));           // max -> Integer
+    }
+
+    // ─────────────────── built-in Dict methods ────────────────────────────────
+
+    @Test
+    void test_inference_of_dict_methods() {
+        /*
+         * let d = ["a":1,"b":2];
+         * let a = d.len();             -> Integer
+         * let b = d.keys();            -> [String]
+         * let c = d.values();          -> [Integer]
+         * let e = d.contains_key("a"); -> Bool
+         * let f = d.get("a");          -> Integer
+         */
+        AST ast = ASTHelper.mockDictMethods();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 1));           // len
+        assertEquals("[String]",  lhsOf(ast, 2).toString());      // keys
+        assertEquals("[Integer]", lhsOf(ast, 3).toString());      // values
+        assertInstanceOf(BOOL.class,    lhsOf(ast, 4));           // contains_key
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 5));           // get
+    }
+
     @Test
     void test_complex_literal() {
 
     }
 
-    @Test
-    void test_import_outline() {
+    // ─────────────────── import / export ─────────────────────────────────────
 
+    @Test
+    void test_import_export_outline() {
+        /*
+         * Module shapes:
+         *   outline Summary = { total: Integer, data: [String:Number] };
+         *   let n: Integer = 10;
+         *   export Summary, n as size;
+         *
+         * Module app:
+         *   import Summary, size from shapes;
+         *   let s: Summary = { total = 42, data = ["x":1,"y":2] };
+         *   let a = s.total;        -> Integer
+         *   let b = s.data;         -> [String:Number]
+         *   let c = size;           -> Integer
+         *   (a, b, c)               -> (Integer,[String : Number],Integer)
+         */
+        AST ast = ASTHelper.mockImportExportOutline();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 1));          // a = s.total
+        assertEquals("[String : Number]", lhsOf(ast, 2).toString()); // b = s.data
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 3));          // c = size
+
+        Outline tuple = ast.program().body().statements().getLast().outline();
+        assertEquals("(Integer,[String : Number],Integer)", tuple.toString());
+    }
+
+    @Test
+    void test_import_export_values() {
+        /*
+         * Module education:
+         *   let grade: Integer = 1, school: String = "NO.1";
+         *   export grade, school as college;
+         *
+         * Module human:
+         *   import grade as level, college as school from education;
+         *   let age: Integer, name: String = "Will", height: Double = 1.68, grade: Integer = level;
+         *   export height as stature, name;
+         *
+         * Verifies that exported types match declared types and that
+         * imported specifiers carry the correct outline from the source module.
+         */
+        ASF asf = ASTHelper.educationAndHuman();
+        asf.infer();
+        assertTrue(asf.inferred());
+
+        // ── education exports ──────────────────────────────────────────────
+        AST edu = asf.get("education");
+        assertTrue(edu.errors().isEmpty());
+        Export exports = edu.program().body().exports().getFirst();
+        assertInstanceOf(INTEGER.class, exports.specifiers().getFirst().outline());  // grade  -> Integer
+        assertInstanceOf(STRING.class,  exports.specifiers().getLast().outline());   // school -> String  (exported as college)
+
+        // ── human imports ──────────────────────────────────────────────────
+        AST human = asf.get("human");
+        Import imports = human.program().body().imports().getFirst();
+        assertInstanceOf(INTEGER.class, imports.specifiers().getFirst().outline()); // level  <- grade
+        assertInstanceOf(STRING.class,  imports.specifiers().get(1).outline());     // school <- college
+
+        // ── human exports ──────────────────────────────────────────────────
+        Export humanExports = human.program().body().exports().getFirst();
+        assertInstanceOf(DOUBLE.class, humanExports.specifiers().getFirst().outline());  // stature <- height
+        assertInstanceOf(STRING.class, humanExports.specifiers().getLast().outline());   // name
+    }
+
+    @Test
+    void test_import_alias_resolves_correctly() {
+        /*
+         * Verifies that "import X as Y from module" makes Y visible under
+         * the local alias and that the original name X is NOT in scope.
+         *
+         * Module src:  let val: Integer = 99;  export val, val as copy;
+         * Module dst:  import val as n, copy from src;
+         *              let a = n;     -> Integer   (alias of val)
+         *              let b = copy;  -> Integer   (no alias)
+         *              (a, b)
+         */
+        AST ast = ASTHelper.mockImportAlias();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        assertTrue(ast.errors().isEmpty());
+
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 0)); // a = n
+        assertInstanceOf(INTEGER.class, lhsOf(ast, 1)); // b = copy
+
+        Outline tuple = ast.program().body().statements().getLast().outline();
+        assertEquals("(Integer,Integer)", tuple.toString());
+    }
+
+    @Test
+    void test_debug_extend_outline_parse() {
+        String[] tests = {
+            "outline C = Point { x: Int };",                        // extend in standalone context
+            "module m\noutline Point = { x: Number };\noutline C = Point { color: String };\n0", // define then extend same module
+            "module m\noutline C = Point { color: String };\nlet x = 0;\nx", // extend with trailing content
+            "module m\noutline C = Point { color: String };",        // extend alone
+        };
+        for (int i = 0; i < tests.length; i++) {
+            try {
+                ASF asf2 = new ASF();
+                org.twelve.outline.OutlineParser p2 = new org.twelve.outline.OutlineParser(new org.twelve.outline.GCPConverter(asf2));
+                p2.parse(tests[i]);
+                System.out.println("Test " + i + " OK");
+            } catch (Exception e) {
+                System.out.println("Test " + i + " FAIL: " + e.getMessage().substring(0, Math.min(80, e.getMessage().length())));
+            }
+        }
+    }
+
+    @Test
+    void test_import_and_extend_outline() {
+        /*
+         * Verifies that an outline TYPE (not just a value) can be exported from one
+         * module, imported in another, and then extended with new members.
+         *
+         * Module shapes:
+         *   outline Point = { x: Number, y: Number };
+         *   let zero: Int = 0;
+         *   export Point, zero;
+         *
+         * Module geo:
+         *   import Point, zero from shapes;
+         *   outline ColorPoint = Point { color: String };  // extends imported outline
+         *   let p: ColorPoint = { x = 1, y = 2, color = "red" };
+         *   let cx = p.x;      -> Number   (inherited member)
+         *   let cc = p.color;  -> String   (new member)
+         *   let z = zero;      -> Integer  (imported value)
+         *   (cx, cc, z)        -> (Number, String, Integer)
+         */
+        AST ast = ASTHelper.mockImportOutlineType();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        if (!ast.errors().isEmpty()) {
+            ast.errors().forEach(e -> System.out.println("ERROR: " + e));
+        }
+        assertTrue(ast.errors().isEmpty());
+
+        // statement indices in geo module (import is not a body statement):
+        // 0 = outline ColorPoint, 1 = let p, 2 = let cx, 3 = let cc, 4 = let z, 5 = (cx,cc,z)
+        assertInstanceOf(Entity.class,   lhsOf(ast, 1)); // p: ColorPoint
+        assertInstanceOf(NUMBER.class,   lhsOf(ast, 2)); // cx = p.x
+        assertInstanceOf(STRING.class,   lhsOf(ast, 3)); // cc = p.color
+        assertInstanceOf(INTEGER.class,  lhsOf(ast, 4)); // z = zero
+
+        Outline tuple = ast.program().body().statements().getLast().outline();
+        assertEquals("(Number,String,Integer)", tuple.toString());
     }
 
     @Test

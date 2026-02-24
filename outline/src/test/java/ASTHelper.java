@@ -271,6 +271,87 @@ public class ASTHelper {
         return parser.parse(code);
     }
 
+    /**
+     * Two-module scenario for import/export outline:
+     *   Module shapes: defines outline Summary, creates a sample value and exports it together with a size counter.
+     *   Module app:    imports the value (whose type IS the outline structure) + the counter, accesses members,
+     *                  and returns (Integer,[String:Number],Integer).
+     *
+     * Note: export grammar only accepts lowercase IDs, so we export a *value* of the outline type rather
+     * than the type name itself.  The importing module receives the full structural type and can access members.
+     */
+    @SneakyThrows
+    public static AST mockImportExportOutline() {
+        ASF asf = new ASF();
+        OutlineParser p = new OutlineParser(new GCPConverter(asf));
+        // exporter module: define outline type, create a typed value, export it
+        p.parse("""
+                module org.twelve.shapes
+                outline Summary = { total: Int, data: [String:Number] };
+                let sample: Summary = { total = 42, data = ["x":1,"y":2] };
+                let n: Int = 10;
+                export sample, n as size;
+                """);
+        // importer module: import the value and counter, access outline members
+        return p.parse("""
+                module org.twelve.app
+                import sample, size from shapes;
+                let s = sample;
+                let a = s.total;
+                let b = s.data;
+                let c = size;
+                (a, b, c)
+                """);
+    }
+
+    /**
+     * Import-alias test: verifies that "import X as Y" binds the value under Y (not X).
+     */
+    @SneakyThrows
+    public static AST mockImportAlias() {
+        ASF asf = new ASF();
+        OutlineParser p = new OutlineParser(new GCPConverter(asf));
+        p.parse("""
+                module org.twelve.src
+                let val: Int = 99;
+                export val, val as copy;
+                """);
+        return p.parse("""
+                module org.twelve.dst
+                import val as n, copy from src;
+                let a = n;
+                let b = copy;
+                (a, b)
+                """);
+    }
+
+    /**
+     * Import-outline-type test: exports an outline type (Point) itself from one module,
+     * then imports it into another module and extends it (ColorPoint = Point + color).
+     * Verifies that inherited members (x, y) and the new member (color) all resolve correctly.
+     */
+    @SneakyThrows
+    public static AST mockImportOutlineType() {
+        ASF asf = new ASF();
+        OutlineParser p = new OutlineParser(new GCPConverter(asf));
+        p.parse("""
+                module org.twelve.shapes
+                outline Point = { x: Number, y: Number };
+                let zero: Int = 0;
+                export Point, zero;
+                """);
+        return p.parse("""
+                module org.twelve.geo
+                import Point, zero from shapes;
+                outline ColorPoint = Point { color: String };
+                let p: ColorPoint = { x = 1, y = 2, color = "red" };
+                let cx = p.x;
+                let cc = p.color;
+                let z = zero;
+                (cx, cc, z)
+                """);
+    }
+
     @SneakyThrows
     public static ASF educationAndHuman() {
         ASF asf = new ASF();
@@ -486,6 +567,90 @@ public class ASTHelper {
                 let x = [1,2];
                 let y = x.reduce((acc,i)->acc+i,0.1);
                 y""";
+        return parser.parse(new ASF(), code);
+    }
+
+    /** Number built-in methods: abs/ceil/floor/round/to_int/to_float/sqrt/pow/min/max */
+    public static AST mockNumberMethods() {
+        String code = """
+                let x = 100;
+                let a = x.abs();
+                let b = x.ceil();
+                let c = x.floor();
+                let d = x.round();
+                let e = x.to_int();
+                let f = x.to_float();
+                let g = x.sqrt();
+                let h = x.pow(2.0);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /** String built-in methods: length/trim/to_upper/to_lower/split/contains/starts_with/ends_with/index_of/sub_str/replace/to_int/to_number/chars/repeat */
+    public static AST mockStringMethods() {
+        String code = """
+                let s = "hello";
+                let a = s.len();
+                let b = s.trim();
+                let c = s.to_upper();
+                let d = s.to_lower();
+                let e = s.split(",");
+                let f = s.contains("ell");
+                let g = s.starts_with("h");
+                let h = s.ends_with("o");
+                let i = s.index_of("ll");
+                let j = s.sub_str(1,3);
+                let k = s.replace("l","r");
+                let l = s.to_int();
+                let m = s.to_number();
+                let n = s.chars();
+                let o = s.repeat(3);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /** Bool built-in methods: not/and_also/or_else */
+    public static AST mockBoolMethods() {
+        String code = """
+                let b = true;
+                let a = b.not();
+                let c = b.and_also(false);
+                let d = b.or_else(false);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /** Array built-in methods: len/reverse/take/drop/filter/forEach/any/all/find/sort/flat_map/min/max */
+    public static AST mockArrayMethods() {
+        String code = """
+                let x = [1,2,3];
+                let a = x.len();
+                let b = x.reverse();
+                let c = x.take(2);
+                let d = x.drop(1);
+                let e = x.filter(i->i>0);
+                x.forEach(i->i.to_str());
+                let g = x.any(i->i>0);
+                let h = x.all(i->i>0);
+                let k = x.find(i->i>0);
+                let m = x.sort(a->b->a-b);
+                let n = x.flat_map(i->[i]);
+                let p = x.min();
+                let q = x.max();
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /** Dict built-in methods: length/keys/values/contains_key/get */
+    public static AST mockDictMethods() {
+        String code = """
+                let d = ["a":1,"b":2];
+                let a = d.len();
+                let b = d.keys();
+                let c = d.values();
+                let e = d.contains_key("a");
+                let f = d.get("a");
+                """;
         return parser.parse(new ASF(), code);
     }
 
@@ -948,30 +1113,6 @@ public class ASTHelper {
                 let count_2 = employee.is_reported_by().count();
                 (count_1, agg, count_2)
                 """;
-
-        code = """
-               outline Aggregator = <a>{
-                      count: Unit -> ~this,
-                      compute: Unit -> [String:Number]
-                  };
-                
-                outline VirtualSet = <a>{
-                     aggregate: <b>(Aggregator<a> -> b) -> b
-                };
-
-                outline Employee = {
-                  name: Name
-                };
- 
-                let employees = __ontology_repo__<VirtualSet<Employee>>;
-
-                let agg = employees
-                    .aggregate(agg->{
-                        agg.count().compute()
-                    });
-                agg
-                """;
-
         return parser.parse(new ASF(), code);
     }
 

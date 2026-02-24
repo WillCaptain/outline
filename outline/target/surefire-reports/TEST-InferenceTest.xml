@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="InferenceTest" time="3.428" tests="39" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="InferenceTest" time="125.233" tests="49" errors="0" skipped="0" failures="0">
   <properties>
     <property name="socksProxyHost" value="127.0.0.1"/>
     <property name="http.proxyHost" value="127.0.0.1"/>
@@ -7,15 +7,17 @@
     <property name="sun.jnu.encoding" value="UTF-8"/>
     <property name="java.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:"/>
     <property name="https.proxyPort" value="7890"/>
+    <property name="surefire.timeout" value="60"/>
     <property name="java.vm.vendor" value="Homebrew"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="user.timezone" value="Asia/Shanghai"/>
     <property name="os.name" value="Mac OS X"/>
     <property name="java.vm.specification.version" value="21"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260224002851896_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-02-24T00-28-51_846-jvmRun1 surefire-20260224002851896_1tmp surefire_0-20260224002851896_2tmp"/>
+    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260224160315693_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-02-24T16-03-15_657-jvmRun1 surefire-20260224160315693_1tmp surefire_0-20260224160315693_2tmp"/>
     <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="jdk.debug" value="release"/>
     <property name="test" value="InferenceTest"/>
@@ -34,7 +36,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260224002851896_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260224160315693_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="java.runtime.version" value="21.0.6"/>
@@ -65,43 +67,59 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="test_inference_of_dict_definition" classname="InferenceTest" time="0.639"/>
-  <testcase name="test_assign_mismatch_inference" classname="InferenceTest" time="0.007"/>
-  <testcase name="test_complex_literal" classname="InferenceTest" time="0.0"/>
-  <testcase name="test_declare_infer" classname="InferenceTest" time="0.032"/>
-  <testcase name="test_reference_call_Lazy" classname="InferenceTest" time="0.115"/>
-  <testcase name="test_declared_poly_mismatch_assignment_inference" classname="InferenceTest" time="0.005"/>
-  <testcase name="test_inference_of_unpack" classname="InferenceTest" time="0.016"/>
-  <testcase name="test_inference_if" classname="InferenceTest" time="0.011"/>
-  <testcase name="test_inference_of_array_reduce" classname="InferenceTest" time="0.007"/>
-  <testcase name="test_as" classname="InferenceTest" time="0.015"/>
-  <testcase name="test_inter_invoke" classname="InferenceTest" time="0.077"/>
-  <testcase name="test_with" classname="InferenceTest" time="0.021"/>
-  <testcase name="test_inherited_person_entity_with_override_member" classname="InferenceTest" time="0.015"/>
-  <testcase name="test_simple_person_entity" classname="InferenceTest" time="0.008"/>
-  <testcase name="test_inference_of_reference_in_entity" classname="InferenceTest" time="0.006"/>
-  <testcase name="test_generic_is_as" classname="InferenceTest" time="0.012"/>
-  <testcase name="test_future_reference_from_entity" classname="InferenceTest" time="1.056"/>
-  <testcase name="test_inference_of_array_definition" classname="InferenceTest" time="0.023"/>
-  <testcase name="test_import_outline" classname="InferenceTest" time="0.0"/>
+  <testcase name="test_inference_of_dict_definition" classname="InferenceTest" time="1.539"/>
+  <testcase name="test_assign_mismatch_inference" classname="InferenceTest" time="0.008"/>
+  <testcase name="test_complex_literal" classname="InferenceTest" time="0.001"/>
+  <testcase name="test_import_and_extend_outline" classname="InferenceTest" time="1.731"/>
+  <testcase name="test_inference_of_string_methods" classname="InferenceTest" time="0.032"/>
+  <testcase name="test_declare_infer" classname="InferenceTest" time="0.027"/>
+  <testcase name="test_reference_call_Lazy" classname="InferenceTest" time="0.172"/>
+  <testcase name="test_declared_poly_mismatch_assignment_inference" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_inference_of_unpack" classname="InferenceTest" time="0.024"/>
+  <testcase name="test_inference_if" classname="InferenceTest" time="0.015"/>
+  <testcase name="test_inference_of_number_methods" classname="InferenceTest" time="0.009"/>
+  <testcase name="test_inference_of_array_reduce" classname="InferenceTest" time="0.01"/>
+  <testcase name="test_as" classname="InferenceTest" time="0.022"/>
+  <testcase name="test_inter_invoke" classname="InferenceTest" time="0.174"/>
+  <testcase name="test_inference_of_bool_methods" classname="InferenceTest" time="0.01"/>
+  <testcase name="test_debug_extend_outline_parse" classname="InferenceTest" time="24.305">
+    <system-out><![CDATA[Test 0 OK
+Test 1 OK
+Test 2 OK
+Test 3 OK
+]]></system-out>
+  </testcase>
+  <testcase name="test_with" classname="InferenceTest" time="0.062"/>
+  <testcase name="test_inherited_person_entity_with_override_member" classname="InferenceTest" time="0.076"/>
+  <testcase name="test_simple_person_entity" classname="InferenceTest" time="0.045"/>
+  <testcase name="test_inference_of_reference_in_entity" classname="InferenceTest" time="0.031"/>
+  <testcase name="test_generic_is_as" classname="InferenceTest" time="0.074"/>
+  <testcase name="test_future_reference_from_entity" classname="InferenceTest" time="11.779"/>
+  <testcase name="test_inference_of_array_definition" classname="InferenceTest" time="0.165"/>
   <testcase name="test_function_project_change_function_declaration" classname="InferenceTest" time="0.0"/>
-  <testcase name="test_simple_person_entity_with_override_member" classname="InferenceTest" time="0.015"/>
+  <testcase name="test_simple_person_entity_with_override_member" classname="InferenceTest" time="0.096"/>
   <testcase name="test_continue_break" classname="InferenceTest" time="0.0"/>
-  <testcase name="test_inherited_person_entity" classname="InferenceTest" time="0.019"/>
-  <testcase name="test_option_is_as" classname="InferenceTest" time="0.024"/>
-  <testcase name="test_function_definition_inference" classname="InferenceTest" time="0.021"/>
-  <testcase name="test_inference_of_reference_in_function" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_explicit_poly_inference" classname="InferenceTest" time="0.02"/>
-  <testcase name="test_declared_assignment_type_mismatch_inference" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_inherited_person_entity" classname="InferenceTest" time="0.106"/>
+  <testcase name="test_future_reference_from_outline" classname="InferenceTest" time="11.322"/>
+  <testcase name="test_import_export_values" classname="InferenceTest" time="14.895"/>
+  <testcase name="test_option_is_as" classname="InferenceTest" time="0.073"/>
+  <testcase name="test_function_definition_inference" classname="InferenceTest" time="0.071"/>
+  <testcase name="test_inference_of_reference_in_function" classname="InferenceTest" time="0.044"/>
+  <testcase name="test_explicit_poly_inference" classname="InferenceTest" time="0.107"/>
+  <testcase name="test_inference_of_array_methods" classname="InferenceTest" time="0.199"/>
+  <testcase name="test_declared_assignment_type_mismatch_inference" classname="InferenceTest" time="0.011"/>
   <testcase name="test_outline_mutual_reference" classname="InferenceTest" time="0.0"/>
-  <testcase name="test_literal_inference" classname="InferenceTest" time="0.025"/>
-  <testcase name="test_initialization_inference" classname="InferenceTest" time="1.058"/>
-  <testcase name="test_poly_is_as" classname="InferenceTest" time="0.014"/>
-  <testcase name="test_symbol_match" classname="InferenceTest" time="0.04"/>
-  <testcase name="test_binary_expression" classname="InferenceTest" time="0.011"/>
-  <testcase name="test_inference_of_basic_adt" classname="InferenceTest" time="0.011"/>
-  <testcase name="test_override_function_definition_inference" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_inference_of_array_map" classname="InferenceTest" time="0.009"/>
-  <testcase name="test_match" classname="InferenceTest" time="0.041"/>
-  <testcase name="test_tuple" classname="InferenceTest" time="0.018"/>
+  <testcase name="test_import_export_outline" classname="InferenceTest" time="16.928"/>
+  <testcase name="test_literal_inference" classname="InferenceTest" time="0.254"/>
+  <testcase name="test_import_alias_resolves_correctly" classname="InferenceTest" time="18.585"/>
+  <testcase name="test_initialization_inference" classname="InferenceTest" time="20.325"/>
+  <testcase name="test_poly_is_as" classname="InferenceTest" time="0.142"/>
+  <testcase name="test_symbol_match" classname="InferenceTest" time="0.362"/>
+  <testcase name="test_binary_expression" classname="InferenceTest" time="0.072"/>
+  <testcase name="test_inference_of_basic_adt" classname="InferenceTest" time="0.06"/>
+  <testcase name="test_override_function_definition_inference" classname="InferenceTest" time="0.073"/>
+  <testcase name="test_inference_of_dict_methods" classname="InferenceTest" time="0.084"/>
+  <testcase name="test_inference_of_array_map" classname="InferenceTest" time="0.063"/>
+  <testcase name="test_match" classname="InferenceTest" time="0.749"/>
+  <testcase name="test_tuple" classname="InferenceTest" time="0.25"/>
 </testsuite>

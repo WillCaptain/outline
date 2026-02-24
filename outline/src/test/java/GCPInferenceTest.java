@@ -28,7 +28,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.twelve.gcp.common.Tool.cast;
 
-public class GCPInference {
+public class GCPInferenceTest {
     @Test
     void test_gcp_declare_to_be() {
         /*
