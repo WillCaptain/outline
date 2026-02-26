@@ -1063,6 +1063,17 @@ public class InferenceTest {
     }
 
     @Test
+    void test_literal_outline(){
+        AST ast = ASTHelper.literalOutline();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        //todo: assert return type is string
+
+        //todo: add one interpret test to get return value
+
+    }
+
+    @Test
     void test_outline_mutual_reference(){
 
     }

@@ -1,14 +1,15 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
-import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.interpreter.value.*;
-import org.twelve.outline.GCPConverter;
 import org.twelve.outline.OutlineParser;
 
 import java.util.List;
 
+import org.twelve.msll.exception.GrammarSyntaxException;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * End-to-end interpreter tests using the OutlineParser to produce real ASTs from GCP source code.
@@ -39,83 +40,28 @@ public class InterpreterTest {
     }
 
     // =========================================================================
-    // Helpers
-    // =========================================================================
-
-    /** Parse code into a fresh single-module ASF and run it. */
-    private Value run(String code) {
-        ASF asf = new ASF();
-        new OutlineParser().parse(asf, code);
-        return asf.interpret();
-    }
-
-    /** Run an already-constructed AST (ASF retrieved from ast.asf()). */
-    private Value run(AST ast) {
-        return ast.asf().interpret();
-    }
-
-    /** Run against a whole ASF (e.g. from ASTHelper.educationAndHuman()). */
-    private Value run(ASF asf) {
-        return asf.interpret();
-    }
-
-    /** Parse and run multiple modules sequentially, returning the value of the last one. */
-    private Value runMultiModule(String... modules) {
-        ASF asf = new ASF();
-        OutlineParser p = new OutlineParser();
-        for (String code : modules) p.parse(asf, code);
-        return asf.interpret();
-    }
-
-    private long intVal(Value v) {
-        assertThat(v).isInstanceOf(IntValue.class);
-        return ((IntValue) v).value();
-    }
-
-    private double floatVal(Value v) {
-        assertThat(v).isInstanceOf(FloatValue.class);
-        return ((FloatValue) v).value();
-    }
-
-    private String strVal(Value v) {
-        assertThat(v).isInstanceOf(StringValue.class);
-        return ((StringValue) v).value();
-    }
-
-    private boolean boolVal(Value v) {
-        assertThat(v).isInstanceOf(BoolValue.class);
-        return ((BoolValue) v).isTruthy();
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Value> arrVal(Value v) {
-        assertThat(v).isInstanceOf(ArrayValue.class);
-        return ((ArrayValue) v).elements();
-    }
-
-    // =========================================================================
     // 1. Literals
     // =========================================================================
 
     @Test
     void test_int_literal() {
-        assertThat(intVal(run("42"))).isEqualTo(42L);
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("42"))).isEqualTo(42L);
     }
 
     @Test
     void test_string_literal() {
-        assertThat(strVal(run("\"hello\""))).isEqualTo("hello");
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("\"hello\""))).isEqualTo("hello");
     }
 
     @Test
     void test_bool_literal() {
-        assertThat(boolVal(run("true"))).isTrue();
-        assertThat(boolVal(run("false"))).isFalse();
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("true"))).isTrue();
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("false"))).isFalse();
     }
 
     @Test
     void test_float_literal() {
-        assertThat(floatVal(run("3.14"))).isEqualTo(3.14);
+        assertThat(RunnerHelper.floatVal(RunnerHelper.run("3.14"))).isEqualTo(3.14);
     }
 
     // =========================================================================
@@ -124,28 +70,28 @@ public class InterpreterTest {
 
     @Test
     void test_add_two_ints() {
-        assertThat(intVal(run("1 + 2"))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("1 + 2"))).isEqualTo(3L);
     }
 
     @Test
     void test_string_concat() {
-        assertThat(strVal(run("\"hello\" + \" world\""))).isEqualTo("hello world");
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("\"hello\" + \" world\""))).isEqualTo("hello world");
     }
 
     @Test
     void test_comparison() {
-        assertThat(boolVal(run("3 > 2"))).isTrue();
-        assertThat(boolVal(run("1 == 1"))).isTrue();
-        assertThat(boolVal(run("1 != 2"))).isTrue();
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("3 > 2"))).isTrue();
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("1 == 1"))).isTrue();
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("1 != 2"))).isTrue();
     }
 
     @Test
     void test_add_func_curried() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let add = (x,y)->x+y;
                 add(3,4)
                 """);
-        assertThat(intVal(v)).isEqualTo(7L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(7L);
     }
 
     // =========================================================================
@@ -154,26 +100,26 @@ public class InterpreterTest {
 
     @Test
     void test_curried_addition() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let add = x->y->x+y;
                 add(10)(5)
                 """);
-        assertThat(intVal(v)).isEqualTo(15L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(15L);
     }
 
     @Test
     void test_closure_captures_outer_var() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 100;
                 let f = ()->x;
                 f()
                 """);
-        assertThat(intVal(v)).isEqualTo(100L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(100L);
     }
 
     @Test
     void test_closure_counter() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let make_counter = ()->{
                     var n = 0;
                     ()->{
@@ -186,7 +132,7 @@ public class InterpreterTest {
                 c();
                 c()
                 """);
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     // =========================================================================
@@ -195,50 +141,50 @@ public class InterpreterTest {
 
     @Test
     void test_entity_field_access() {
-        Value v = run(ASTHelper.mockSimplePersonEntity());
+        Value v = RunnerHelper.run(ASTHelper.mockSimplePersonEntity());
         // last evaluated expression is person.get_name() which returns this.name = "Will"
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_entity_direct_field() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let p = {name = "Will", age = 30};
                 p.name
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_entity_method_uses_this() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let p = {
                     name = "Ivy",
                     get_name = ()->this.name
                 };
                 p.get_name()
                 """);
-        assertThat(strVal(v)).isEqualTo("Ivy");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Ivy");
     }
 
     @Test
     void test_entity_method_closure_capture() {
         // get_my_name = ()->name captures 'name' directly from the entity scope
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let p = {
                     name = "Will",
                     get_my_name = ()->name
                 };
                 p.get_my_name()
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_entity_inheritance_base_access() {
-        Value v = run(ASTHelper.mockInheritedPersonEntity());
+        Value v = RunnerHelper.run(ASTHelper.mockInheritedPersonEntity());
         // last expression is 'me', which is person extended; let me check get_full_name
-        Value v2 = run("""
+        Value v2 = RunnerHelper.run("""
                 let person = {
                     get_name = ()->this.name,
                     name = "Will"
@@ -249,27 +195,27 @@ public class InterpreterTest {
                 };
                 me.get_full_name()
                 """);
-        assertThat(strVal(v2)).isEqualTo("WillZhang");
+        assertThat(RunnerHelper.strVal(v2)).isEqualTo("WillZhang");
     }
 
     @Test
     void test_entity_base_field_accessible_in_child() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let base = {x = 10};
                 let child = base{y = 20};
                 child.x
                 """);
-        assertThat(intVal(v)).isEqualTo(10L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(10L);
     }
 
     @Test
     void test_entity_override_field() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let base = {name = "Base"};
                 let child = base{name = "Child"};
                 child.name
                 """);
-        assertThat(strVal(v)).isEqualTo("Child");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Child");
     }
 
     // =========================================================================
@@ -278,41 +224,41 @@ public class InterpreterTest {
 
     @Test
     void test_tuple_element_access() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let t = ("Will", 30);
                 t.0
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_tuple_second_element() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let t = ("Will", 30);
                 t.1
                 """);
-        assertThat(intVal(v)).isEqualTo(30L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(30L);
     }
 
     @Test
     void test_tuple_method_uses_this() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let t = ("Will", ()->this.0, 40);
                 t.1()
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_simple_tuple() {
         // mockSimpleTuple ends with an outline declaration (UnitValue);
         // verify the intermediate computations were correct via direct code
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let person = ("Will",()->this.0,40);
                 let name_1 = person.0;
                 person.1()
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     // =========================================================================
@@ -321,68 +267,68 @@ public class InterpreterTest {
 
     @Test
     void test_array_literal() {
-        Value v = run("[1,2,3]");
-        List<Value> elems = arrVal(v);
+        Value v = RunnerHelper.run("[1,2,3]");
+        List<Value> elems = RunnerHelper.arrVal(v);
         assertThat(elems).hasSize(3);
-        assertThat(intVal(elems.get(0))).isEqualTo(1L);
-        assertThat(intVal(elems.get(2))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(elems.get(0))).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(elems.get(2))).isEqualTo(3L);
     }
 
     @Test
     void test_array_access_by_index() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [10,20,30];
                 a[1]
                 """);
-        assertThat(intVal(v)).isEqualTo(20L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(20L);
     }
 
     @Test
     void test_array_map_method() {
-        Value v = run(ASTHelper.mockArrayMapMethod());
-        assertThat(strVal(v)).isEqualTo("1");
+        Value v = RunnerHelper.run(ASTHelper.mockArrayMapMethod());
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("1");
     }
 
     @Test
     void test_array_reduce_method() {
-        Value v = run(ASTHelper.mockArrayReduceMethod());
+        Value v = RunnerHelper.run(ASTHelper.mockArrayReduceMethod());
         // [1,2].reduce((acc,i)->acc+i, 0.1) = 3.1
         assertThat(v).isInstanceOf(FloatValue.class);
-        assertThat(floatVal(v)).isEqualTo(3.1, org.assertj.core.data.Offset.offset(0.001));
+        assertThat(RunnerHelper.floatVal(v)).isEqualTo(3.1, org.assertj.core.data.Offset.offset(0.001));
     }
 
     @Test
     void test_array_len() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [1,2,3,4,5];
                 a.len()
                 """);
-        assertThat(intVal(v)).isEqualTo(5L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(5L);
     }
 
     @Test
     void test_array_filter() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [1,2,3,4,5];
                 let b = a.filter(x->x>2);
                 b.len()
                 """);
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     @Test
     void test_array_reverse() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [1,2,3];
                 let b = a.reverse();
                 b[0]
                 """);
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     @Test
     void test_array_take_and_drop() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [10,20,30,40,50];
                 let b = a.take(3);
                 let c = a.drop(3);
@@ -390,13 +336,13 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(3L);
-        assertThat(intVal(tv.get(1))).isEqualTo(2L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(2L);
     }
 
     @Test
     void test_array_any_all() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [1,2,3];
                 let b = a.any(x->x>2);
                 let c = a.all(x->x>0);
@@ -404,64 +350,101 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(boolVal(tv.get(0))).isTrue();
-        assertThat(boolVal(tv.get(1))).isTrue();
+        assertThat(RunnerHelper.boolVal(tv.get(0))).isTrue();
+        assertThat(RunnerHelper.boolVal(tv.get(1))).isTrue();
     }
 
     @Test
     void test_array_find() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [1,2,3,4];
                 a.find(x->x>2)
                 """);
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     @Test
     void test_array_min_max() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [3,1,4,1,5,9];
                 (a.min(), a.max())
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(1L);
-        assertThat(intVal(tv.get(1))).isEqualTo(9L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(9L);
     }
 
     @Test
     void test_array_sort() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [3,1,2];
                 let b = a.sort(x->y->x-y);
                 b[0]
                 """);
-        assertThat(intVal(v)).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
     }
 
     @Test
     void test_array_flat_map() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let a = [1,2,3];
                 let b = a.flat_map(x->[x,x]);
                 b.len()
                 """);
-        assertThat(intVal(v)).isEqualTo(6L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(6L);
+    }
+
+    @Test
+    void test_array_dynamic_range_variable_end() {
+        Value v = RunnerHelper.run("""
+                let n = 5;
+                [1...n]
+                """);
+        List<Value> elems = RunnerHelper.arrVal(v);
+        assertThat(elems).hasSize(5);
+        assertThat(RunnerHelper.intVal(elems.get(0))).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(elems.get(4))).isEqualTo(5L);
+    }
+
+    @Test
+    void test_array_dynamic_range_both_variable() {
+        Value v = RunnerHelper.run("""
+                let lo = 3;
+                let hi = 7;
+                [lo...hi]
+                """);
+        List<Value> elems = RunnerHelper.arrVal(v);
+        assertThat(elems).hasSize(5);
+        assertThat(RunnerHelper.intVal(elems.get(0))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(elems.get(4))).isEqualTo(7L);
+    }
+
+    @Test
+    void test_array_dynamic_range_filter() {
+        Value v = RunnerHelper.run("""
+                let limit = 10;
+                [2...limit].filter(x -> x % 2 == 0)
+                """);
+        List<Value> elems = RunnerHelper.arrVal(v);
+        assertThat(elems).hasSize(5);
+        assertThat(RunnerHelper.intVal(elems.get(0))).isEqualTo(2L);
+        assertThat(RunnerHelper.intVal(elems.get(4))).isEqualTo(10L);
     }
 
     @Test
     void test_array_methods_from_asthelper() {
         // mockArrayMethods uses len/reverse/take/drop/filter/forEach/any/all/find/sort/flat_map/min/max
-        Value v = run(ASTHelper.mockArrayMethods());
+        Value v = RunnerHelper.run(ASTHelper.mockArrayMethods());
         // last expression is q = x.max() from [1,2,3]
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     @Test
     void test_array_definition() {
         // mockArrayDefinition: let a=[1,2,3,4]; let b:[String]=[]; let c:[?]=[...5]; let d=...
         // just verify it runs without error and last val is []
-        Value v = run(ASTHelper.mockArrayDefinition());
+        Value v = RunnerHelper.run(ASTHelper.mockArrayDefinition());
         assertThat(v).isNotNull();
     }
 
@@ -471,25 +454,25 @@ public class InterpreterTest {
 
     @Test
     void test_dict_literal_and_access() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let d = ["a":1,"b":2];
                 d["a"]
                 """);
-        assertThat(intVal(v)).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
     }
 
     @Test
     void test_dict_len() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let d = ["x":10,"y":20,"z":30];
                 d.len()
                 """);
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     @Test
     void test_dict_keys_values() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let d = ["a":1,"b":2];
                 let k = d.keys();
                 let vs = d.values();
@@ -497,34 +480,34 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(2L);
-        assertThat(intVal(tv.get(1))).isEqualTo(2L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(2L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(2L);
     }
 
     @Test
     void test_dict_contains_key() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let d = ["a":1];
                 d.contains_key("a")
                 """);
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     @Test
     void test_dict_get() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let d = ["hello":42];
                 d.get("hello")
                 """);
-        assertThat(intVal(v)).isEqualTo(42L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(42L);
     }
 
     @Test
     void test_dict_methods_from_asthelper() {
         // mockDictMethods: len/keys/values/contains_key/get
-        Value v = run(ASTHelper.mockDictMethods());
+        Value v = RunnerHelper.run(ASTHelper.mockDictMethods());
         // last is d.get("a") = 1 from ["a":1,"b":2]
-        assertThat(intVal(v)).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
     }
 
     // =========================================================================
@@ -533,61 +516,61 @@ public class InterpreterTest {
 
     @Test
     void test_int_to_str() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 42;
                 x.to_str()
                 """);
-        assertThat(strVal(v)).isEqualTo("42");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("42");
     }
 
     @Test
     void test_int_abs() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = -5;
                 x.abs()
                 """);
-        assertThat(intVal(v)).isEqualTo(5L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(5L);
     }
 
     @Test
     void test_int_to_float() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 3;
                 x.to_float()
                 """);
-        assertThat(floatVal(v)).isEqualTo(3.0);
+        assertThat(RunnerHelper.floatVal(v)).isEqualTo(3.0);
     }
 
     @Test
     void test_float_ceil_floor() {
-        Value ceil = run("""
+        Value ceil = RunnerHelper.run("""
                 let x = 3.2;
                 x.ceil()
                 """);
-        Value floor = run("""
+        Value floor = RunnerHelper.run("""
                 let y = 3.9;
                 y.floor()
                 """);
-        assertThat(intVal(ceil)).isEqualTo(4L);
-        assertThat(intVal(floor)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(ceil)).isEqualTo(4L);
+        assertThat(RunnerHelper.intVal(floor)).isEqualTo(3L);
     }
 
     @Test
     void test_float_sqrt() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 4.0;
                 x.sqrt()
                 """);
-        assertThat(floatVal(v)).isEqualTo(2.0);
+        assertThat(RunnerHelper.floatVal(v)).isEqualTo(2.0);
     }
 
     @Test
     void test_number_methods_from_asthelper() {
         // mockNumberMethods: abs/ceil/floor/round/to_int/to_float/sqrt/pow
-        Value v = run(ASTHelper.mockNumberMethods());
+        Value v = RunnerHelper.run(ASTHelper.mockNumberMethods());
         // last expression is h = x.pow(2.0) where x=100 → 10000.0
         assertThat(v).isInstanceOf(FloatValue.class);
-        assertThat(floatVal(v)).isEqualTo(10000.0, org.assertj.core.data.Offset.offset(0.001));
+        assertThat(RunnerHelper.floatVal(v)).isEqualTo(10000.0, org.assertj.core.data.Offset.offset(0.001));
     }
 
     // =========================================================================
@@ -596,140 +579,140 @@ public class InterpreterTest {
 
     @Test
     void test_string_len() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.len()
                 """);
-        assertThat(intVal(v)).isEqualTo(5L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(5L);
     }
 
     @Test
     void test_string_to_upper() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.to_upper()
                 """);
-        assertThat(strVal(v)).isEqualTo("HELLO");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("HELLO");
     }
 
     @Test
     void test_string_to_lower() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "WORLD";
                 s.to_lower()
                 """);
-        assertThat(strVal(v)).isEqualTo("world");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("world");
     }
 
     @Test
     void test_string_trim() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "  hi  ";
                 s.trim()
                 """);
-        assertThat(strVal(v)).isEqualTo("hi");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("hi");
     }
 
     @Test
     void test_string_contains() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello world";
                 s.contains("world")
                 """);
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     @Test
     void test_string_starts_with() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.starts_with("he")
                 """);
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     @Test
     void test_string_ends_with() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.ends_with("lo")
                 """);
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     @Test
     void test_string_sub_str() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.sub_str(1,3)
                 """);
-        assertThat(strVal(v)).isEqualTo("el");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("el");
     }
 
     @Test
     void test_string_replace() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.replace("l","r")
                 """);
-        assertThat(strVal(v)).isEqualTo("herro");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("herro");
     }
 
     @Test
     void test_string_split() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "a,b,c";
                 s.split(",")
                 """);
-        List<Value> parts = arrVal(v);
+        List<Value> parts = RunnerHelper.arrVal(v);
         assertThat(parts).hasSize(3);
-        assertThat(strVal(parts.get(1))).isEqualTo("b");
+        assertThat(RunnerHelper.strVal(parts.get(1))).isEqualTo("b");
     }
 
     @Test
     void test_string_repeat() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "ab";
                 s.repeat(3)
                 """);
-        assertThat(strVal(v)).isEqualTo("ababab");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("ababab");
     }
 
     @Test
     void test_string_chars() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "abc";
                 s.chars()
                 """);
-        List<Value> chars = arrVal(v);
+        List<Value> chars = RunnerHelper.arrVal(v);
         assertThat(chars).hasSize(3);
-        assertThat(strVal(chars.get(0))).isEqualTo("a");
+        assertThat(RunnerHelper.strVal(chars.get(0))).isEqualTo("a");
     }
 
     @Test
     void test_string_index_of() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "hello";
                 s.index_of("ll")
                 """);
-        assertThat(intVal(v)).isEqualTo(2L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(2L);
     }
 
     @Test
     void test_string_to_int() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let s = "42";
                 s.to_int()
                 """);
-        assertThat(intVal(v)).isEqualTo(42L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(42L);
     }
 
     @Test
     void test_string_methods_from_asthelper() {
         // mockStringMethods: all string built-ins
-        Value v = run(ASTHelper.mockStringMethods());
+        Value v = RunnerHelper.run(ASTHelper.mockStringMethods());
         // last is o = s.repeat(3) where s="hello" → "hellohellohello"
-        assertThat(strVal(v)).isEqualTo("hellohellohello");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("hellohellohello");
     }
 
     // =========================================================================
@@ -738,37 +721,37 @@ public class InterpreterTest {
 
     @Test
     void test_bool_not() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let b = true;
                 b.not()
                 """);
-        assertThat(boolVal(v)).isFalse();
+        assertThat(RunnerHelper.boolVal(v)).isFalse();
     }
 
     @Test
     void test_bool_and_also() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let b = true;
                 b.and_also(false)
                 """);
-        assertThat(boolVal(v)).isFalse();
+        assertThat(RunnerHelper.boolVal(v)).isFalse();
     }
 
     @Test
     void test_bool_or_else() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let b = false;
                 b.or_else(true)
                 """);
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     @Test
     void test_bool_methods_from_asthelper() {
         // mockBoolMethods: not/and_also/or_else
-        Value v = run(ASTHelper.mockBoolMethods());
+        Value v = RunnerHelper.run(ASTHelper.mockBoolMethods());
         // last: d = b.or_else(false) where b=true → true
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     // =========================================================================
@@ -777,25 +760,25 @@ public class InterpreterTest {
 
     @Test
     void test_if_true_branch() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 10;
                 if(x > 5){ "big" } else { "small" }
                 """);
-        assertThat(strVal(v)).isEqualTo("big");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("big");
     }
 
     @Test
     void test_if_false_branch() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 3;
                 if(x > 5){ "big" } else { "small" }
                 """);
-        assertThat(strVal(v)).isEqualTo("small");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("small");
     }
 
     @Test
     void test_if_else_if_chain() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let name = "Evan";
                 if(name=="Will"){
                     "Found Will"
@@ -805,24 +788,24 @@ public class InterpreterTest {
                     "Unknown"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("Found Evan");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Found Evan");
     }
 
     @Test
     void test_ternary() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let age = 20;
                 let label = age>=18? "adult": "minor";
                 label
                 """);
-        assertThat(strVal(v)).isEqualTo("adult");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("adult");
     }
 
     @Test
     void test_if_from_asthelper() {
         // mockIf has complex `is...as` binding - test the simpler behavior:
         // get() returns the value of the second if which should handle name=="Will"
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let name = "Will";
                 let age = 30;
                 let get = ()->{
@@ -836,7 +819,7 @@ public class InterpreterTest {
                 };
                 get()
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     // =========================================================================
@@ -845,7 +828,7 @@ public class InterpreterTest {
 
     @Test
     void test_match_literal() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 8;
                 match x {
                     10 -> "ten",
@@ -853,12 +836,12 @@ public class InterpreterTest {
                     _  -> "other"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("eight");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("eight");
     }
 
     @Test
     void test_match_guard() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let n = 15;
                 match n {
                     m if m>10 -> "big",
@@ -866,78 +849,78 @@ public class InterpreterTest {
                     _         -> "other"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("big");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("big");
     }
 
     @Test
     void test_match_entity_unpack() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let ent = {name = "Will", age = 40};
                 match ent {
                     {name, age} if age>30 -> name,
                     _ -> "unknown"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_match_tuple_unpack() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let t = ("Will", 30);
                 match t {
                     (name, age) if age > 18 -> name,
                     _ -> "young"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_match_wildcard() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let x = 999;
                 match x {
                     1 -> "one",
                     _ -> "other"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("other");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("other");
     }
 
     @Test
     void test_match_entity_with_guard() {
         // entity match with guard: {field} if condition -> consequence
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let ent = {name = {last="Will",first="Zhang"}, age = 48};
                 let result = match ent { {name,age} if age>40 -> name.last, _ -> "other" };
                 result
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_match_from_asthelper() {
         // match on int literal with guard
-        Value v1 = run("""
+        Value v1 = RunnerHelper.run("""
                 let num = 10;
                 match num { m if m>9 -> m, 8 -> 7, _ -> "str" }
                 """);
-        assertThat(intVal(v1)).isEqualTo(10L);
+        assertThat(RunnerHelper.intVal(v1)).isEqualTo(10L);
 
         // match on tuple with unpack + guard
-        Value v2 = run("""
+        Value v2 = RunnerHelper.run("""
                 let tpl = (("Will","Zhang"),48);
                 match tpl { (name,age) if age>40 -> name.0, _ -> "miss" }
                 """);
-        assertThat(strVal(v2)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v2)).isEqualTo("Will");
 
         // match on entity with field unpack + guard
-        Value v3 = run("""
+        Value v3 = RunnerHelper.run("""
                 let ent = {name = {last="Will",first="Zhang"}, age = 48};
                 match ent { {name,age} if age>40 -> name.last, _ -> "other" }
                 """);
-        assertThat(strVal(v3)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v3)).isEqualTo("Will");
     }
 
     // =========================================================================
@@ -947,18 +930,18 @@ public class InterpreterTest {
     @Test
     void test_symbol_entity_construction() {
         // Male{name="Will",age=40} produces an entity with symbolTag="Male"
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 outline Human = Male{name:String, age:Int}|Female(Int, String);
                 let will = Male{name="Fuji",age=5};
                 will.name
                 """);
-        assertThat(strVal(v)).isEqualTo("Fuji");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Fuji");
     }
 
     @Test
     void test_symbol_entity_match() {
         // Male{name} in match patterns is a SymbolEntityUnpackNode
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 outline Human = Male{name:String, age:Int}|Female(Int, String);
                 let will = Male{name="Will",age=40};
                 match will {
@@ -966,13 +949,13 @@ public class InterpreterTest {
                     _ -> "unknown"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_symbol_tuple_match() {
         // Female(_,age) in match patterns is a SymbolTupleUnpackNode
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 outline Human = Male{name:String, age:Int}|Female(Int, String);
                 let ivy = Female(40,"Ivy");
                 match ivy {
@@ -981,13 +964,55 @@ public class InterpreterTest {
                     _ -> "unknown"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("Ivy");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Ivy");
+    }
+
+    @Test
+    void test_match_bare_symbol_pattern() {
+        Value v = RunnerHelper.run("""
+                outline Color = Red | Green | Blue;
+                let c = Green;
+                match c {
+                    Red   -> "red",
+                    Green -> "green",
+                    Blue  -> "blue"
+                }
+                """);
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("green");
+    }
+
+    @Test
+    void test_match_bare_symbol_with_guard() {
+        Value v = RunnerHelper.run("""
+                outline Dir = North | South | East | West;
+                let d = North;
+                let classify = x -> match x {
+                    North -> "up",
+                    South -> "down",
+                    _     -> "side"
+                };
+                classify(d)
+                """);
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("up");
+    }
+
+    @Test
+    void test_match_mixed_bare_and_unpack() {
+        Value v = RunnerHelper.run("""
+                outline Shape = Circle{r:Int} | Dot;
+                let s = Dot;
+                match s {
+                    Circle{r} -> r,
+                    Dot       -> 0
+                }
+                """);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(0L);
     }
 
     @Test
     void test_bare_symbol_wildcard_match() {
         // Dog (bare symbol) falls through to wildcard
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 outline Pet = Dog|Cat;
                 let p = Dog;
                 match p {
@@ -995,17 +1020,17 @@ public class InterpreterTest {
                     _ -> "bare"
                 }
                 """);
-        assertThat(strVal(v)).isEqualTo("bare");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("bare");
     }
 
     @Test
     void test_symbol_match_full() {
         // mockSymbolMatch covers Male{...}, Female(...), bare symbol Dog/Cat
-        Value v = run(ASTHelper.mockSymbolMatch());
+        Value v = RunnerHelper.run(ASTHelper.mockSymbolMatch());
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
         // get_name(will) where will=Male{name="will",age=40} → matches Male{name} → "will"
-        assertThat(strVal(tv.get(0))).isEqualTo("will");
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("will");
     }
 
     // =========================================================================
@@ -1014,22 +1039,22 @@ public class InterpreterTest {
 
     @Test
     void test_self_recursive_factorial() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let factorial = n->n==0? 1: factorial(n-1)*n;
                 factorial(5)
                 """);
-        assertThat(intVal(v)).isEqualTo(120L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(120L);
     }
 
     @Test
     void test_recursive_from_asthelper() {
         // mockSelfRecursive: last call is factorial("100") which causes type error at runtime
         // Use a simplified test instead
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let factorial = n->n==0? 1: factorial(n-1)*n;
                 factorial(6)
                 """);
-        assertThat(intVal(v)).isEqualTo(720L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(720L);
     }
 
     // =========================================================================
@@ -1038,19 +1063,19 @@ public class InterpreterTest {
 
     @Test
     void test_with_expression() {
-        Value v = run(ASTHelper.mockWith());
+        Value v = RunnerHelper.run(ASTHelper.mockWith());
         // with resource.create() as r { r.done } → true
-        assertThat(boolVal(v)).isTrue();
+        assertThat(RunnerHelper.boolVal(v)).isTrue();
     }
 
     @Test
     void test_with_expression_inline() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let res = {create = ()->{open=()->{},close=()->{},value=42}};
                 let result = with res.create() as r { r.value };
                 result
                 """);
-        assertThat(intVal(v)).isEqualTo(42L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(42L);
     }
 
     // =========================================================================
@@ -1059,49 +1084,49 @@ public class InterpreterTest {
 
     @Test
     void test_tuple_unpack() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let t = ("Will", 30);
                 let (name, age) = t;
                 name
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_nested_tuple_unpack() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let t = (("Will","Zhang"),48);
                 let ((fn,ln),_) = t;
                 ln
                 """);
-        assertThat(strVal(v)).isEqualTo("Zhang");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Zhang");
     }
 
     @Test
     void test_entity_unpack() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let p = {name = "Will", age = 30};
                 let {name, age} = p;
                 name
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_entity_unpack_with_alias() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let p = {gender = "male"};
                 let {gender as g} = p;
                 g
                 """);
-        assertThat(strVal(v)).isEqualTo("male");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("male");
     }
 
     @Test
     void test_unpack_from_asthelper() {
         // mockUnpack: tuple and entity destructuring
         // Verify individual unpack works via a focused test
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let tuple = (("Will","Zhang"),"Male",20);
                 let ent = {name = {last_name = "Will", first_name = "Zhang"}, gender = "Male", age = 20};
                 let ((name,_),gender) = tuple;
@@ -1109,7 +1134,7 @@ public class InterpreterTest {
                 let {name:{last_name},gender as g} = ent;
                 myAge
                 """);
-        assertThat(intVal(v)).isEqualTo(20L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(20L);
     }
 
     // =========================================================================
@@ -1118,41 +1143,41 @@ public class InterpreterTest {
 
     @Test
     void test_hof_apply_function() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let apply = (f,x)->f(x);
                 apply(x->x*2, 5)
                 """);
-        assertThat(intVal(v)).isEqualTo(10L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(10L);
     }
 
     @Test
     void test_hof_compose() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let compose = (f,g)->x->f(g(x));
                 let double = x->x*2;
                 let inc = x->x+1;
                 let double_then_inc = compose(inc, double);
                 double_then_inc(3)
                 """);
-        assertThat(intVal(v)).isEqualTo(7L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(7L);
     }
 
     @Test
     void test_hof_projection_1() {
         // f = (x,y)->y(x); f(10,x->x*5) = 50
-        Value v = run(ASTHelper.mockGcpHofProjection1());
-        assertThat(intVal(v)).isEqualTo(50L);
+        Value v = RunnerHelper.run(ASTHelper.mockGcpHofProjection1());
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(50L);
     }
 
     @Test
     void test_hof_projection_pipeline() {
         // f = (x,y,z)->z(y(x)); f(10, x->x+"some", y->y+100)
         // x=10, y("some") = "some"+100 fails... let me use a simpler version
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let f = (x,y)->y(x);
                 f(10, x->x+1)
                 """);
-        assertThat(intVal(v)).isEqualTo(11L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(11L);
     }
 
     // =========================================================================
@@ -1161,7 +1186,7 @@ public class InterpreterTest {
 
     @Test
     void test_import_export_value() {
-        Value v = runMultiModule(
+        Value v = RunnerHelper.runMultiModule(
                 """
                 module org.twelve.math
                 let pi = 3;
@@ -1174,38 +1199,38 @@ public class InterpreterTest {
                 pi + euler
                 """
         );
-        assertThat(intVal(v)).isEqualTo(5L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(5L);
     }
 
     @Test
     void test_import_alias() {
-        Value v = run(ASTHelper.mockImportAlias());
+        Value v = RunnerHelper.run(ASTHelper.mockImportAlias());
         // last expr (a, b) where a=99 (imported as n), b=99 (imported as copy)
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(99L);
-        assertThat(intVal(tv.get(1))).isEqualTo(99L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(99L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(99L);
     }
 
     @Test
     void test_import_export_outline() {
-        Value v = run(ASTHelper.mockImportExportOutline());
+        Value v = RunnerHelper.run(ASTHelper.mockImportExportOutline());
         // (a, b, c) where a=42 (total), b=dict, c=10 (size)
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(42L);
-        assertThat(intVal(tv.get(2))).isEqualTo(10L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(42L);
+        assertThat(RunnerHelper.intVal(tv.get(2))).isEqualTo(10L);
     }
 
     @Test
     void test_import_outline_type() {
-        Value v = run(ASTHelper.mockImportOutlineType());
+        Value v = RunnerHelper.run(ASTHelper.mockImportOutlineType());
         // (cx, cc, z) where cx=1 (p.x), cc="red" (p.color), z=0 (zero)
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(1L);
-        assertThat(strVal(tv.get(1))).isEqualTo("red");
-        assertThat(intVal(tv.get(2))).isEqualTo(0L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(1L);
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("red");
+        assertThat(RunnerHelper.intVal(tv.get(2))).isEqualTo(0L);
     }
 
     // =========================================================================
@@ -1223,12 +1248,12 @@ public class InterpreterTest {
         interp.registerConstructor("db", (constructorName, typeArgs, valueArgs) ->
                 new StringValue("db:" + String.join(",", typeArgs)));
         Value v = interp.run();
-        assertThat(strVal(v)).isEqualTo("db:String");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("db:String");
     }
 
     @Test
     void test_external_constructor_placeholder_without_plugin() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let repo = __sys__<Int>;
                 repo
                 """);
@@ -1243,18 +1268,18 @@ public class InterpreterTest {
 
     @Test
     void test_var_reassignment() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 var x = 1;
                 x = x + 1;
                 x = x + 1;
                 x
                 """);
-        assertThat(intVal(v)).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
     }
 
     @Test
     void test_let_in_block() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let result = {
                     let a = 10;
                     let b = 20;
@@ -1262,7 +1287,7 @@ public class InterpreterTest {
                 };
                 result
                 """);
-        assertThat(intVal(v)).isEqualTo(30L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(30L);
     }
 
     // =========================================================================
@@ -1271,7 +1296,7 @@ public class InterpreterTest {
 
     @Test
     void test_entity_chained_method_calls() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let builder = {
                     value = 0,
                     add = (n)->this{value = this.value + n},
@@ -1281,27 +1306,27 @@ public class InterpreterTest {
                 let b3 = b2.add(20);
                 b3.get()
                 """);
-        assertThat(intVal(v)).isEqualTo(30L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(30L);
     }
 
     @Test
     void test_entity_method_returns_this() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let p = {
                     name = "Will",
                     get_self = ()->this
                 };
                 p.get_self().name
                 """);
-        assertThat(strVal(v)).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     @Test
     void test_random_person_entity() {
         // mockRandomPersonEntity uses this.name and directly captures name
         // Let me verify name_2 = person.get_name() runs without error
-        Value v = run(ASTHelper.mockSimplePersonEntity());
-        assertThat(strVal(v)).isEqualTo("Will");
+        Value v = RunnerHelper.run(ASTHelper.mockSimplePersonEntity());
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
     }
 
     // =========================================================================
@@ -1310,7 +1335,7 @@ public class InterpreterTest {
 
     @Test
     void test_early_return_from_function() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let f = x->{
                     if(x > 10){
                         return "big";
@@ -1319,12 +1344,12 @@ public class InterpreterTest {
                 };
                 f(20)
                 """);
-        assertThat(strVal(v)).isEqualTo("big");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("big");
     }
 
     @Test
     void test_return_without_early_exit() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let f = x->{
                     if(x > 10){
                         return "big";
@@ -1333,7 +1358,7 @@ public class InterpreterTest {
                 };
                 f(5)
                 """);
-        assertThat(strVal(v)).isEqualTo("small");
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("small");
     }
 
     // =========================================================================
@@ -1344,7 +1369,7 @@ public class InterpreterTest {
     void test_future_reference_from_entity() {
         // Focused version of mockFutureReferenceFromEntity:
         // entity inheritance with this-binding, walk/talk chaining, and closures
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let animal = {
                     walk = ()-> this,
                     age = 40,
@@ -1362,15 +1387,15 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(strVal(tv.get(0))).isEqualTo("Will");
-        assertThat(strVal(tv.get(1))).isEqualTo("Will");
-        assertThat(intVal(tv.get(2))).isEqualTo(40L);
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("Will");
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("Will");
+        assertThat(RunnerHelper.intVal(tv.get(2))).isEqualTo(40L);
     }
 
     @Test
     void test_general_module() {
         // educationAndHuman: imports and exports across modules, just verify no crash
-        Value v = run(ASTHelper.educationAndHuman());
+        Value v = RunnerHelper.run(ASTHelper.educationAndHuman());
         assertThat(v).isNotNull();
     }
 
@@ -1385,7 +1410,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_student_statistics() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let students = [
                     {name="Alice",   score=92},
                     {name="Bob",     score=58},
@@ -1399,8 +1424,8 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(3L);    // Alice, Charlie, Diana
-        assertThat(intVal(tv.get(1))).isEqualTo(265L);  // 92 + 78 + 95
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(3L);    // Alice, Charlie, Diana
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(265L);  // 92 + 78 + 95
     }
 
 
@@ -1411,7 +1436,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_order_state_machine() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 outline Order = Processing{id:Int}|Shipped(Int,String);
                 let describe = order -> match order {
                     Processing{id}     -> "processing",
@@ -1425,9 +1450,9 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(strVal(tv.get(0))).isEqualTo("processing");
-        assertThat(strVal(tv.get(1))).isEqualTo("TRK-99");
-        assertThat(strVal(tv.get(2))).isEqualTo("TRK-007");
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("processing");
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("TRK-99");
+        assertThat(RunnerHelper.strVal(tv.get(2))).isEqualTo("TRK-007");
     }
 
     /**
@@ -1436,7 +1461,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_curried_pipeline() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let add    = a -> b -> a + b;
                 let mul    = a -> b -> a * b;
                 let add3   = add(3);
@@ -1445,7 +1470,7 @@ public class InterpreterTest {
                 result.reduce(a -> b -> a + b)(0)
                 """);
         // (1+3)*2=8  (2+3)*2=10  (3+3)*2=12  (4+3)*2=14  (5+3)*2=16  sum=60
-        assertThat(intVal(v)).isEqualTo(60L);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(60L);
     }
 
     /**
@@ -1455,7 +1480,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_entity_inheritance_polymorphism() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let shape = {
                     color     = "red",
                     get_color = () -> this.color
@@ -1478,12 +1503,12 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(strVal(tv.get(0))).isEqualTo("red");       // circle inherits color from shape
-        assertThat(strVal(tv.get(1))).isEqualTo("circle");    // circle's own kind
-        assertThat(intVal(tv.get(2))).isEqualTo(25L);         // 5*5
-        assertThat(strVal(tv.get(3))).isEqualTo("red");       // rect inherits color from shape
-        assertThat(strVal(tv.get(4))).isEqualTo("rect");      // rect's own kind
-        assertThat(intVal(tv.get(5))).isEqualTo(24L);         // 4*6
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("red");       // circle inherits color from shape
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("circle");    // circle's own kind
+        assertThat(RunnerHelper.intVal(tv.get(2))).isEqualTo(25L);         // 5*5
+        assertThat(RunnerHelper.strVal(tv.get(3))).isEqualTo("red");       // rect inherits color from shape
+        assertThat(RunnerHelper.strVal(tv.get(4))).isEqualTo("rect");      // rect's own kind
+        assertThat(RunnerHelper.intVal(tv.get(5))).isEqualTo(24L);         // 4*6
     }
 
     /**
@@ -1492,7 +1517,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_string_pipeline() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let csv     = "alice,bob,charlie,diana";
                 let names   = csv.split(",");
                 let upper   = names.map(n -> n.to_upper());
@@ -1503,8 +1528,8 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(4L);
-        assertThat(strVal(tv.get(1))).isEqualTo("CHARLIE");
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(4L);
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("CHARLIE");
     }
 
     /**
@@ -1513,7 +1538,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_bank_account() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let make_account = initial -> {
                     balance  = initial,
                     deposit  = amount -> this.balance + amount,
@@ -1528,9 +1553,9 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(150L);
-        assertThat(intVal(tv.get(1))).isEqualTo(70L);
-        assertThat(intVal(tv.get(2))).isEqualTo(100L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(150L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(70L);
+        assertThat(RunnerHelper.intVal(tv.get(2))).isEqualTo(100L);
     }
 
     /**
@@ -1539,7 +1564,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_fibonacci_list() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let fib  = n -> if(n <= 1){ n }else{ fib(n-1) + fib(n-2) };
                 let fibs = [0...7].map(fib);
                 fibs
@@ -1548,9 +1573,9 @@ public class InterpreterTest {
         assertThat(v).isInstanceOf(ArrayValue.class);
         ArrayValue av = (ArrayValue) v;
         assertThat(av.size()).isEqualTo(8);
-        assertThat(intVal(av.get(0))).isEqualTo(0L);
-        assertThat(intVal(av.get(5))).isEqualTo(5L);
-        assertThat(intVal(av.get(7))).isEqualTo(13L);
+        assertThat(RunnerHelper.intVal(av.get(0))).isEqualTo(0L);
+        assertThat(RunnerHelper.intVal(av.get(5))).isEqualTo(5L);
+        assertThat(RunnerHelper.intVal(av.get(7))).isEqualTo(13L);
     }
 
     /**
@@ -1559,7 +1584,7 @@ public class InterpreterTest {
      */
     @Test
     void test_realistic_word_frequency() {
-        Value v = run("""
+        Value v = RunnerHelper.run("""
                 let text  = "a b a c b a";
                 let words = text.split(" ");
                 let count_word = w -> words.filter(x -> x == w).len();
@@ -1567,8 +1592,76 @@ public class InterpreterTest {
                 """);
         assertThat(v).isInstanceOf(TupleValue.class);
         TupleValue tv = (TupleValue) v;
-        assertThat(intVal(tv.get(0))).isEqualTo(3L);
-        assertThat(intVal(tv.get(1))).isEqualTo(2L);
-        assertThat(intVal(tv.get(2))).isEqualTo(1L);
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(2L);
+        assertThat(RunnerHelper.intVal(tv.get(2))).isEqualTo(1L);
+    }
+
+    // =========================================================================
+    // 28. Error reporting: keywords used as identifiers
+    // =========================================================================
+
+    @Test
+    void test_keyword_as_var_name_reports_reserved_hint() {
+        assertThatThrownBy(() -> RunnerHelper.run("let if = 5;"))
+                .isInstanceOf(GrammarSyntaxException.class)
+                .hasMessageMatching("(?si).*reserved keyword.*");
+    }
+
+    @Test
+    void test_keyword_in_module_path_reports_reserved_hint() {
+        assertThatThrownBy(() -> RunnerHelper.run("let x = 1;\nmodule org.if.foo"))
+                .isInstanceOf(GrammarSyntaxException.class)
+                .hasMessageMatching("(?si).*reserved keyword.*");
+    }
+
+    // ── Error reporting improvements ─────────────────────────────────────────
+
+    /**
+     * Multiple syntax errors should be collected in one pass (panic-mode
+     * recovery) and reported as an AggregateGrammarSyntaxException.
+     */
+    @Test
+    void test_multiple_parse_errors_collected() {
+        // Two clearly bad statements separated by ';'; recovery should collect both
+        assertThatThrownBy(() -> RunnerHelper.run("let if = 5;\nlet while = 10;"))
+                .isInstanceOf(org.twelve.msll.exception.AggregateGrammarSyntaxException.class)
+                .satisfies(ex -> {
+                    var agg = (org.twelve.msll.exception.AggregateGrammarSyntaxException) ex;
+                    // At minimum the first error must be collected
+                    assertThat(agg.errors()).hasSizeGreaterThanOrEqualTo(1);
+                    // All individual errors still mention the reserved-keyword hint
+                    agg.errors().forEach(e ->
+                            assertThat(e.getMessage()).matches("(?si).*reserved keyword.*"));
+                });
+    }
+
+    /**
+     * GCPErrCode should carry human-readable descriptions and GCPError.toString()
+     * should contain those descriptions rather than raw enum names.
+     */
+    @Test
+    void test_gcp_error_format_readable() {
+        var errCode = org.twelve.gcp.exception.GCPErrCode.OUTLINE_MISMATCH;
+        // description() must return human-readable text
+        assertThat(errCode.description()).isEqualTo("type mismatch");
+        // GCPError.toString() must include the description, not the raw SHOUTING_SNAKE_CASE name
+        var error = new org.twelve.gcp.exception.GCPError(null, errCode, "extra detail");
+        String str = error.toString();
+        assertThat(str).contains("type mismatch");
+        assertThat(str).doesNotContain("OUTLINE_MISMATCH");
+        // Detail message should also appear
+        assertThat(str).contains("extra detail");
+    }
+
+    /**
+     * String literals with escape sequences should be decoded at parse time.
+     */
+    @Test
+    void test_string_escape_sequences() {
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("\"hello\\nworld\""))).isEqualTo("hello\nworld");
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("\"tab\\there\""))).isEqualTo("tab\there");
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("\"back\\\\slash\""))).isEqualTo("back\\slash");
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("\"quote\\\"here\""))).isEqualTo("quote\"here");
     }
 }

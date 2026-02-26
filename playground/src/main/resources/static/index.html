@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Outline Playground — GCP Type Inference</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ HEADER -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" class="logo-svg">
+        <polygon points="13,1 25,7 25,19 13,25 1,19 1,7" fill="none" stroke="currentColor" stroke-width="2" class="hex-stroke"/>
+        <polygon points="13,5 21,9.5 21,18.5 13,23 5,18.5 5,9.5" fill="currentColor" opacity="0.15"/>
+        <text x="13" y="17" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" font-family="monospace">⟨T⟩</text>
+      </svg>
+      <div class="logo-text-group">
+        <span class="logo-text">Outline <span class="logo-accent">Playground</span></span>
+        <span class="logo-sub">powered by GCP type inference</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <button id="btn-run" class="btn btn-primary" title="Run (Ctrl+Enter)">
+      <svg width="12" height="12" viewBox="0 0 12 12"><polygon points="2,1 11,6 2,11" fill="currentColor"/></svg>
+      Run
+    </button>
+    <button id="btn-infer" class="btn btn-secondary" title="Infer types only (no execution)">
+      <span>⟨T⟩</span> Infer
+    </button>
+    <div class="separator"></div>
+    <button id="btn-share" class="btn btn-ghost" title="Copy shareable link">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share
+    </button>
+    <button id="btn-clear" class="btn btn-ghost" title="Clear editor (Ctrl+K)">✕ Clear</button>
+  </div>
+
+  <div class="header-right">
+    <label class="toggle-label" title="Show inferred types inline in editor">
+      <input type="checkbox" id="toggle-inline-types" checked>
+      <span class="toggle-text">inline types</span>
+    </label>
+    <a href="https://github.com/twelve-cloud/outline" class="header-link" target="_blank" rel="noopener">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+    </a>
+    <button class="btn-theme" id="btn-theme" title="Toggle light/dark theme">☀</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════ MAIN -->
+<main class="layout">
+
+  <!-- ── LEFT SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-toggle" id="sidebar-toggle" title="Collapse sidebar">‹</div>
+
+    <!-- Tab switcher inside sidebar -->
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" data-stab="examples">📚 Examples</button>
+      <button class="sidebar-tab" data-stab="myspace">🗂 MySpace</button>
+    </div>
+
+    <!-- Examples panel -->
+    <div class="sidebar-panel active" id="stab-examples">
+      <div class="cat-filter" id="category-filter">
+        <button class="cat-btn active" data-cat="all">All</button>
+        <button class="cat-btn" data-cat="basics">Basics</button>
+        <button class="cat-btn" data-cat="functions">Functions</button>
+        <button class="cat-btn" data-cat="types">Types</button>
+        <button class="cat-btn" data-cat="collections">Collections</button>
+        <button class="cat-btn" data-cat="advanced">Advanced</button>
+      </div>
+      <div class="example-list" id="example-list">
+        <div class="loading-msg">Loading examples…</div>
+      </div>
+    </div>
+
+    <!-- MySpace panel -->
+    <div class="sidebar-panel" id="stab-myspace">
+      <div class="myspace-header">
+        <span class="myspace-hint">Your saved snippets (stored locally)</span>
+        <button class="btn-save-new" id="btn-save" title="Save current editor code">＋ Save</button>
+      </div>
+      <div class="snippet-list" id="snippet-list">
+        <div class="empty-state">
+          <div class="empty-icon">📂</div>
+          <div>No snippets yet</div>
+          <div class="empty-hint">Press <kbd>＋ Save</kbd> to save your code</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── EDITOR ────────────────────────────────────────────────── -->
+  <section class="editor-panel">
+    <div class="editor-toolbar">
+      <div class="file-tab">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="4" x2="9" y2="4" stroke="currentColor" stroke-width="1"/><line x1="3" y1="6.5" x2="9" y2="6.5" stroke="currentColor" stroke-width="1"/><line x1="3" y1="9" x2="7" y2="9" stroke="currentColor" stroke-width="1"/></svg>
+        main.outline
+      </div>
+      <div class="editor-status-area">
+        <span class="editor-status" id="editor-status">Ready</span>
+      </div>
+      <div class="editor-meta" id="editor-meta">
+        <span id="meta-lines">0 lines</span>
+        <span class="meta-sep">·</span>
+        <kbd title="Run">Ctrl+Enter</kbd>
+      </div>
+    </div>
+    <div id="monaco-editor" class="monaco-container"></div>
+  </section>
+
+  <!-- ── RIGHT PANEL ───────────────────────────────────────────── -->
+  <aside class="results-panel">
+
+    <!-- Tab bar -->
+    <nav class="result-tabs" id="result-tabs">
+      <button class="result-tab active" data-tab="inference">
+        <span class="tab-label">⟨T⟩ Inference</span>
+        <span class="tab-badge" id="badge-inference" style="display:none">0</span>
+      </button>
+      <button class="result-tab" data-tab="output">
+        <span class="tab-label">▶ Output</span>
+      </button>
+      <button class="result-tab" data-tab="errors">
+        <span class="tab-label">⚠ Errors</span>
+        <span class="tab-badge tab-badge-error" id="badge-errors" style="display:none">0</span>
+      </button>
+    </nav>
+
+    <!-- ── Inference tab ────────────────────────────────────────── -->
+    <div class="tab-content active" id="tab-inference">
+      <!-- Stats bar -->
+      <div class="stats-bar" id="stats-bar" style="display:none">
+        <div class="stat"><span class="stat-val" id="stat-symbols">0</span><span class="stat-key">symbols</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><span class="stat-val" id="stat-infer-ms">0ms</span><span class="stat-key">infer</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><span class="stat-val" id="stat-exec-ms">0ms</span><span class="stat-key">exec</span></div>
+      </div>
+
+      <!-- Intro placeholder -->
+      <div class="inference-intro" id="inference-intro">
+        <div class="intro-icon">⟨T⟩</div>
+        <p>Run your code to see GCP's<br/>type inference results here.</p>
+        <p class="intro-hint">Every variable, every function —<br/>inferred with <em>zero</em> type annotations.</p>
+        <div class="intro-features">
+          <div class="feature">✓ Hindley-Milner style inference</div>
+          <div class="feature">✓ Algebraic Data Types</div>
+          <div class="feature">✓ Curried function types</div>
+          <div class="feature">✓ Generic / polymorphic types</div>
+        </div>
+      </div>
+
+      <!-- Symbol table -->
+      <div id="inference-result" style="display:none">
+        <div class="kind-section" id="section-types" style="display:none">
+          <div class="kind-header">
+            <span class="kind-badge kind-outline">outline</span>
+            Type Definitions
+          </div>
+          <div class="sym-list" id="list-types"></div>
+        </div>
+        <div class="kind-section" id="section-vars">
+          <div class="kind-header">
+            <span class="kind-badge kind-let">let / var</span>
+            Inferred Bindings
+          </div>
+          <div class="sym-list" id="list-vars"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Output tab ────────────────────────────────────────────── -->
+    <div class="tab-content" id="tab-output">
+      <div class="output-card">
+        <div class="output-card-header">
+          <span>Execution Result</span>
+          <button class="btn-copy" id="btn-copy-output" title="Copy output">⎘ Copy</button>
+        </div>
+        <pre class="output-box" id="output-box"><span class="placeholder-text">Press ▶ Run to execute your code</span></pre>
+      </div>
+    </div>
+
+    <!-- ── Errors tab ────────────────────────────────────────────── -->
+    <div class="tab-content" id="tab-errors">
+      <div id="errors-list">
+        <div class="no-errors-state">
+          <div class="no-errors-icon">✓</div>
+          <div>No errors detected</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+</main>
+
+<!-- ══════════════════════════════════════════════════════ SAVE MODAL -->
+<div class="modal-overlay" id="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <span>Save to MySpace</span>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <input class="modal-input" id="snippet-name" type="text" placeholder="Give this snippet a name…" maxlength="60" autocomplete="off"/>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+      <button class="btn btn-primary" id="modal-confirm">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- Monaco -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.46.0/min/vs/loader.min.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

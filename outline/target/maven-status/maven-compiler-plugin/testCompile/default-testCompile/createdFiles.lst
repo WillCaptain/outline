@@ -1,6 +1,6 @@
-GCPInferenceTest.class
 ASTHelper.class
 InferenceTest.class
 ParserStructureTest.class
+GCPInferenceTest.class
 InterpreterTest.class
 BuiltinTypeTest.class

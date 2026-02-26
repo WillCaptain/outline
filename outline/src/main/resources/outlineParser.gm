@@ -146,7 +146,7 @@ match_arms'
     : match_arm (',' match_arm)* ','?
     ;
 match_arm
-    : (symbol_unpack | ID | number | STRING | '_') match_if? '->' expression
+    : (symbol_unpack | Symbol | ID | number | STRING | '_') match_if? '->' expression
     ;
 match_if
     : 'if' or_expression
@@ -246,7 +246,7 @@ array_iterate_expression
     : array_iterate_range (',' INT ',' lambda ',' lambda)?
     ;
 array_iterate_range
-    : INT? '...' INT
+    : (INT | ID)? '...' (INT | ID)
     ;
 map
     : '[' (':' | ( literal ':' expression (',' literal ':' expression)* )) ']'

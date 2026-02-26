@@ -1247,24 +1247,24 @@ public class ASTHelper {
                     });
                 agg
                 """;
-//        code = """
-//                outline Aggregator = <a>{
-//                    count: (a->Int) -> ~this,
-//                    avg: (a -> Number) -> ~this,
-//                    compute: Unit->[String:Number]
-//                };
-//
-//                outline Employees = <b>{
-//                    aggregate: <a>(Aggregator<b>->a)->a
-//                };
-//
-//                let employees = __sys__<Employees<{name:String,age:Int}>>;
-//
-////                employees.aggregate(agg->agg.count().avg(e->e.name).compute())
-//employees.aggregate(agg->agg.count(i->0))
-//
-//                """;
-
         return parser.parse(new ASF(), code);
+    }
+
+    public static AST literalOutline() {
+        String code = """
+                outline Gender = Male(String,Int)|Female{name:String, age:Int};
+                outline Human = {
+                      gender: Gender,
+                      specie: #"human" //literal type,means specie can only be "human" String
+                  };
+                let person:Human = {
+                    gender = Male("Will",49)
+                }; // don't need to set specie which is literal type: "human"
+                
+                person.specie // the value should be "human"
+                  
+                """;
+        return parser.parse(new ASF(), code);
+
     }
 }

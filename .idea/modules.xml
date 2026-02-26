@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../gcp/gcp.iml" filepath="$PROJECT_DIR$/../gcp/gcp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/playground/playground.iml" filepath="$PROJECT_DIR$/playground/playground.iml" />
     </modules>
   </component>
 </project>

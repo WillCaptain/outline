@@ -9,6 +9,8 @@ import org.twelve.msll.parsetree.LexerRuleTree;
 import org.twelve.msll.parsetree.ParserGrammarTree;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Facade for parsing Outline source code into GCP ASTs.
@@ -47,7 +49,19 @@ public class OutlineParser {
             synchronized (OutlineParser.class) {
                 if (SHARED_BUILDER == null) {
                     try {
-                        SHARED_BUILDER = new MyParserBuilder(PARSER_GRAMMAR, LEXER_GRAMMAR);
+                        // Use getResourceAsStream so grammar files can be loaded both from
+                        // the filesystem (during development) and from inside an executable JAR.
+                        ClassLoader cl = OutlineParser.class.getClassLoader();
+                        InputStream parserStream = cl.getResourceAsStream(PARSER_GRAMMAR);
+                        InputStream lexerStream  = cl.getResourceAsStream(LEXER_GRAMMAR);
+                        if (parserStream == null || lexerStream == null) {
+                            // Fall back to file-path loading (unit-test / IDE classpath)
+                            SHARED_BUILDER = new MyParserBuilder(PARSER_GRAMMAR, LEXER_GRAMMAR);
+                        } else {
+                            SHARED_BUILDER = new MyParserBuilder(
+                                    new InputStreamReader(parserStream),
+                                    new InputStreamReader(lexerStream));
+                        }
                     } catch (IOException e) {
                         throw new RuntimeException("Failed to initialise Outline grammar", e);
                     }

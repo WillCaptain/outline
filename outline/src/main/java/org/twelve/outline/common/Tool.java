@@ -35,24 +35,95 @@ public final class Tool {
             }
         }
     }
+    /**
+     * Converts an MSLL lexer token to a GCP {@link Token}, preserving full
+     * source-location information (line number and column offset) so that
+     * error messages can report {@code "line N:M"} instead of a raw offset.
+     *
+     * <p>The surrounding double-quotes are stripped and common escape sequences
+     * ({@code \n}, {@code \t}, {@code \r}, {@code \\}, {@code \"}) are decoded
+     * so that string literals behave intuitively at runtime.
+     */
     public static Token convertStrToken(org.twelve.msll.lexer.Token token) {
-        return new Token<>(token.lexeme().replace("\"",""), token.location().start());
-    }
-    public static Token convertNumToken(org.twelve.msll.lexer.Token token){
-        return new Token<>(Tool.parseNumber(token.lexeme()), token.location().start());
+        var loc = token.location();
+        String raw = token.lexeme();
+        // Strip only the outermost surrounding double-quote delimiters, then
+        // decode escape sequences so that "hello\nworld" → hello + newline + world.
+        if (raw.length() >= 2 && raw.charAt(0) == '"' && raw.charAt(raw.length() - 1) == '"') {
+            raw = raw.substring(1, raw.length() - 1);
+        } else {
+            raw = raw.replace("\"", "");   // fallback: remove all quotes (old behaviour)
+        }
+        String decoded = decodeEscapes(raw);
+        // MSLL line numbers are 0-based; add 1 for the conventional 1-based display
+        return new Token<>(decoded, loc.start(), loc.line().number() + 1, loc.lineStart());
     }
 
-    public static Token convertFloatToken(org.twelve.msll.lexer.Token token){
-        String lexeme = token.lexeme().substring(0,token.lexeme().length()-2);
-        return new Token<>(Float.parseFloat(lexeme), token.location().start());
+    /**
+     * Decodes common Java/C-style string escape sequences.
+     * Unrecognised escape sequences are left as-is (backslash retained).
+     */
+    private static String decodeEscapes(String s) {
+        if (!s.contains("\\")) return s;
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 1 < s.length()) {
+                char next = s.charAt(i + 1);
+                switch (next) {
+                    case 'n'  -> { sb.append('\n'); i++; }
+                    case 't'  -> { sb.append('\t'); i++; }
+                    case 'r'  -> { sb.append('\r'); i++; }
+                    case '"'  -> { sb.append('"');  i++; }
+                    case '\'' -> { sb.append('\''); i++; }
+                    case '\\' -> { sb.append('\\'); i++; }
+                    case 'u'  -> {
+                        // Unicode escape: backslash + u + 4 hex digits
+                        if (i + 5 < s.length()) {
+                            try {
+                                int cp = Integer.parseInt(s.substring(i + 2, i + 6), 16);
+                                sb.append((char) cp);
+                                i += 5;
+                            } catch (NumberFormatException e) {
+                                sb.append(c);
+                            }
+                        } else {
+                            sb.append(c);
+                        }
+                    }
+                    default -> sb.append(c);  // unrecognised – keep backslash
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
-    public static Token convertDoubleToken(org.twelve.msll.lexer.Token token){
-        String lexeme = token.lexeme().substring(0,token.lexeme().length()-2);
-        return new Token<>(Double.parseDouble(lexeme), token.location().start());
+
+    public static Token convertNumToken(org.twelve.msll.lexer.Token token) {
+        var loc = token.location();
+        return new Token<>(Tool.parseNumber(token.lexeme()),
+                loc.start(), loc.line().number() + 1, loc.lineStart());
     }
-    public static Token convertIntToken(org.twelve.msll.lexer.Token token){
-//        String lexeme = token.lexeme().substring(0,token.lexeme().length()-2);
-        return new Token<>(Integer.valueOf(token.lexeme()), token.location().start());
+
+    public static Token convertFloatToken(org.twelve.msll.lexer.Token token) {
+        String lexeme = token.lexeme().substring(0, token.lexeme().length() - 2);
+        var loc = token.location();
+        return new Token<>(Float.parseFloat(lexeme),
+                loc.start(), loc.line().number() + 1, loc.lineStart());
+    }
+
+    public static Token convertDoubleToken(org.twelve.msll.lexer.Token token) {
+        String lexeme = token.lexeme().substring(0, token.lexeme().length() - 2);
+        var loc = token.location();
+        return new Token<>(Double.parseDouble(lexeme),
+                loc.start(), loc.line().number() + 1, loc.lineStart());
+    }
+
+    public static Token convertIntToken(org.twelve.msll.lexer.Token token) {
+        var loc = token.location();
+        return new Token<>(Integer.valueOf(token.lexeme()),
+                loc.start(), loc.line().number() + 1, loc.lineStart());
     }
 
     public static List<ReferenceNode> convertReferences(Map<String, Converter> converters, NonTerminalNode node, AST ast) {
