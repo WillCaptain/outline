@@ -77,9 +77,14 @@ public class OutlineParser {
     /**
      * <b>Isolated mode</b>: every call to {@link #parse(String)} creates a fresh {@link ASF}.
      * Use this for single-module tests and tooling.
+     * <p>
+     * Eagerly initialises the shared grammar tables so that the first {@link #parse} call
+     * does not incur the one-time compilation cost (which would otherwise be charged to
+     * whichever test or module happens to run first).
      */
     public OutlineParser() {
         this.sharedConverter = null;
+        sharedBuilder(); // warm up: compile grammar tables now, not on first parse
     }
 
     /**
@@ -92,6 +97,7 @@ public class OutlineParser {
      */
     public OutlineParser(GCPConverter converter) {
         this.sharedConverter = converter;
+        sharedBuilder(); // warm up
     }
 
     // ── parse methods ─────────────────────────────────────────────────────────

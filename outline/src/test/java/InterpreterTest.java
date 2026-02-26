@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
@@ -31,6 +32,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  *   - Higher-order functions
  */
 public class InterpreterTest {
+
+    @BeforeAll
+    static void warmUp() {
+        ASTHelper.parser.toString();
+    }
 
     // =========================================================================
     // Helpers

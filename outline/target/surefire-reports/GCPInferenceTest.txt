@@ -1,4 +1,34 @@
 -------------------------------------------------------------------------------
 Test set: GCPInferenceTest
 -------------------------------------------------------------------------------
-Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.290 s -- in GCPInferenceTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.329 s -- in GCPInferenceTest
+GCPInferenceTest.test_gcp_has_to_be -- Time elapsed: 0.014 s
+GCPInferenceTest.test_gcp_add_expression -- Time elapsed: 0.009 s
+GCPInferenceTest.test_multi_defined_projection -- Time elapsed: 0.009 s
+GCPInferenceTest.test_gcp_defined_to_be -- Time elapsed: 0.003 s
+GCPInferenceTest.test_gcp_declare_to_be -- Time elapsed: 0.002 s
+GCPInferenceTest.test_generic_refer_each_other -- Time elapsed: 0.005 s
+GCPInferenceTest.test_gcp_declared_hof_projection -- Time elapsed: 0.008 s
+GCPInferenceTest.test_gcp_extend_hof_projection -- Time elapsed: 0.004 s
+GCPInferenceTest.test_dict_projection -- Time elapsed: 0.016 s
+GCPInferenceTest.test_extend_entity_projection -- Time elapsed: 0.005 s
+GCPInferenceTest.test_gcp_argument_reference_for_simple_function -- Time elapsed: 0.003 s
+GCPInferenceTest.test_tuple_projection -- Time elapsed: 0.018 s
+GCPInferenceTest.test_extend_hasTo_defined_projection -- Time elapsed: 0.015 s
+GCPInferenceTest.test_gcp_only_reference_for_entity_return_function -- Time elapsed: 0.005 s
+GCPInferenceTest.test_entity_hof_projection_1 -- Time elapsed: 0.018 s
+GCPInferenceTest.test_entity_hof_projection_2 -- Time elapsed: 0.016 s
+GCPInferenceTest.test_entity_hof_projection_3 -- Time elapsed: 0.017 s
+GCPInferenceTest.test_entity_hof_projection_4 -- Time elapsed: 0.019 s
+GCPInferenceTest.test_entity_hof_projection_5 -- Time elapsed: 0.043 s
+GCPInferenceTest.test_gcp_hof_projection_1 -- Time elapsed: 0.002 s
+GCPInferenceTest.test_gcp_hof_projection_2 -- Time elapsed: 0.003 s
+GCPInferenceTest.test_gcp_hof_projection_3 -- Time elapsed: 0.003 s
+GCPInferenceTest.test_gcp_hof_projection_4 -- Time elapsed: 0.003 s
+GCPInferenceTest.test_complicated_hof_projection -- Time elapsed: 0.006 s
+GCPInferenceTest.test_gcp_extend_to_be -- Time elapsed: 0.003 s
+GCPInferenceTest.test_multi_extend_projection -- Time elapsed: 0.004 s
+GCPInferenceTest.test_gcp_only_reference_for_simple_function -- Time elapsed: 0.002 s
+GCPInferenceTest.test_array_projection -- Time elapsed: 0.014 s
+GCPInferenceTest.test_gcp_recursive_projection -- Time elapsed: 0.003 s
+GCPInferenceTest.test_self_return_gcp -- Time elapsed: 0.049 s

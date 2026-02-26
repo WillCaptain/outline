@@ -1,4 +1,22 @@
 -------------------------------------------------------------------------------
 Test set: ParserStructureTest
 -------------------------------------------------------------------------------
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.934 s -- in ParserStructureTest
+Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.006 s -- in ParserStructureTest
+ParserStructureTest.test_array_definition -- Time elapsed: 0.062 s
+ParserStructureTest.test_tuple_type -- Time elapsed: 0.027 s
+ParserStructureTest.test_as -- Time elapsed: 0.009 s
+ParserStructureTest.test_if -- Time elapsed: 0.008 s
+ParserStructureTest.test_poly -- Time elapsed: 0.006 s
+ParserStructureTest.test_entity -- Time elapsed: 0.007 s
+ParserStructureTest.test_export -- Time elapsed: 0.007 s
+ParserStructureTest.test_import -- Time elapsed: 0.006 s
+ParserStructureTest.test_non_argument_function -- Time elapsed: 0.001 s
+ParserStructureTest.test_option -- Time elapsed: 0.005 s
+ParserStructureTest.test_declare -- Time elapsed: 0.008 s
+ParserStructureTest.test_array_as_argument_definition -- Time elapsed: 0.015 s
+ParserStructureTest.test_dict_definition -- Time elapsed: 0.010 s
+ParserStructureTest.test_variable_declare -- Time elapsed: 0.006 s
+ParserStructureTest.test_namespace -- Time elapsed: 0.006 s
+ParserStructureTest.test_function_definition -- Time elapsed: 0.003 s
+ParserStructureTest.test_reference_in_function -- Time elapsed: 0.003 s
+ParserStructureTest.test_tuple -- Time elapsed: 0.012 s

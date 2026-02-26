@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
@@ -29,6 +30,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.twelve.gcp.common.Tool.cast;
 
 public class GCPInferenceTest {
+
+    @BeforeAll
+    static void warmUp() {
+        ASTHelper.parser.toString();
+    }
+
     @Test
     void test_gcp_declare_to_be() {
         /*

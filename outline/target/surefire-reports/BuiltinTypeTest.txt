@@ -1,4 +1,7 @@
 -------------------------------------------------------------------------------
 Test set: BuiltinTypeTest
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in BuiltinTypeTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in BuiltinTypeTest
+BuiltinTypeTest.stringBuiltins -- Time elapsed: 0.006 s
+BuiltinTypeTest.dictBuiltins -- Time elapsed: 0.003 s
+BuiltinTypeTest.numberBuiltins -- Time elapsed: 0.003 s

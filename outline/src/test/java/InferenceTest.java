@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
@@ -36,6 +37,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.twelve.gcp.common.Tool.cast;
 
 public class InferenceTest {
+
+    @BeforeAll
+    static void warmUp() {
+        // Triggers ASTHelper class loading and OutlineParser grammar compilation
+        // so the one-time initialisation cost is not charged to the first test.
+        ASTHelper.parser.toString();
+    }
 
 
     @Test
@@ -1008,7 +1016,7 @@ public class InferenceTest {
                 ASF asf2 = new ASF();
                 org.twelve.outline.OutlineParser p2 = ASTHelper.parser;
                 p2.parse(tests[i]);
-                System.out.println("Test " + i + " OK");
+//                System.out.println("Test " + i + " OK");
             } catch (Exception e) {
                 System.out.println("Test " + i + " FAIL: " + e.getMessage().substring(0, Math.min(80, e.getMessage().length())));
             }

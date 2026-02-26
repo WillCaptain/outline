@@ -1,4 +1,5 @@
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Token;
@@ -22,6 +23,10 @@ import static org.twelve.gcp.common.Tool.cast;
 
 public class ParserStructureTest {
 
+    @BeforeAll
+    static void warmUp() {
+        ASTHelper.parser.toString();
+    }
 
     @Test
     void test_namespace() {

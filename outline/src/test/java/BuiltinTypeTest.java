@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
@@ -16,6 +17,11 @@ import static org.twelve.gcp.common.Tool.cast;
  * Verifies that each built-in method resolves to the correct return type.
  */
 public class BuiltinTypeTest {
+
+    @BeforeAll
+    static void warmUp() {
+        ASTHelper.parser.toString();
+    }
 
     private static Outline lhsOf(AST ast, int stmtIndex) {
         VariableDeclarator decl = cast(ast.program().body().statements().get(stmtIndex));
