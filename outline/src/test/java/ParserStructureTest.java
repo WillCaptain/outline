@@ -175,7 +175,7 @@ public class ParserStructureTest {
                 let get = ()->{
                 
                 };""";
-        AST ast = new OutlineParser().parse(code);
+        AST ast = ASTHelper.parser.parse(code);
         assertEquals(Token.unit().lexeme(),((FunctionNode)ast.program().body().get(0).get(0).get(1)).argument().name());
     }
     @Test

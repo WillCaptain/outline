@@ -7,7 +7,7 @@ import org.twelve.outline.OutlineParser;
 import java.io.IOException;
 
 public class ASTHelper {
-    private static OutlineParser parser;
+    public static OutlineParser parser;
 
     static {
         try {

@@ -1006,7 +1006,7 @@ public class InferenceTest {
         for (int i = 0; i < tests.length; i++) {
             try {
                 ASF asf2 = new ASF();
-                org.twelve.outline.OutlineParser p2 = new org.twelve.outline.OutlineParser(new org.twelve.outline.GCPConverter(asf2));
+                org.twelve.outline.OutlineParser p2 = ASTHelper.parser;
                 p2.parse(tests[i]);
                 System.out.println("Test " + i + " OK");
             } catch (Exception e) {

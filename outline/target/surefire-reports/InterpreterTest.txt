@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: ParserStructureTest
+Test set: InterpreterTest
 -------------------------------------------------------------------------------
-Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.433 s -- in ParserStructureTest
+Tests run: 121, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 280.9 s -- in InterpreterTest
