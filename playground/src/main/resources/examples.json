@@ -25,21 +25,28 @@
     "title": "Curried Functions",
     "description": "All Outline functions are curried — GCP infers the full A→B→C chain.",
     "category": "functions",
-    "code": "// Curried binary functions\nlet add = x -> y -> x + y;   // Int → Int → Int\nlet mul = x -> y -> x * y;   // Int → Int → Int\n\n// Partial application creates specialised functions\nlet add5   = add(5);          // Int → Int\nlet double = mul(2);          // Int → Int (or Number → Number)\n\n// Compose via application\nlet result = add5(double(3)); // = add5(6) = 11\n\nresult;"
+    "code": "// Curried binary functions\nlet add = x -> y -> x + y;   // Int → Int → Int\nlet mul = x -> y -> x * y;   // Int → Int → Int\n\n// Partial application creates specialised functions\nlet add5   = add(5);          // Int → Int\nlet double = mul(2);          // Int → Int\n\n// Compose via application\nlet result = add5(double(3)); // = add5(6) = 11\n\nresult;"
   },
   {
     "id": "hof",
     "title": "Higher-Order Functions",
     "description": "Functions that accept or return functions — GCP tracks the full type chain.",
     "category": "functions",
-    "code": "// Classic higher-order combinators\nlet apply   = f -> x -> f(x);\nlet compose = f -> g -> x -> f(g(x));\nlet twice   = f -> x -> f(f(x));\nlet flip    = f -> x -> y -> f(y)(x);\n\nlet inc    = x -> x + 1;\nlet double = x -> x * 2;\n\n// Compose inc then double: (5+1)*2 = 12\nlet inc_then_double = compose(double)(inc);\n\n// Apply a function four times: 3 * 2 * 2 = 12\nlet four_times = twice(double);\n\n// flip argument order: sub(3)(10) = 10 - 3 = 7\nlet sub  = x -> y -> x - y;\nlet flipped_sub = flip(sub);\n\nlet r1 = apply(inc)(10);          // 11\nlet r2 = inc_then_double(5);      // 12\nlet r3 = four_times(3);           // 12\nlet r4 = flipped_sub(3)(10);      // 7\nr2;"
+    "code": "// Classic higher-order combinators\nlet apply  = f -> x -> f(x);\nlet twice  = f -> x -> f(f(x));\nlet flip   = f -> x -> y -> f(y)(x);\n\nlet inc    = x -> x + 1;\nlet double = x -> x * 2;\nlet sub    = x -> y -> x - y;\n\n// Apply: apply(f)(x) = f(x)\nlet r1 = apply(inc)(10);       // 11\n\n// Twice: apply a function two times\nlet r2 = twice(double)(3);     // 3 * 2 * 2 = 12\n\n// Flip: reverse argument order — sub(10)(3) = 10-3 = 7\nlet r3 = flip(sub)(3)(10);     // 10 - 3 = 7\n\nr2;"
+  },
+  {
+    "id": "hof-compose",
+    "title": "Function Composition",
+    "description": "Compose two functions — GCP infers the full composed type chain.",
+    "category": "functions",
+    "code": "// compose(f)(g)(x) = f(g(x))\nlet compose = f -> g -> x -> f(g(x));\n\nlet inc    = x -> x + 1;\nlet double = x -> x * 2;\nlet square = x -> x * x;\n\n// inc after double: (5 * 2) + 1 = 11\nlet inc_after_double = compose(inc)(double);\n\n// double after square: (4^2) * 2 = 32\nlet double_after_sq  = compose(double)(square);\n\nlet r1 = inc_after_double(5);   // 11\nlet r2 = double_after_sq(4);    // 32\n\nr1;"
   },
   {
     "id": "recursive",
     "title": "Recursive Functions",
-    "description": "GCP handles mutual recursion and infers fixed-point types.",
+    "description": "GCP handles self-referential let bindings — factorial and GCD.",
     "category": "functions",
-    "code": "// Classic math functions\nlet fact = n -> if (n <= 1) 1 else n * fact(n - 1);\nlet fib  = n -> if (n <= 1) n else fib(n - 1) + fib(n - 2);\n\n// GCD via Euclidean algorithm (curried)\nlet gcd = x -> y -> if (y == 0) x else gcd(y)(x % y);\nlet lcm = x -> y -> (x * y) / (gcd(x)(y));\n\nlet f5  = fact(5);           // 120\nlet f10 = fib(10);           // 55\nlet g   = gcd(48)(18);       // 6\nlet l   = lcm(4)(6);         // 12\n\nf5;"
+    "code": "// Linear recursion — GCP infers Int→Int automatically\nlet fact = n -> if (n <= 1) 1 else n * fact(n - 1);\n\n// GCD via Euclidean algorithm (curried binary recursion)\nlet gcd  = x -> y -> if (y == 0) x else gcd(y)(x % y);\n\n// Power of 2 via repeated squaring\nlet pow2 = n -> if (n == 0) 1 else 2 * pow2(n - 1);\n\nlet f5 = fact(5);         // 120\nlet f6 = fact(6);         // 720\nlet g  = gcd(48)(18);     // 6\nlet p  = pow2(8);         // 256\n\nf5;"
   },
   {
     "id": "adt-sum",
@@ -70,11 +77,25 @@
     "code": "outline Shape = Circle{r:Int} | Rect{w:Int, h:Int} | Dot;\n\n// Dispatch on variant, unpack fields inline\nlet area = s -> match s {\n    Circle{r}    -> r * r,\n    Rect{w, h}   -> w * h,\n    Dot          -> 0\n};\n\nlet describe = s -> match s {\n    Circle{r} if r > 10 -> \"big circle\",\n    Circle{r}           -> \"small circle\",\n    Rect{w, h}          -> \"rectangle\",\n    Dot                 -> \"dot\"\n};\n\nlet c = Circle{r=7};\nlet r = Rect{w=4, h=5};\narea(r);"
   },
   {
+    "id": "nested-entity",
+    "title": "Nested Entity Access",
+    "description": "Deep-nested anonymous entity literals — GCP resolves each field accessor chain.",
+    "category": "types",
+    "code": "let father = {\n    name = \"will\",\n    son = {name=\"evan\", girl_friend={name=\"someone\"}, gender=\"male\"}\n};\n\n// Chained member access across three levels of nesting\nlet gf_name  = father.son.girl_friend.name;   // \"someone\"\nlet son_name = father.son.name;               // \"evan\"\nlet dad_name = father.name;                   // \"will\"\n\ngf_name;"
+  },
+  {
     "id": "arrays",
     "title": "Arrays & Pipelines",
-    "description": "Ranges with variables, map/filter/reduce — all inferred end-to-end.",
+    "description": "Ranges, map, filter, reduce — all inferred end-to-end. Note: reduce takes combiner first, then initial value.",
     "category": "collections",
-    "code": "let nums  = [1, 2, 3, 4, 5];\nlet n     = 10;\n\n// Dynamic range: [1..n] — n is a variable!\nlet range = [1...n];\n\n// Pipeline: filter → map\nlet evens = [1...n].filter(x -> x % 2 == 0);   // [2,4,6,8,10]\nlet sq    = [1...5].map(x -> x * x);            // [1,4,9,16,25]\n\n// Gauss sum: n*(n+1)/2 = 5050\nlet total = [1...100].reduce(0, (acc, x) -> acc + x);\n\ntotal;"
+    "code": "let nums  = [1, 2, 3, 4, 5];\n\n// Static-range map and filter\nlet sq    = [1, 2, 3, 4, 5].map(x -> x * x);        // [1,4,9,16,25]\nlet evens = [1, 2, 3, 4, 5, 6].filter(x -> x % 2 == 0);  // [2,4,6]\n\n// Dynamic range: [1...n] where n is a variable\nlet n     = 10;\nlet range = [1...n];\n\n// reduce: combiner first, initial value second (curried)\n// Gauss sum: 1+2+...+100 = 5050\nlet total = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n              .reduce(acc -> x -> acc + x)(0);\n\ntotal;"
+  },
+  {
+    "id": "pipeline",
+    "title": "Data Pipeline",
+    "description": "A realistic data-processing pipeline — filter, map, reduce all chained.",
+    "category": "collections",
+    "code": "// Simulate a small data pipeline\nlet data = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];\n\n// Step 1: filter values above threshold\nlet threshold = 3;\nlet hi = data.filter(x -> x > threshold);   // [4,5,9,6,5]\n\n// Step 2: double each value\nlet doubled = hi.map(x -> x * 2);            // [8,10,18,12,10]\n\n// Step 3: sum — note: reduce(combiner)(initial)\nlet result = doubled.reduce(acc -> x -> acc + x)(0);\n\nresult;"
   },
   {
     "id": "inference-power",
@@ -88,13 +109,6 @@
     "title": "Generic Functions",
     "description": "GCP propagates generic type variables through arbitrary call chains.",
     "category": "advanced",
-    "code": "// Swap a pair — inferred as (A, B) → (B, A)\nlet swap = p -> (p.second, p.first);\n\n// Const: ignore second argument — A → B → A\nlet konst = a -> b -> a;\n\n// SKI combinators\nlet s = f -> g -> x -> f(x)(g(x));\nlet k = a -> b -> a;\nlet i = s(k)(k);   // identity via SKI\n\n// Fix-point (Y combinator approximation)\nlet fix = f -> (x -> f(x -> f(x)(x)))(x -> f(x -> f(x)(x)));\n\nlet fact_gen = self -> n -> if (n <= 1) 1 else n * self(n - 1);\nlet fact = fix(fact_gen);\n\nfact(6);   // → 720"
-  },
-  {
-    "id": "pipeline",
-    "title": "Data Pipeline",
-    "description": "A realistic data-processing pipeline — GCP tracks types through every stage.",
-    "category": "advanced",
-    "code": "// Simulate a small data pipeline\nlet data = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];\n\n// Step 1: deduplicate (keep first occurrence)\nlet unique = arr -> arr.filter((x, i) -> i == arr.indexOf(x));\n\n// Step 2: sort ascending (bubble-sort via reduce — simple demo)\nlet min = a -> b -> if (a < b) a else b;\n\n// Step 3: filter > threshold\nlet threshold = 3;\nlet hi = data.filter(x -> x > threshold);\n\n// Step 4: double each\nlet doubled = hi.map(x -> x * 2);\n\n// Step 5: sum\nlet result = doubled.reduce(0, (acc, x) -> acc + x);\n\nresult;"
+    "code": "// ── ∀α. α → α  (identity — works for any type)\nlet id      = x -> x;\n\n// ── ∀α β. α → β → α  (const combinator)\nlet konst   = a -> b -> a;\n\n// ── (B→C) → (A→B) → A → C  (function composition)\nlet compose = f -> g -> x -> f(g(x));\n\n// ── argument order flip\nlet flip    = f -> x -> y -> f(y)(x);\n\nlet inc    = x -> x + 1;\nlet double = x -> x * 2;\nlet sub    = x -> y -> x - y;\n\nlet r1 = id(42);                    // 42    — generic over Int\nlet r2 = konst(\"hello\")(999);       // \"hello\" — generic over String\nlet r3 = compose(double)(inc)(5);   // (5+1)*2 = 12\nlet r4 = flip(sub)(3)(10);          // 10-3 = 7\n\nr3;"
   }
 ]

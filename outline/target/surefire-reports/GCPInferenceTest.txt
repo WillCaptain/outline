@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: GCPInferenceTest
 -------------------------------------------------------------------------------
-Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.398 s -- in GCPInferenceTest
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.304 s -- in GCPInferenceTest
