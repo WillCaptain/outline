@@ -1,13 +1,10 @@
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
-import org.twelve.gcp.interpreter.OutlineInterpreter;
 import org.twelve.gcp.interpreter.value.*;
 import org.twelve.outline.GCPConverter;
 import org.twelve.outline.OutlineParser;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class InterpreterTest {
 
-    private static OutlineParser parser;
-
-    @BeforeAll
-    static void setup() throws IOException {
-        parser = new OutlineParser();
-    }
-
     // =========================================================================
     // Helpers
     // =========================================================================
@@ -49,26 +39,26 @@ public class InterpreterTest {
     /** Parse code into a fresh single-module ASF and run it. */
     private Value run(String code) {
         ASF asf = new ASF();
-        AST ast = parser.parse(asf, code);
-        return new OutlineInterpreter(asf).run();
+        new OutlineParser().parse(asf, code);
+        return asf.interpret();
     }
 
     /** Run an already-constructed AST (ASF retrieved from ast.asf()). */
     private Value run(AST ast) {
-        return new OutlineInterpreter(ast.asf()).run();
+        return ast.asf().interpret();
     }
 
     /** Run against a whole ASF (e.g. from ASTHelper.educationAndHuman()). */
     private Value run(ASF asf) {
-        return new OutlineInterpreter(asf).run();
+        return asf.interpret();
     }
 
     /** Parse and run multiple modules sequentially, returning the value of the last one. */
-    private Value runMultiModule(String... modules) throws IOException {
+    private Value runMultiModule(String... modules) {
         ASF asf = new ASF();
-        OutlineParser p = new OutlineParser(new GCPConverter(asf));
-        for (String code : modules) p.parse(code);
-        return new OutlineInterpreter(asf).run();
+        OutlineParser p = new OutlineParser();
+        for (String code : modules) p.parse(asf, code);
+        return asf.interpret();
     }
 
     private long intVal(Value v) {
@@ -1164,7 +1154,7 @@ public class InterpreterTest {
     // =========================================================================
 
     @Test
-    void test_import_export_value() throws IOException {
+    void test_import_export_value() {
         Value v = runMultiModule(
                 """
                 module org.twelve.math
@@ -1219,11 +1209,11 @@ public class InterpreterTest {
     @Test
     void test_external_constructor_via_plugin() {
         ASF asf = new ASF();
-        parser.parse(asf, """
+        new OutlineParser().parse(asf, """
                 let repo = __db__<String>;
                 repo
                 """);
-        OutlineInterpreter interp = new OutlineInterpreter(asf);
+        org.twelve.gcp.interpreter.OutlineInterpreter interp = new org.twelve.gcp.interpreter.OutlineInterpreter(asf);
         interp.registerConstructor("db", (constructorName, typeArgs, valueArgs) ->
                 new StringValue("db:" + String.join(",", typeArgs)));
         Value v = interp.run();
@@ -1345,7 +1335,7 @@ public class InterpreterTest {
     // =========================================================================
 
     @Test
-    void test_future_reference_from_entity() throws IOException {
+    void test_future_reference_from_entity() {
         // Focused version of mockFutureReferenceFromEntity:
         // entity inheritance with this-binding, walk/talk chaining, and closures
         Value v = run("""

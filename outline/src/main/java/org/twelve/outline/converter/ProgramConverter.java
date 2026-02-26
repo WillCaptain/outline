@@ -23,7 +23,6 @@ public class ProgramConverter extends Converter{
         NonTerminalNode root = cast(source);
         Program program = cast(related);
         for (ParseNode node : root.nodes()) {
-//            converters.get(node.name()).convert(ast, node, program.body());
             Node converted = converters.get(node.name()).convert(ast, node,program.body());
             if(converted instanceof Expression){
                 program.body().addStatement(new ReturnStatement((Expression) converted));

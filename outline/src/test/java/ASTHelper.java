@@ -1,21 +1,10 @@
-import lombok.SneakyThrows;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.outline.GCPConverter;
 import org.twelve.outline.OutlineParser;
 
-import java.io.IOException;
-
 public class ASTHelper {
-    public static OutlineParser parser;
-
-    static {
-        try {
-            parser = new OutlineParser();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public static final OutlineParser parser = new OutlineParser();
 
     public static AST mockAddFunc() {
         String code = """
@@ -24,7 +13,7 @@ public class ASTHelper {
                     let z = x+y;
                     z
                 };""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockRandomPersonEntity() {
@@ -37,7 +26,7 @@ public class ASTHelper {
                 };
                 let name_1 = person.name;
                 let name_2 = person.get_name();""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockSimplePersonEntity() {
@@ -49,7 +38,7 @@ public class ASTHelper {
                 };
                 let name_1 = person.name;
                 let name_2 = person.get_name();""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockSimpleTuple() {
@@ -86,7 +75,7 @@ public class ASTHelper {
                 module default
                 
                 var poly = 100&"some"&{age=40,name="Will"}&(40,"Will");""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockDefinedLiteralUnion() {
@@ -95,7 +84,7 @@ public class ASTHelper {
                 
                 var option :100|"some"|String|{name="will"}|("will",30) = 100;
                 option++, option = 200;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockMatch() {
@@ -180,7 +169,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    @SneakyThrows
+    
     public static AST mockReferenceInFunction() {
         String code = """
                 let f = fx<a,b>(x: a)->{
@@ -200,7 +189,7 @@ public class ASTHelper {
                   name = "Will",
                   age = 20
                 } as {name: Int};""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockArrayDefinition() {
@@ -210,7 +199,7 @@ public class ASTHelper {
                 let c: [?] = [...5];
                 let d = [1...6,2,x->x+"2",x->x%2==0];
                 let e = [];""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockDictDefinition() {
@@ -231,7 +220,7 @@ public class ASTHelper {
                 let a = [{
                   name = "Will"
                 }:"Male"];""";*/
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockArrayAsArgument() {
@@ -268,7 +257,7 @@ public class ASTHelper {
                 import * from e.f.g;
                 let age: Int = 10, name = "Will", height: Double = 1.68, grade = level;
                 export height as stature, name;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     /**
@@ -280,7 +269,6 @@ public class ASTHelper {
      * Note: export grammar only accepts lowercase IDs, so we export a *value* of the outline type rather
      * than the type name itself.  The importing module receives the full structural type and can access members.
      */
-    @SneakyThrows
     public static AST mockImportExportOutline() {
         ASF asf = new ASF();
         OutlineParser p = new OutlineParser(new GCPConverter(asf));
@@ -307,7 +295,6 @@ public class ASTHelper {
     /**
      * Import-alias test: verifies that "import X as Y" binds the value under Y (not X).
      */
-    @SneakyThrows
     public static AST mockImportAlias() {
         ASF asf = new ASF();
         OutlineParser p = new OutlineParser(new GCPConverter(asf));
@@ -330,7 +317,6 @@ public class ASTHelper {
      * then imports it into another module and extends it (ColorPoint = Point + color).
      * Verifies that inherited members (x, y) and the new member (color) all resolve correctly.
      */
-    @SneakyThrows
     public static AST mockImportOutlineType() {
         ASF asf = new ASF();
         OutlineParser p = new OutlineParser(new GCPConverter(asf));
@@ -352,21 +338,18 @@ public class ASTHelper {
                 """);
     }
 
-    @SneakyThrows
     public static ASF educationAndHuman() {
         ASF asf = new ASF();
         OutlineParser parser = new OutlineParser(new GCPConverter(asf));
-        String code = """
+        parser.parse("""
                 module org.twelve.education
                 let grade: Int = 1, school: String = "NO.1";
-                export grade, school as college;""";
-        parser.parse(code);
-        code = """
+                export grade, school as college;""");
+        parser.parse("""
                 module org.twelve.human
                 import grade as level, college as school from education;
                 let age: Int, name: String = "Will", height: Double = 1.68, grade: Int = level;
-                export height as stature, name;""";
-        parser.parse(code);
+                export height as stature, name;""");
         return asf;
     }
 
@@ -374,7 +357,7 @@ public class ASTHelper {
         String code = """
                 module me
                 var age: Int = "some";""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST assignMismatch() {
@@ -382,7 +365,7 @@ public class ASTHelper {
                 module me
                 var age = "some";
                 age = 100;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST declaredPolyMismatchAssignment() {
@@ -390,7 +373,7 @@ public class ASTHelper {
                 module me
                 var age = "some"&(100|200);
                 age = 100.0;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockErrorAssignOnDefinedPoly() {
@@ -400,7 +383,7 @@ public class ASTHelper {
                 var poly = 100&"some"&{age=40,name="Will"}&(40,"Will");
                 poly = 10.0f;
                 let poly = 10.0f;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockAssignOnDefinedLiteralUnion() {
@@ -411,7 +394,7 @@ public class ASTHelper {
                 option++, option = 200;
                 option = 100;
                 option = "some"; """;
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
 
     }
 
@@ -420,7 +403,7 @@ public class ASTHelper {
                 var add = ((x,y)->x+y) & ((x,y,z)->x+y+z);""";
         code = """
                 var add = (x,y)->x+y &&& (x,y,z)->{x+y+z};""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
     public static AST mockGCPTestAst() {
@@ -432,10 +415,10 @@ public class ASTHelper {
                 a-b;
                 a-c;
                 a==b;""";
-        return parser.parse(code);
+        return parser.parse(new ASF(), code);
     }
 
-    @SneakyThrows
+    
     public static AST mockSimplePersonEntityWithOverrideMember() {
         String code = """ 
                 module test
@@ -991,7 +974,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    public static AST mockFutureReferenceFromEntity() throws IOException {
+    public static AST mockFutureReferenceFromEntity() {
         String code = """
                 let animal = {
                     walk = ()-> this,
@@ -1212,7 +1195,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    public static AST mockMoreReference() throws IOException {
+    public static AST mockMoreReference() {
         String code = """
                 outline O1 = fx<a> a->a;
                 outline O11 = fx<a> a->a;
