@@ -169,7 +169,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    
+
     public static AST mockReferenceInFunction() {
         String code = """
                 let f = fx<a,b>(x: a)->{
@@ -262,10 +262,10 @@ public class ASTHelper {
 
     /**
      * Two-module scenario for import/export outline:
-     *   Module shapes: defines outline Summary, creates a sample value and exports it together with a size counter.
-     *   Module app:    imports the value (whose type IS the outline structure) + the counter, accesses members,
-     *                  and returns (Integer,[String:Number],Integer).
-     *
+     * Module shapes: defines outline Summary, creates a sample value and exports it together with a size counter.
+     * Module app:    imports the value (whose type IS the outline structure) + the counter, accesses members,
+     * and returns (Integer,[String:Number],Integer).
+     * <p>
      * Note: export grammar only accepts lowercase IDs, so we export a *value* of the outline type rather
      * than the type name itself.  The importing module receives the full structural type and can access members.
      */
@@ -418,7 +418,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    
+
     public static AST mockSimplePersonEntityWithOverrideMember() {
         String code = """ 
                 module test
@@ -553,7 +553,9 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    /** Number built-in methods: abs/ceil/floor/round/to_int/to_float/sqrt/pow/min/max */
+    /**
+     * Number built-in methods: abs/ceil/floor/round/to_int/to_float/sqrt/pow/min/max
+     */
     public static AST mockNumberMethods() {
         String code = """
                 let x = 100;
@@ -569,7 +571,9 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    /** String built-in methods: length/trim/to_upper/to_lower/split/contains/starts_with/ends_with/index_of/sub_str/replace/to_int/to_number/chars/repeat */
+    /**
+     * String built-in methods: length/trim/to_upper/to_lower/split/contains/starts_with/ends_with/index_of/sub_str/replace/to_int/to_number/chars/repeat
+     */
     public static AST mockStringMethods() {
         String code = """
                 let s = "hello";
@@ -592,7 +596,9 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    /** Bool built-in methods: not/and_also/or_else */
+    /**
+     * Bool built-in methods: not/and_also/or_else
+     */
     public static AST mockBoolMethods() {
         String code = """
                 let b = true;
@@ -603,7 +609,9 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    /** Array built-in methods: len/reverse/take/drop/filter/forEach/any/all/find/sort/flat_map/min/max */
+    /**
+     * Array built-in methods: len/reverse/take/drop/filter/forEach/any/all/find/sort/flat_map/min/max
+     */
     public static AST mockArrayMethods() {
         String code = """
                 let x = [1,2,3];
@@ -624,7 +632,9 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    /** Dict built-in methods: length/keys/values/contains_key/get */
+    /**
+     * Dict built-in methods: length/keys/values/contains_key/get
+     */
     public static AST mockDictMethods() {
         String code = """
                 let d = ["a":1,"b":2];
@@ -1099,40 +1109,40 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    public static AST mockReferCallLazy(){
+    public static AST mockReferCallLazy() {
         String code = """
-               outline A = <c,e>{
-                b:B<String,e>,
-                c:c,
-                e:e,
-                g:<d>(c->d)->A<d,e>,
-                t:~this
-               };
-               outline B = <e>A<e>{
-                d:e
-               };
-               
-               let fb = <a>(a:a)->a;
-               let fa = <a>(a:a)->{
-                return {
-                    a = a,
-                    b = fb<a>
+                outline A = <c,e>{
+                 b:B<String,e>,
+                 c:c,
+                 e:e,
+                 g:<d>(c->d)->A<d,e>,
+                 t:~this
                 };
-               };
-               
-               
-               let a = __sys__<B<Int,Int>>;
-               let c_1 = a.b.c;
-               let c_2 = a.t.c;
-               let d_1 = a.b.d;
-               let d_2 = a.t.d;
-               let g_1 = a.b.g(x->x).c;
-               let g_2 = a.t.g(x->"will").c;
-               let f = fa(100);
-               
-               (c_1,c_2,d_1,d_2,g_1,g_2,f.a,f.b(10),f.b("some"))
-               
-               """;
+                outline B = <e>A<e>{
+                 d:e
+                };
+                
+                let fb = <a>(a:a)->a;
+                let fa = <a>(a:a)->{
+                 return {
+                     a = a,
+                     b = fb<a>
+                 };
+                };
+                
+                
+                let a = __sys__<B<Int,Int>>;
+                let c_1 = a.b.c;
+                let c_2 = a.t.c;
+                let d_1 = a.b.d;
+                let d_2 = a.t.d;
+                let g_1 = a.b.g(x->x).c;
+                let g_2 = a.t.g(x->"will").c;
+                let f = fa(100);
+                
+                (c_1,c_2,d_1,d_2,g_1,g_2,f.a,f.b(10),f.b("some"))
+                
+                """;
 //        code = """
 //           let fb = <a>(a:a)->a;
 //           let fa = <a>(a:a)->{
@@ -1148,49 +1158,49 @@ public class ASTHelper {
 
     public static AST mockInterInvoke() {
         String code = """
-               outline Blood = A|B|C;
-               outline Region = Asia|Africa|America;
-               
-               let create_wife = husband ->{
-                    return{ 
-                        husband = husband,
-                        family_name = husband.family_name
-                    };
-               };
-               
-               let create_son = origin->{
-                    return {
-                        age = 20,
-                        origin = origin,
-                        myself = this,
-                        father = create_father(this)
-                    };
-               };
-               
-               let create_father = son->{
-                    return {
-                        name = "father",
-                        family_name = "Zhang",
-                        son = son,
-                        wife = create_wife(this)
-                    };
-               };
-               let son = create_son(Asia);
-               
-               outline Son = <a>{
-                    name: String,
-                    origin: a,
-                    father: Father<a>
-               };
-               outline Father = <b>{
-                    age: Int,
-                    origin: b,
-                    son: Son<b>
-               };
-               let father = __constructor__<Father<Blood>>;
-         
-              (son.origin, son.father.name, son.father.son.age, son.father.son.origin, son.father.wife.family_name,father.son.name, father.son.father.origin, father.son.origin)
-               """;
+                 outline Blood = A|B|C;
+                 outline Region = Asia|Africa|America;
+                
+                 let create_wife = husband ->{
+                      return{ 
+                          husband = husband,
+                          family_name = husband.family_name
+                      };
+                 };
+                
+                 let create_son = origin->{
+                      return {
+                          age = 20,
+                          origin = origin,
+                          myself = this,
+                          father = create_father(this)
+                      };
+                 };
+                
+                 let create_father = son->{
+                      return {
+                          name = "father",
+                          family_name = "Zhang",
+                          son = son,
+                          wife = create_wife(this)
+                      };
+                 };
+                 let son = create_son(Asia);
+                
+                 outline Son = <a>{
+                      name: String,
+                      origin: a,
+                      father: Father<a>
+                 };
+                 outline Father = <b>{
+                      age: Int,
+                      origin: b,
+                      son: Son<b>
+                 };
+                 let father = __constructor__<Father<Blood>>;
+                
+                (son.origin, son.father.name, son.father.son.age, son.father.son.origin, son.father.wife.family_name,father.son.name, father.son.father.origin, father.son.origin)
+                """;
 
         return parser.parse(new ASF(), code);
     }
@@ -1232,15 +1242,15 @@ public class ASTHelper {
                 outline VirtualSet = <a>{
                      aggregate: <b>(Aggregator<a> -> b) -> b
                 };
-
+                
                 outline Employee = {
                   name: String,
                   age: Int
                 };
- 
+                
                 let employees = __ontology_repo__<VirtualSet<Employee>>;
-
-
+                
+                
                 let agg = employees
                     .aggregate(agg->{
                         agg.avg(e->e.age).avg(e->e.name).compute()//avg(e->e.name) error seems hidden by the first avg: .avg(e->e.age)
@@ -1262,9 +1272,22 @@ public class ASTHelper {
                 }; // don't need to set specie which is literal type: "human"
                 
                 person.specie // the value should be "human"
-                  
+                
                 """;
         return parser.parse(new ASF(), code);
 
+
+    }
+
+    public static AST mockNestedEntity() {
+        String code = """
+                let father = {
+                    name = "will",
+                    son = {name="evan", girl_friend={name="someone"},gender="male"}
+                };
+                
+                father.son.girl_friend.name
+                """;
+        return parser.parse(new ASF(), code);
     }
 }

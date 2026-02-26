@@ -366,6 +366,23 @@ public class OutlineCompilerService {
                 d;
                 """),
 
+            new ExampleCode("nested-entity", "Nested Entities",
+                "Deep-nested anonymous entity literals — GCP resolves each field accessor chain.",
+                "types",
+                """
+                let father = {
+                    name = "will",
+                    son = {name="evan", girl_friend={name="someone"},gender="male"}
+                };
+
+                // Chained member access across three levels of nesting
+                let gf_name = father.son.girl_friend.name;   // "someone"
+                let son_name = father.son.name;               // "evan"
+                let dad_name = father.name;                   // "will"
+
+                gf_name;
+                """),
+
             new ExampleCode("match-adt", "Pattern Matching + Guards",
                 "Exhaustive match with guard conditions — GCP infers a unified result type.",
                 "types",

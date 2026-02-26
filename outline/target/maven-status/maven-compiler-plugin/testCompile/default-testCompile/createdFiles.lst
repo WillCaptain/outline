@@ -1,6 +1,8 @@
 ASTHelper.class
+RunnerHelper.class
 InferenceTest.class
 ParserStructureTest.class
+ComplexInterpretTest.class
 GCPInferenceTest.class
 InterpreterTest.class
 BuiltinTypeTest.class

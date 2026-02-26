@@ -113,7 +113,12 @@ public class GCPConverter {
         //tuple
         this.converters.put(Constants.TUPLE, new TupleConverter(converters));
         //factor expression
-        this.converters.put(Constants.FACTOR_EXPRESSION, new FactorExprConverter(converters));
+        FactorExprConverter factorExprConverter = new FactorExprConverter(converters);
+        this.converters.put(Constants.FACTOR_EXPRESSION, factorExprConverter);
+        // When a single-property entity is ambiguous with block, abstractNodes collapses
+        // factor_expression (1 child) exposing factor_expression_beta to the parent.
+        // Register the same handler so ambiguous entity/block is resolved correctly.
+        this.converters.put("factor_expression_beta", factorExprConverter);
         //factor (expression)
         this.converters.put(Constants.FACTOR, new FactorConverter(converters));
         //this

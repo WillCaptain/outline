@@ -1,7 +1,9 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
+import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.interpreter.value.*;
+import org.twelve.gcp.outline.primitive.STRING;
 import org.twelve.outline.OutlineParser;
 
 import java.util.List;
@@ -10,6 +12,8 @@ import org.twelve.msll.exception.GrammarSyntaxException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.twelve.gcp.common.Tool.cast;
 
 /**
  * End-to-end interpreter tests using the OutlineParser to produce real ASTs from GCP source code.
@@ -62,6 +66,16 @@ public class InterpreterTest {
     @Test
     void test_float_literal() {
         assertThat(RunnerHelper.floatVal(RunnerHelper.run("3.14"))).isEqualTo(3.14);
+    }
+
+    @Test
+    void test_literal_outline(){
+        AST ast = ASTHelper.literalOutline();
+        //ast.asf().infer();只有执行了infer，interpret才成功，这是不对的
+        // execution: person.specie should evaluate to "human"
+        org.twelve.gcp.interpreter.value.Value result = ast.asf().interpret();
+        assertInstanceOf(org.twelve.gcp.interpreter.value.StringValue.class, result);
+        assertEquals("human", ((org.twelve.gcp.interpreter.value.StringValue) result).value());
     }
 
     // =========================================================================
@@ -144,6 +158,18 @@ public class InterpreterTest {
         Value v = RunnerHelper.run(ASTHelper.mockSimplePersonEntity());
         // last evaluated expression is person.get_name() which returns this.name = "Will"
         assertThat(RunnerHelper.strVal(v)).isEqualTo("Will");
+    }
+
+    @Test
+    void test_nested_entity_field_access() {
+        Value v = RunnerHelper.run("""
+                let father = {
+                    name = "will",
+                    son = {name="evan", girl_friend={name="someone"},gender="male"}
+                };
+                father.son.girl_friend.name
+                """);
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("someone");
     }
 
     @Test
@@ -1663,5 +1689,21 @@ public class InterpreterTest {
         assertThat(RunnerHelper.strVal(RunnerHelper.run("\"tab\\there\""))).isEqualTo("tab\there");
         assertThat(RunnerHelper.strVal(RunnerHelper.run("\"back\\\\slash\""))).isEqualTo("back\\slash");
         assertThat(RunnerHelper.strVal(RunnerHelper.run("\"quote\\\"here\""))).isEqualTo("quote\"here");
+    }
+
+    /**
+     * Deeply nested entity member access: single-property nested entity must be
+     * correctly parsed and interpreted end-to-end.
+     */
+    @Test
+    void test_nested_entity_member_access() {
+        String code = """
+                let father = {
+                    name = "will",
+                    son = {name="evan", girl_friend={name="someone"},gender="male"}
+                };
+                father.son.girl_friend.name
+                """;
+        assertThat(RunnerHelper.strVal(RunnerHelper.run(code))).isEqualTo("someone");
     }
 }

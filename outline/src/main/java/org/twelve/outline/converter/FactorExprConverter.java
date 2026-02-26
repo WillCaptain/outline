@@ -6,7 +6,6 @@ import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.common.Constants;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,13 +19,16 @@ public class FactorExprConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode factor = cast(source);
-        //so far, only one member entity and block have ambiguous conflict
-        Optional<ParseNode> entity = factor.nodes().stream().filter(n -> n.flag().isAmbiguous() &&
-                n.name().equals(Constants.ENTITY)).findFirst();
-        if(entity.isPresent()){
+        // entity and block are alternative interpretations of the same { } token span.
+        // Prefer entity over block whenever both appear as siblings (ambiguous or structural).
+        Optional<ParseNode> entity = factor.nodes().stream()
+                .filter(n -> n.name().equals(Constants.ENTITY))
+                .findFirst();
+        boolean hasBlock = factor.nodes().stream().anyMatch(n -> n.name().equals(Constants.BLOCK));
+        if (entity.isPresent() && (entity.get().flag().isAmbiguous() || hasBlock)) {
             NonTerminalNode ent = cast(entity.get());
             return converters.get(ent.name()).convert(ast, ent);
-        }else {
+        } else {
             Node head = converters.get(factor.node(0).name()).convert(ast, factor.node(0));
             NonTerminalNode next = cast(factor.node(1));
             return converters.get(next.explain()).convert(ast, next, head);

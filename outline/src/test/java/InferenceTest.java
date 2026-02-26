@@ -259,6 +259,15 @@ public class InferenceTest {
     }
 
     @Test
+    void test_nested_entity(){
+        AST ast = ASTHelper.mockNestedEntity();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.asf().inferred());
+        assertTrue(ast.errors().isEmpty());
+        assertInstanceOf(STRING.class, ast.program().body().statements().getLast().outline());
+    }
+
+    @Test
     void test_tuple() {
         AST ast = ASTHelper.mockSimpleTuple();
         assertTrue(ast.asf().infer());
@@ -1067,10 +1076,27 @@ public class InferenceTest {
         AST ast = ASTHelper.literalOutline();
         ast.asf().infer();
         assertTrue(ast.inferred());
-        //todo: assert return type is string
+        // diagnostic: show error detail
+        ast.errors().forEach(e -> {
+            System.out.println("ERROR node type: " + e.node().getClass().getSimpleName() + ", outline: " + e.node().outline() + ", parent: " + e.node().parent().getClass().getSimpleName());
+            if (e.node().outline() instanceof org.twelve.gcp.outline.adt.Entity entity) {
+                entity.members().stream().filter(m -> !m.isDefault()).forEach(m -> 
+                    System.out.println("  member: " + m.name() + " -> " + m.outline().getClass().getSimpleName() + " = " + m.outline()));
+            }
+        });
+        assertTrue(ast.errors().isEmpty(), "expected no errors but got: " + ast.errors());
 
-        //todo: add one interpret test to get return value
+        // person.specie should infer to Literal("human", STRING)
+        int n = ast.program().body().statements().size();
+        org.twelve.gcp.ast.Node specieAccess = ast.program().body().statements().get(n - 1).get(0);
+        assertInstanceOf(org.twelve.gcp.outline.primitive.Literal.class, specieAccess.outline());
+        org.twelve.gcp.outline.primitive.Literal lit = cast(specieAccess.outline());
+        assertInstanceOf(STRING.class, lit.outline()); // origin type is String
 
+        // execution: person.specie should evaluate to "human"
+        org.twelve.gcp.interpreter.value.Value result = ast.asf().interpret();
+        assertInstanceOf(org.twelve.gcp.interpreter.value.StringValue.class, result);
+        assertEquals("human", ((org.twelve.gcp.interpreter.value.StringValue) result).value());
     }
 
     @Test

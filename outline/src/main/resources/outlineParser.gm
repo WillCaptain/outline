@@ -46,8 +46,12 @@ outline_declarator
     : 'outline' Symbol '=' extend_outline (',' Symbol '=' extend_outline)* ';'
     ;
 extend_outline
-    : declared_outline entity_type?
+    : non_compound_type entity_type?
+    | adt_type
     | reference_type Symbol reference_call? entity_type?
+    ;
+non_compound_type
+    : func_type | factor_type
     ;
 comment
     : SingleLineComment
