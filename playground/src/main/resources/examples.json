@@ -1,0 +1,100 @@
+[
+  {
+    "id": "hello",
+    "title": "Hello, GCP",
+    "description": "Every type inferred from zero annotations – welcome to GCP.",
+    "category": "basics",
+    "code": "// GCP infers types for every binding — no annotations needed\nlet x    = 42;          // → Int\nlet name = \"Outline\";   // → String\nlet pi   = 3.14159;     // → Float\nlet flag = true;        // → Bool\nlet msg  = \"Hello, \" + name + \"!\";\nmsg;"
+  },
+  {
+    "id": "string-ops",
+    "title": "String & Escape Sequences",
+    "description": "String concatenation, escape sequences (\\n \\t \\\") — all decoded at parse time.",
+    "category": "basics",
+    "code": "let greet = name -> \"Hello, \" + name + \"!\";\n\n// Escape sequences decoded at parse time\nlet newline = \"line1\\nline2\";\nlet tab     = \"col1\\tcol2\";\nlet quote   = \"She said \\\"hi\\\"\";\n\nlet msg1 = greet(\"World\");\nlet msg2 = greet(\"GCP\");\nmsg1;"
+  },
+  {
+    "id": "arithmetic",
+    "title": "Numeric Tower",
+    "description": "GCP infers the narrowest numeric type automatically.",
+    "category": "basics",
+    "code": "let a = 10;\nlet b = 3;\n\nlet sum   = a + b;     // → Int\nlet diff  = a - b;     // → Int\nlet prod  = a * b;     // → Int\nlet quot  = a / b;     // → Int\nlet mod   = a % b;     // → Int\nlet power = a * a;     // → Int\n\n// Mixed types widen automatically\nlet x = 1;\nlet y = 2.5;\nlet z = x + y;        // → Float | Double\n\npower;"
+  },
+  {
+    "id": "curried",
+    "title": "Curried Functions",
+    "description": "All Outline functions are curried — GCP infers the full A→B→C chain.",
+    "category": "functions",
+    "code": "// Curried binary functions\nlet add = x -> y -> x + y;   // Int → Int → Int\nlet mul = x -> y -> x * y;   // Int → Int → Int\n\n// Partial application creates specialised functions\nlet add5   = add(5);          // Int → Int\nlet double = mul(2);          // Int → Int (or Number → Number)\n\n// Compose via application\nlet result = add5(double(3)); // = add5(6) = 11\n\nresult;"
+  },
+  {
+    "id": "hof",
+    "title": "Higher-Order Functions",
+    "description": "Functions that accept or return functions — GCP tracks the full type chain.",
+    "category": "functions",
+    "code": "// Classic higher-order combinators\nlet apply   = f -> x -> f(x);\nlet compose = f -> g -> x -> f(g(x));\nlet twice   = f -> x -> f(f(x));\nlet flip    = f -> x -> y -> f(y)(x);\n\nlet inc    = x -> x + 1;\nlet double = x -> x * 2;\n\n// Compose inc then double: (5+1)*2 = 12\nlet inc_then_double = compose(double)(inc);\n\n// Apply a function four times: 3 * 2 * 2 = 12\nlet four_times = twice(double);\n\n// flip argument order: sub(3)(10) = 10 - 3 = 7\nlet sub  = x -> y -> x - y;\nlet flipped_sub = flip(sub);\n\nlet r1 = apply(inc)(10);          // 11\nlet r2 = inc_then_double(5);      // 12\nlet r3 = four_times(3);           // 12\nlet r4 = flipped_sub(3)(10);      // 7\nr2;"
+  },
+  {
+    "id": "recursive",
+    "title": "Recursive Functions",
+    "description": "GCP handles mutual recursion and infers fixed-point types.",
+    "category": "functions",
+    "code": "// Classic math functions\nlet fact = n -> if (n <= 1) 1 else n * fact(n - 1);\nlet fib  = n -> if (n <= 1) n else fib(n - 1) + fib(n - 2);\n\n// GCD via Euclidean algorithm (curried)\nlet gcd = x -> y -> if (y == 0) x else gcd(y)(x % y);\nlet lcm = x -> y -> (x * y) / (gcd(x)(y));\n\nlet f5  = fact(5);           // 120\nlet f10 = fib(10);           // 55\nlet g   = gcd(48)(18);       // 6\nlet l   = lcm(4)(6);         // 12\n\nf5;"
+  },
+  {
+    "id": "adt-sum",
+    "title": "Sum Types (ADT)",
+    "description": "GCP infers the precise ADT variant for every match branch.",
+    "category": "types",
+    "code": "// Define algebraic sum types\noutline Color     = Red | Green | Blue;\noutline Direction = North | South | East | West;\n\nlet c = Green;\nlet d = North;\n\n// Pattern match — GCP infers result type String\nlet color_name = match c {\n    Red   -> \"red\",\n    Green -> \"green\",\n    Blue  -> \"blue\"\n};\n\nlet is_vertical = match d {\n    North -> true,\n    South -> true,\n    _     -> false\n};\n\ncolor_name;"
+  },
+  {
+    "id": "adt-entity",
+    "title": "Entity Types (Product Types)",
+    "description": "Struct-like entity types with typed fields — GCP infers field access types.",
+    "category": "types",
+    "code": "// Product types (records / structs)\noutline Point  = {x:Int, y:Int};\noutline Person = {name:String, age:Int};\n\nlet origin = Point{x=0, y=0};\nlet p      = Point{x=3, y=4};\nlet alice  = Person{name=\"Alice\", age=30};\n\n// Field access — GCP narrows type to Int\nlet dist_sq = a -> b -> a * a + b * b;\nlet d = dist_sq(p.x)(p.y);   // 3² + 4² = 25\n\nd;"
+  },
+  {
+    "id": "literal-type",
+    "title": "Literal Types",
+    "description": "Literal types pin a field to a fixed constant value — no assignment needed.",
+    "category": "types",
+    "code": "// Literal type: the field value IS the type.\n// #\"human\" means specie can only ever be \"human\".\noutline Gender = Male(String,Int) | Female{name:String, age:Int};\noutline Human = {\n    gender: Gender,\n    specie: #\"human\"   // literal type — always \"human\"\n};\n\n// person.specie is automatically \"human\" — no need to set it\nlet person:Human = {\n    gender = Male(\"Will\", 49)\n};\n\nperson.specie;   // → \"human\""
+  },
+  {
+    "id": "match-adt",
+    "title": "Pattern Matching + Guards",
+    "description": "Exhaustive match with guard conditions — GCP infers a unified result type.",
+    "category": "types",
+    "code": "outline Shape = Circle{r:Int} | Rect{w:Int, h:Int} | Dot;\n\n// Dispatch on variant, unpack fields inline\nlet area = s -> match s {\n    Circle{r}    -> r * r,\n    Rect{w, h}   -> w * h,\n    Dot          -> 0\n};\n\nlet describe = s -> match s {\n    Circle{r} if r > 10 -> \"big circle\",\n    Circle{r}           -> \"small circle\",\n    Rect{w, h}          -> \"rectangle\",\n    Dot                 -> \"dot\"\n};\n\nlet c = Circle{r=7};\nlet r = Rect{w=4, h=5};\narea(r);"
+  },
+  {
+    "id": "arrays",
+    "title": "Arrays & Pipelines",
+    "description": "Ranges with variables, map/filter/reduce — all inferred end-to-end.",
+    "category": "collections",
+    "code": "let nums  = [1, 2, 3, 4, 5];\nlet n     = 10;\n\n// Dynamic range: [1..n] — n is a variable!\nlet range = [1...n];\n\n// Pipeline: filter → map\nlet evens = [1...n].filter(x -> x % 2 == 0);   // [2,4,6,8,10]\nlet sq    = [1...5].map(x -> x * x);            // [1,4,9,16,25]\n\n// Gauss sum: n*(n+1)/2 = 5050\nlet total = [1...100].reduce(0, (acc, x) -> acc + x);\n\ntotal;"
+  },
+  {
+    "id": "inference-power",
+    "title": "⚡ GCP Inference Showcase",
+    "description": "Generics, HOFs, ADTs and closures — GCP infers it all with zero annotations.",
+    "category": "advanced",
+    "code": "// ── Generic identity: inferred as ∀α. α → α\nlet id = x -> x;\n\n// ── Church numerals — numbers as functions!\nlet zero  = f -> x -> x;\nlet succ  = n -> f -> x -> f(n(f)(x));\nlet one   = succ(zero);\nlet two   = succ(one);\nlet three = succ(two);\n\n// ── to_int: decode a Church numeral\nlet to_int = n -> n(x -> x + 1)(0);\n\n// ── Church addition: add(m)(n) = m + n\nlet church_add = m -> n -> f -> x -> m(f)(n(f)(x));\nlet five = church_add(two)(three);\n\nto_int(five);   // → 5"
+  },
+  {
+    "id": "gcp-generics",
+    "title": "Generic Functions",
+    "description": "GCP propagates generic type variables through arbitrary call chains.",
+    "category": "advanced",
+    "code": "// Swap a pair — inferred as (A, B) → (B, A)\nlet swap = p -> (p.second, p.first);\n\n// Const: ignore second argument — A → B → A\nlet konst = a -> b -> a;\n\n// SKI combinators\nlet s = f -> g -> x -> f(x)(g(x));\nlet k = a -> b -> a;\nlet i = s(k)(k);   // identity via SKI\n\n// Fix-point (Y combinator approximation)\nlet fix = f -> (x -> f(x -> f(x)(x)))(x -> f(x -> f(x)(x)));\n\nlet fact_gen = self -> n -> if (n <= 1) 1 else n * self(n - 1);\nlet fact = fix(fact_gen);\n\nfact(6);   // → 720"
+  },
+  {
+    "id": "pipeline",
+    "title": "Data Pipeline",
+    "description": "A realistic data-processing pipeline — GCP tracks types through every stage.",
+    "category": "advanced",
+    "code": "// Simulate a small data pipeline\nlet data = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];\n\n// Step 1: deduplicate (keep first occurrence)\nlet unique = arr -> arr.filter((x, i) -> i == arr.indexOf(x));\n\n// Step 2: sort ascending (bubble-sort via reduce — simple demo)\nlet min = a -> b -> if (a < b) a else b;\n\n// Step 3: filter > threshold\nlet threshold = 3;\nlet hi = data.filter(x -> x > threshold);\n\n// Step 4: double each\nlet doubled = hi.map(x -> x * 2);\n\n// Step 5: sum\nlet result = doubled.reduce(0, (acc, x) -> acc + x);\n\nresult;"
+  }
+]

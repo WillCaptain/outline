@@ -28,6 +28,12 @@ public class OutlineCompilerService {
     // Reuse the shared grammar tables across requests (thread-safe)
     private static final OutlineParser PARSER = new OutlineParser();
 
+    private final ExamplesRepository examplesRepository;
+
+    public OutlineCompilerService(ExamplesRepository examplesRepository) {
+        this.examplesRepository = examplesRepository;
+    }
+
     // ─── Main compilation entry point ─────────────────────────────────────────
 
     public CompileResponse compile(String code) {
@@ -193,9 +199,19 @@ public class OutlineCompilerService {
         return msg.replaceAll("\n{3,}", "\n\n").trim();
     }
 
-    // ─── Built-in example library ──────────────────────────────────────────────
+    // ─── Example library (delegated to ExamplesRepository) ───────────────────
 
     public List<ExampleCode> examples() {
+        return examplesRepository.findAll();
+    }
+
+    public ExampleCode addExample(ExampleCode ex) {
+        return examplesRepository.save(ex);
+    }
+
+    // ─── (Legacy hardcoded examples – kept as fallback reference) ─────────────
+    @SuppressWarnings("unused")
+    private List<ExampleCode> _legacyExamples() {
         return List.of(
 
             // ── Basics ─────────────────────────────────────────────────────────
@@ -506,3 +522,4 @@ public class OutlineCompilerService {
         );
     }
 }
+

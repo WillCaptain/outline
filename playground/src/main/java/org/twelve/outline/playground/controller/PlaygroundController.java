@@ -24,10 +24,19 @@ public class PlaygroundController {
         return service.compile(req.code());
     }
 
-    /** Return the built-in example library. */
+    /** Return the example library (built-in + user-contributed). */
     @GetMapping("/examples")
     public List<ExampleCode> examples() {
         return service.examples();
+    }
+
+    /**
+     * Contribute a new example (or overwrite one with the same id).
+     * POST /api/examples  { "id":"my-ex","title":"…","description":"…","category":"…","code":"…" }
+     */
+    @PostMapping("/examples")
+    public ExampleCode addExample(@RequestBody ExampleCode ex) {
+        return service.addExample(ex);
     }
 
     /**

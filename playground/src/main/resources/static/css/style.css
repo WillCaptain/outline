@@ -141,10 +141,38 @@ body {
 /* ── Layout ─────────────────────────────────────────────────── */
 .layout {
   flex: 1;
-  display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr var(--results-w);
+  display: flex;          /* flex instead of grid for resizable right panel */
   overflow: hidden;
   height: calc(100vh - var(--header-h));
+}
+
+.editor-panel {
+  flex: 1 1 0;
+  min-width: 200px;
+}
+
+.panel-resize-handle {
+  flex: 0 0 5px;
+  background: var(--border);
+  cursor: col-resize;
+  position: relative;
+  transition: background .15s;
+  z-index: 5;
+}
+.panel-resize-handle:hover,
+.panel-resize-handle.dragging {
+  background: var(--accent);
+}
+.panel-resize-handle::after {
+  content: '';
+  position: absolute;
+  inset: 0 -4px;   /* wider hit-target */
+}
+
+.results-panel {
+  flex: 0 0 var(--results-w);
+  min-width: 200px;
+  max-width: 80vw;
 }
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
@@ -263,6 +291,7 @@ body {
 }
 [data-theme="light"] .editor-panel { background: #f8fafc; }
 
+
 .editor-toolbar {
   display: flex; align-items: center; padding: 7px 12px;
   background: var(--bg-2); border-bottom: 1px solid var(--border);
@@ -298,6 +327,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  /* width is controlled by JS drag; initial value via CSS var */
 }
 
 /* Tabs */
@@ -511,6 +541,70 @@ body {
 }
 [data-theme="light"] .inline-type-hint { color: #7090c0 !important; }
 
+/* ── Sym-row expandable ──────────────────────────────────────── */
+.sym-row {
+  cursor: pointer;
+}
+.sym-row:hover .sym-expand-hint { opacity: 1; }
+.sym-expand-hint {
+  font-size: 9px; color: var(--dim); margin-left: 4px; opacity: 0;
+  transition: opacity .12s; white-space: nowrap;
+}
+.sym-type-truncated { max-width: 160px; }
+
+/* ── Type detail modal ───────────────────────────────────────── */
+.modal-wide { width: min(720px, 90vw); }
+.type-detail-meta {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.type-detail-meta .sym-name { font-size: 15px; font-family: var(--fn-mono); font-weight: 600; }
+.type-detail-meta .sym-kind-pill { font-size: 11px; padding: 2px 8px; }
+.type-detail-meta .sym-loc { font-size: 11px; }
+.type-detail-body {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px 20px;
+  font-family: var(--fn-mono); font-size: 13px; line-height: 1.7;
+  color: var(--text); overflow-y: auto; max-height: 55vh;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+/* ── Contribute example panel/modal ─────────────────────────── */
+.contrib-footer {
+  flex-shrink: 0;
+  padding: 8px 8px;
+  border-top: 1px solid var(--border);
+}
+.btn-contrib {
+  width: 100%; padding: 7px 0; font-size: 11px; font-weight: 600;
+  background: rgba(79,172,254,.08); color: var(--accent);
+  border: 1px dashed rgba(79,172,254,.3); border-radius: var(--r-sm);
+  cursor: pointer; transition: all .12s;
+}
+.btn-contrib:hover { background: rgba(79,172,254,.16); border-style: solid; }
+
+.contrib-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 4px; }
+.contrib-row { display: flex; flex-direction: column; gap: 4px; }
+.contrib-row label { font-size: 11px; font-weight: 600; color: var(--muted); }
+.field-hint { font-weight: 400; color: var(--dim); }
+.contrib-code-preview {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 8px 12px;
+  font-family: var(--fn-mono); font-size: 11px; line-height: 1.55;
+  color: var(--text); overflow-y: auto; max-height: 160px;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+/* ── Monaco inline diagnostic squiggles (via CSS class) ─────── */
+.diag-underline-error {
+  text-decoration: underline wavy var(--red);
+  text-decoration-skip-ink: none;
+}
+.diag-underline-warn {
+  text-decoration: underline wavy var(--yellow);
+  text-decoration-skip-ink: none;
+}
+
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 960px) {
   :root { --sidebar-w: 240px; --results-w: 300px; }
@@ -518,11 +612,13 @@ body {
 @media (max-width: 720px) {
   :root { --sidebar-w: 0px; --results-w: 280px; }
   .sidebar { display: none; }
+  .panel-resize-handle { display: none; }
   .separator, .toggle-label { display: none; }
 }
 @media (max-width: 540px) {
   :root { --results-w: 100%; }
-  .layout { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-  .results-panel { border-left: none; border-top: 1px solid var(--border); }
+  .layout { flex-direction: column; }
+  .editor-panel { flex: 1 1 50%; }
+  .results-panel { flex: 0 0 50% !important; border-left: none; border-top: 1px solid var(--border); }
   .header-center .btn-infer, .header-center .btn-clear { display: none; }
 }

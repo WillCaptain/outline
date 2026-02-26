@@ -11,8 +11,11 @@ const state = {
   inferDebounce : null,
   hoverProvider : null,
   typeDecos     : [],
+  diagDecos     : [],
   showInline    : JSON.parse(localStorage.getItem('outline_inline') ?? 'true'),
   isDark        : JSON.parse(localStorage.getItem('outline_dark') ?? 'true'),
+  // panel resize
+  resultsWidth  : parseInt(localStorage.getItem('outline_results_w') || '360', 10),
 };
 
 // ── Monaco bootstrap ───────────────────────────────────────────
@@ -43,6 +46,7 @@ require(['vs/editor/editor.main'], () => {
   });
 
   applyTheme(state.isDark);
+  applyResultsWidth(state.resultsWidth);
 
   // Shortcuts
   state.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runCode('run'));
@@ -62,6 +66,7 @@ require(['vs/editor/editor.main'], () => {
   loadExamples();
   renderSnippets();
   bindEvents();
+  bindResizeHandle();
   loadFromUrl();
 });
 
@@ -216,6 +221,7 @@ function renderResults(data, mode) {
   registerHover(syms);
   renderOutput(data);
   renderErrors(diag);
+  updateDiagMarkers(diag);     // ← NEW: Monaco squiggles
 
   if (errors.length > 0) {
     setStatus('error', `✗ ${errors.length} error${errors.length > 1 ? 's' : ''}`);
@@ -258,19 +264,26 @@ function renderInference(symbols) {
   el('list-vars').innerHTML = vars.length
     ? vars.map(renderSymRow).join('')
     : '<div class="sym-empty">No variable bindings found</div>';
+
+  // Wire up expand-on-click for every sym-row
+  document.querySelectorAll('.sym-row[data-sym]').forEach(row => {
+    row.addEventListener('click', () => openTypeModal(JSON.parse(row.dataset.sym)));
+  });
 }
 
 function renderSymRow(sym) {
-  const locStr = sym.line > 0 ? `${sym.line}:${sym.col}` : '';
+  const locStr   = sym.line > 0 ? `${sym.line}:${sym.col}` : '';
   const typeHtml = formatTypeHtml(sym.type);
   const kindClass = `kind-${sym.kind}`;
+  const symJson   = esc(JSON.stringify(sym));
+
   return `
-    <div class="sym-row" data-name="${esc(sym.name)}">
+    <div class="sym-row" data-sym="${symJson}" title="Click to see full type">
       <div class="sym-left">
         <span class="sym-name">${esc(sym.name)}</span>
         <span class="sym-kind-pill ${kindClass}">${sym.kind}</span>
       </div>
-      <div class="sym-type">${typeHtml}</div>
+      <div class="sym-type sym-type-truncated">${typeHtml}<span class="sym-expand-hint">↗</span></div>
       ${locStr ? `<div class="sym-loc">${locStr}</div>` : ''}
     </div>`;
 }
@@ -317,6 +330,30 @@ function renderErrors(diag) {
       state.editor.focus();
     });
   });
+}
+
+// ── Monaco diagnostic markers (squiggles) ──────────────────────
+function updateDiagMarkers(diagnostics) {
+  if (!state.editor) return;
+  const model = state.editor.getModel();
+  const markers = (diagnostics || [])
+    .filter(d => d.line > 0)
+    .map(d => {
+      const lineMax = model.getLineMaxColumn(d.line);
+      const startCol = (d.col > 0 && d.col <= lineMax) ? d.col : 1;
+      return {
+        severity : d.severity === 'error'
+          ? monaco.MarkerSeverity.Error
+          : monaco.MarkerSeverity.Warning,
+        startLineNumber : d.line,
+        startColumn     : startCol,
+        endLineNumber   : d.line,
+        endColumn       : lineMax,
+        message         : d.message,
+        source          : 'GCP',
+      };
+    });
+  monaco.editor.setModelMarkers(model, 'outline-server', markers);
 }
 
 // ── Examples ───────────────────────────────────────────────────
@@ -432,6 +469,114 @@ async function loadFromUrl() {
   } catch (_) { /* ignore */ }
 }
 
+// ── Contribute Example ─────────────────────────────────────────
+function openContribModal() {
+  const code = state.editor.getValue();
+  el('contrib-id').value    = '';
+  el('contrib-title').value = '';
+  el('contrib-desc').value  = '';
+  el('contrib-cat').value   = 'types';
+  el('contrib-code-preview').textContent = code.length > 300
+    ? code.slice(0, 300) + '\n… (' + code.length + ' chars)'
+    : code;
+  el('contrib-modal-overlay').style.display = 'flex';
+  setTimeout(() => el('contrib-id').focus(), 50);
+}
+function closeContribModal() {
+  el('contrib-modal-overlay').style.display = 'none';
+}
+async function submitContrib() {
+  const id    = el('contrib-id').value.trim().replace(/\s+/g, '-').toLowerCase();
+  const title = el('contrib-title').value.trim();
+  const desc  = el('contrib-desc').value.trim();
+  const cat   = el('contrib-cat').value;
+  const code  = state.editor.getValue();
+
+  if (!id || !title || !code) {
+    showToast('ID, title and code are required', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/examples', {
+      method  : 'POST',
+      headers : { 'Content-Type': 'application/json' },
+      body    : JSON.stringify({ id, title, description: desc, category: cat, code }),
+    });
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const saved = await res.json();
+    // Merge into local examples list
+    const existing = state.examples.findIndex(e => e.id === saved.id);
+    if (existing >= 0) state.examples[existing] = saved;
+    else state.examples.push(saved);
+    renderExampleList(state.examples);
+    closeContribModal();
+    showToast(`Example "${title}" saved!`, 'ok');
+  } catch (err) {
+    showToast('Failed to save example: ' + err.message, 'error');
+  }
+}
+
+// ── Type Detail Modal ──────────────────────────────────────────
+function openTypeModal(sym) {
+  const kindClass = `kind-${sym.kind}`;
+  const locStr    = sym.line > 0 ? `line ${sym.line}:${sym.col}` : '';
+  el('type-modal-title').textContent = sym.name;
+  el('type-modal-meta').innerHTML = `
+    <span class="sym-name">${esc(sym.name)}</span>
+    <span class="sym-kind-pill ${kindClass}">${sym.kind}</span>
+    ${locStr ? `<span class="sym-loc">${locStr}</span>` : ''}
+  `;
+  // Format the type nicely: break long entity/tuple types at punctuation
+  el('type-modal-body').innerHTML = formatTypeHtml(sym.type);
+  el('type-modal-overlay').style.display = 'flex';
+}
+function closeTypeModal() {
+  el('type-modal-overlay').style.display = 'none';
+}
+
+// ── Panel Resize Handle ─────────────────────────────────────────
+function bindResizeHandle() {
+  const handle = el('panel-resize-handle');
+  const panel  = el('results-panel');
+  if (!handle || !panel) return;
+
+  let startX = 0;
+  let startW = 0;
+
+  handle.addEventListener('mousedown', e => {
+    startX = e.clientX;
+    startW = panel.getBoundingClientRect().width;
+    handle.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const onMove = e2 => {
+      const delta = startX - e2.clientX;   // dragging left = bigger panel
+      const newW  = Math.max(200, Math.min(window.innerWidth * 0.8, startW + delta));
+      applyResultsWidth(newW);
+    };
+
+    const onUp = () => {
+      handle.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      localStorage.setItem('outline_results_w', String(Math.round(panel.getBoundingClientRect().width)));
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    e.preventDefault();
+  });
+}
+
+function applyResultsWidth(w) {
+  const panel = el('results-panel');
+  if (panel) panel.style.flex = `0 0 ${w}px`;
+}
+
 // ── Events ─────────────────────────────────────────────────────
 function bindEvents() {
   el('btn-run').addEventListener('click', () => runCode('run'));
@@ -497,6 +642,25 @@ function bindEvents() {
   el('snippet-name').addEventListener('keydown', e => {
     if (e.key === 'Enter') confirmSave();
     if (e.key === 'Escape') closeSaveModal();
+  });
+
+  // Contribute modal
+  el('btn-contrib').addEventListener('click', openContribModal);
+  el('contrib-cancel').addEventListener('click', closeContribModal);
+  el('contrib-modal-close').addEventListener('click', closeContribModal);
+  el('contrib-confirm').addEventListener('click', submitContrib);
+  el('contrib-modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeContribModal(); });
+
+  // Type detail modal
+  el('type-modal-close').addEventListener('click', closeTypeModal);
+  el('type-modal-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeTypeModal(); });
+
+  // Global ESC closes any open modal
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    closeSaveModal();
+    closeContribModal();
+    closeTypeModal();
   });
 }
 
@@ -593,6 +757,10 @@ function clearResults() {
   setStatus('', 'Ready');
   state.typeDecos = state.editor.deltaDecorations(state.typeDecos, []);
   if (state.hoverProvider) { state.hoverProvider.dispose(); state.hoverProvider = null; }
+  // Clear Monaco markers
+  if (state.editor) {
+    monaco.editor.setModelMarkers(state.editor.getModel(), 'outline-server', []);
+  }
 }
 
 function setStatus(cls, msg) {
