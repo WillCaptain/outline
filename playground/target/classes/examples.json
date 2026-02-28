@@ -176,6 +176,22 @@
   },
 
   {
+    "id": "gcpx-entity-literal-type",
+    "title": "★ Entity Literal Types",
+    "description": "An entity literal type pins a field to a fixed entity value — auto-filled at construction, impossible to override.",
+    "category": "unique",
+    "code": "// Entity literal type: a field whose type IS a specific entity constant.\n// The constant is always auto-filled — callers cannot override it.\n//\n// Useful for embedding immutable configuration into a typed record.\n\noutline Service = {\n    name: String,\n    meta: #{ env = \"prod\", version = 1 }   // entity literal — always this exact record\n};\n\n// Only `name` needs to be supplied — `meta` is auto-filled from the literal\nlet svc = Service{name = \"auth-service\"};\n\n// Trying to override meta at construction is a compile-time error:\n//   let bad = Service{name = \"x\", meta = {env = \"dev\", version = 2}};  // ← NOT_ASSIGNABLE\n\n// Always the literal value regardless of construction arguments\nsvc.meta.env;   // → \"prod\""
+  },
+
+  {
+    "id": "gcpx-tuple-literal-type",
+    "title": "★ Tuple Literal Types",
+    "description": "A tuple literal type pins a field to a fixed tuple constant — just like string/number literal types, but for compound tuple values.",
+    "category": "unique",
+    "code": "// Tuple literal type: a field whose type IS a specific tuple constant.\n// Works identically to string literal types — auto-filled, immutable.\n//\n// Practical use: embed a known coordinate, version pair, range, etc.\n\noutline Origin = {\n    label:  String,\n    coords: #(0, 0)   // tuple literal — always (0, 0)\n};\n\noutline VersionedApi = {\n    name:    String,\n    version: #(1, 0, 0)   // semantic version — always 1.0.0\n};\n\nlet o   = Origin{label = \"centre\"};\nlet api = VersionedApi{name = \"gateway\"};\n\n// Trying to supply coords=(1,2) is a compile-time error (NOT_ASSIGNABLE)\n// let bad = Origin{label = \"p\", coords = (1, 2)};\n\n// Both fields are guaranteed by the type\n(o.label, o.coords, api.version)"
+  },
+
+  {
     "id": "gcpx-external-builder",
     "title": "★ External Builder Protocol",
     "description": "GCP's __external_builder__ syntax lets runtime plugins construct typed entities — GCP verifies the type at compile time while the plugin supplies the value at runtime.",

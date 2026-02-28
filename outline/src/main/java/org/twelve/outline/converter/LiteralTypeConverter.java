@@ -23,7 +23,7 @@ public class LiteralTypeConverter extends Converter {
         if(source.name().equals(Constants.LITERAL_TYPE_)){
             node = ((NonTerminalNode) source).node(1);
         }
-        return new LiteralTypeNode(cast(converters.get(node.name()).convert(ast, node)));
+        return new LiteralTypeNode(converters.get(node.name()).convert(ast, node));
 //        if(source instanceof TerminalNode) {
 //            return new LiteralTypeNode(cast(converters.get(source.name()).convert(ast, source)));
 //        }else{

@@ -47,10 +47,15 @@ public class EntityFieldConverter extends Converter {
             Node defaultNode = converters.get(Constants.LITERAL).convert(ast, typeOrDefault);
             return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
         }
+        // MSLL may collapse  literal: <child>  →  <child>  for any single-production path.
+        // Handle the most common collapsed cases: primitives, lambdas, entity/tuple literals.
         if (Constants.STRING.equals(typeName) || Constants.INT.equals(typeName)
                 || Constants.FLOAT.equals(typeName) || Constants.DOUBLE.equals(typeName)
-                || Constants.NUMBER.equals(typeName)) {
-            // Bare terminal literal — use its specific converter directly.
+                || Constants.NUMBER.equals(typeName)
+                || Constants.FUNCTION.equals(typeName)   // lambda collapsed
+                || Constants.ENTITY.equals(typeName)     // entity literal collapsed
+                || Constants.TUPLE.equals(typeName)      // tuple literal collapsed
+                || Constants.SYMBOL.equals(typeName)) {  // symbol literal collapsed (e.g. alias: Male)
             Node defaultNode = converters.get(typeName).convert(ast, typeOrDefault);
             return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
         }

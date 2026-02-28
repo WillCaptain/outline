@@ -1,220 +1,95 @@
 -------------------------------------------------------------------------------
 Test set: ExternalTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 0.013 s <<< FAILURE! -- in ExternalTest
-ExternalTest.test_external_builder_interpret -- Time elapsed: 0.007 s <<< ERROR!
-org.twelve.msll.exception.AggregateGrammarSyntaxException: 
-Found 2 syntax error(s):
-token: Symbol:Male doesn't match any grammar definition at line: 4, position from 8 to 12
-gender:#Male
- the possible productions should be matched would be:factor_820'->Symbol 
-zero_more_124778'->EPSILON 
-zero_one_120288'->EPSILON 
-complex_expression->ternary_expression zero_one_120156'(ignored) 
-factor_581'->factor_702'(ignored) 
-zero_one_52'->EPSILON 
-adt_type->factor_104570'(ignored) one_more_104890'(ignored) 
-and_expression->equality_expression zero_more_122046'(ignored) 
-relational_expression->numeric_expression zero_more_123190'(ignored) 
-zero_one_113313'->EPSILON 
-symbol_type->Symbol factor_112218'(ignored) 
-zero_one_120156'->EPSILON 
-zero_more_122046'->EPSILON 
-factor_101133'->Symbol 
-factor_109334'->declared_outline 
-factor_117429'->symbol_unpack 
-factor_117429'->Symbol 
-factor_105746'->factor_type 
-factor_105746'->symbol_type 
-symbol_unpack->zero_one_114371'(ignored) factor_114394'(ignored) 
-factor_113510'->symbol_unpack 
-zero_one_114371'->Symbol 
-expression->assignment zero_one_113039'(ignored) 
-match_arm->factor_117429'(ignored) zero_one_118034'(ignored) Arrow expression 
-array_enum_items->expression zero_more_131571'(ignored) 
-zero_one_128384'->factor_128403'(ignored) 
-zero_one_130049'->EPSILON 
-factor_expression_alpha'->EPSILON 
-zero_one_129771'->EPSILON 
-factor_expression_beta'->Symbol 
-zero_one_113039'->EPSILON 
-zero_more_143919'->EPSILON 
-zero_more_123190'->EPSILON 
-zero_one_120516'->EPSILON 
-zero_more_72'->EPSILON 
-factor_104570'->factor_type 
-factor_104570'->symbol_type 
-factor_128403'->expression zero_more_128594'(ignored) 
-factor_6173'->Symbol 
-zero_more_122274'->EPSILON 
-factor_131318'->array_enum_items 
-factor_22017'->Symbol 
-zero_more_121818'->EPSILON 
-zero_more_120902'->EPSILON 
-factor_106986'->Symbol 
-factor_99899'->Symbol 
-one_more_95'->statement zero_more_142780'(ignored) 
-zero_one_104097'->expression 
-or_expression->and_expression zero_more_121818'(ignored) 
-non_compound_type->func_type 
-non_compound_type->factor_type 
-zero_more_131227'->statement zero_more_131227'(ignored) 
-zero_one_112631'->EPSILON 
-zero_more_141327'->EPSILON 
-poly_or_option_expression->or_expression zero_more_120902'(ignored) 
-zero_one_131299'->factor_131318'(ignored) 
-non_func_type->adt_type 
-non_func_type->factor_type 
-zero_one_108835'->EPSILON 
-ternary_expression->poly_or_option_expression zero_one_120516'(ignored) 
-zero_more_142956'->EPSILON 
-match_arms'->match_arm zero_more_117202'(ignored) zero_one_117398'(ignored) 
-extend_outline->non_compound_type zero_one_102864'(ignored) 
-extend_outline->adt_type 
-factor_111386'->declared_outline 
-statement->expression_statement 
-factor_type->factor_106986'(ignored) zero_one_108835'(ignored) 
-declared_outline->func_type 
-declared_outline->non_func_type 
-tuple_ids'->unpack_fragment'(ignored) 
-unpack_fragment'->symbol_unpack 
-factor_101551'->Symbol 
-func_type->zero_one_112631'(ignored) non_func_type Arrow declared_outline 
-zero_more_125694'->EPSILON 
-zero_one_118182'->EPSILON 
-expression_statement->expression zero_one_130049'(ignored) 
-equality_expression->relational_expression zero_more_122274'(ignored) 
-factor_100317'->Symbol 
-zero_more_142780'->statement zero_more_142780'(ignored) 
-factor_702'->factor_820'(ignored) zero_one_4386'(ignored) zero_more_20288'(ignored) 
-factor_expression->factor_expression_beta'(ignored) factor_expression_alpha'(ignored) 
-zero_more_143188'->EPSILON 
-factor_43189'->Symbol 
-factor_108962'->declared_outline 
-numeric_expression->term_expression zero_more_124778'(ignored) 
-zero_one_127667'->EPSILON 
-root->zero_one_52'(ignored) zero_more_72'(ignored) one_more_95'(ignored) zero_one_118'(ignored) 
-assignment->complex_expression zero_one_118182'(ignored) 
-term_expression->unary_expression zero_more_125694'(ignored) 
-unary_expression->factor_expression zero_one_127667'(ignored) 
-
-─────────────────────────────────
-unexpected token: let, expected token in END is END, at line:8, position: 0 - 3
-let person_2 = __external_builder__<Human>{age=40,name="Will"};//built by external with arguments
-	at org.twelve.msll.parser.MsllParser.lambda$parse$2(MsllParser.java:432)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
-
-ExternalTest.test_external_builder_inference -- Time elapsed: 0.005 s <<< ERROR!
-org.twelve.msll.exception.AggregateGrammarSyntaxException: 
-Found 2 syntax error(s):
-token: Symbol:Male doesn't match any grammar definition at line: 4, position from 8 to 12
-gender:#Male
- the possible productions should be matched would be:factor_820'->Symbol 
-zero_more_124778'->EPSILON 
-zero_one_120288'->EPSILON 
-complex_expression->ternary_expression zero_one_120156'(ignored) 
-factor_581'->factor_702'(ignored) 
-zero_one_52'->EPSILON 
-adt_type->factor_104570'(ignored) one_more_104890'(ignored) 
-and_expression->equality_expression zero_more_122046'(ignored) 
-relational_expression->numeric_expression zero_more_123190'(ignored) 
-zero_one_113313'->EPSILON 
-symbol_type->Symbol factor_112218'(ignored) 
-zero_one_120156'->EPSILON 
-zero_more_122046'->EPSILON 
-factor_101133'->Symbol 
-factor_109334'->declared_outline 
-factor_117429'->symbol_unpack 
-factor_117429'->Symbol 
-factor_105746'->factor_type 
-factor_105746'->symbol_type 
-symbol_unpack->zero_one_114371'(ignored) factor_114394'(ignored) 
-factor_113510'->symbol_unpack 
-zero_one_114371'->Symbol 
-expression->assignment zero_one_113039'(ignored) 
-match_arm->factor_117429'(ignored) zero_one_118034'(ignored) Arrow expression 
-array_enum_items->expression zero_more_131571'(ignored) 
-zero_one_128384'->factor_128403'(ignored) 
-zero_one_130049'->EPSILON 
-factor_expression_alpha'->EPSILON 
-zero_one_129771'->EPSILON 
-factor_expression_beta'->Symbol 
-zero_one_113039'->EPSILON 
-zero_more_143919'->EPSILON 
-zero_more_123190'->EPSILON 
-zero_one_120516'->EPSILON 
-zero_more_72'->EPSILON 
-factor_104570'->factor_type 
-factor_104570'->symbol_type 
-factor_128403'->expression zero_more_128594'(ignored) 
-factor_6173'->Symbol 
-zero_more_122274'->EPSILON 
-factor_131318'->array_enum_items 
-factor_22017'->Symbol 
-zero_more_121818'->EPSILON 
-zero_more_120902'->EPSILON 
-factor_106986'->Symbol 
-factor_99899'->Symbol 
-one_more_95'->statement zero_more_142780'(ignored) 
-zero_one_104097'->expression 
-or_expression->and_expression zero_more_121818'(ignored) 
-non_compound_type->func_type 
-non_compound_type->factor_type 
-zero_more_131227'->statement zero_more_131227'(ignored) 
-zero_one_112631'->EPSILON 
-zero_more_141327'->EPSILON 
-poly_or_option_expression->or_expression zero_more_120902'(ignored) 
-zero_one_131299'->factor_131318'(ignored) 
-non_func_type->adt_type 
-non_func_type->factor_type 
-zero_one_108835'->EPSILON 
-ternary_expression->poly_or_option_expression zero_one_120516'(ignored) 
-zero_more_142956'->EPSILON 
-match_arms'->match_arm zero_more_117202'(ignored) zero_one_117398'(ignored) 
-extend_outline->non_compound_type zero_one_102864'(ignored) 
-extend_outline->adt_type 
-factor_111386'->declared_outline 
-statement->expression_statement 
-factor_type->factor_106986'(ignored) zero_one_108835'(ignored) 
-declared_outline->func_type 
-declared_outline->non_func_type 
-tuple_ids'->unpack_fragment'(ignored) 
-unpack_fragment'->symbol_unpack 
-factor_101551'->Symbol 
-func_type->zero_one_112631'(ignored) non_func_type Arrow declared_outline 
-zero_more_125694'->EPSILON 
-zero_one_118182'->EPSILON 
-expression_statement->expression zero_one_130049'(ignored) 
-equality_expression->relational_expression zero_more_122274'(ignored) 
-factor_100317'->Symbol 
-zero_more_142780'->statement zero_more_142780'(ignored) 
-factor_702'->factor_820'(ignored) zero_one_4386'(ignored) zero_more_20288'(ignored) 
-factor_expression->factor_expression_beta'(ignored) factor_expression_alpha'(ignored) 
-zero_more_143188'->EPSILON 
-factor_43189'->Symbol 
-factor_108962'->declared_outline 
-numeric_expression->term_expression zero_more_124778'(ignored) 
-zero_one_127667'->EPSILON 
-root->zero_one_52'(ignored) zero_more_72'(ignored) one_more_95'(ignored) zero_one_118'(ignored) 
-assignment->complex_expression zero_one_118182'(ignored) 
-term_expression->unary_expression zero_more_125694'(ignored) 
-unary_expression->factor_expression zero_one_127667'(ignored) 
-
-─────────────────────────────────
-unexpected token: let, expected token in END is END, at line:8, position: 0 - 3
-let person_2 = __external_builder__<Human>{age=40,name="Will"};//built by external with arguments
-	at org.twelve.msll.parser.MsllParser.lambda$parse$2(MsllParser.java:432)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.013 s <<< FAILURE! -- in ExternalTest
+ExternalTest.test_external_builder_interpret -- Time elapsed: 0.006 s <<< ERROR!
+java.lang.RuntimeException: Member 'name' not found on external_builder{__typeArgs__ = Human}
+	at org.twelve.gcp.interpreter.interpretation.MemberAccessorInterpretation.interpret(MemberAccessorInterpretation.java:28)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:245)
+	at org.twelve.gcp.node.expression.accessor.MemberAccessor.acceptInterpret(MemberAccessor.java:52)
+	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:262)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:181)
+	at org.twelve.gcp.interpreter.interpretation.TupleInterpretation.interpret(TupleInterpretation.java:44)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:240)
+	at org.twelve.gcp.node.expression.TupleNode.acceptInterpret(TupleNode.java:46)
+	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:262)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:181)
+	at org.twelve.gcp.interpreter.interpretation.ReturnInterpretation.interpret(ReturnInterpretation.java:13)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:255)
+	at org.twelve.gcp.node.statement.ReturnStatement.acceptInterpret(ReturnStatement.java:40)
+	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:262)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:181)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.runAst(OutlineInterpreter.java:162)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.run(OutlineInterpreter.java:149)
+	at org.twelve.gcp.ast.ASF.interpret(ASF.java:115)
+	at ExternalTest.test_external_builder_interpret(ExternalTest.java:30)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:727)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:217)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:213)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:138)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:68)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:147)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:127)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:90)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:55)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:102)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:54)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:86)
+	at org.junit.platform.launcher.core.DefaultLauncherSession$DelegatingLauncher.execute(DefaultLauncherSession.java:86)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
 

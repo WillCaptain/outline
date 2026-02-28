@@ -1724,4 +1724,85 @@ public class InterpreterTest {
         assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("GCP-System" );
         assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("alice");
     }
+    @Test
+    void test_poly() {
+        Value v = RunnerHelper.run("""
+                let db = 10&"Will"&{name="Will"};
+                let ent = db as {name:String};
+                let num = db as Int;
+                let str = db as String;
+                (ent,num,str)
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        // ent = db as {name:String}  →  entity {name="Will"}
+        assertThat(tv.get(0)).isInstanceOf(org.twelve.gcp.interpreter.value.EntityValue.class);
+        assertThat(RunnerHelper.strVal(
+                ((org.twelve.gcp.interpreter.value.EntityValue) tv.get(0)).get("name")
+        )).isEqualTo("Will");
+        // num = db as Int  →  10
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(10L);
+        // str = db as String  →  "Will"
+        assertThat(RunnerHelper.strVal(tv.get(2))).isEqualTo("Will");
+    }
+
+    /**
+     * outline Human = { speed: Int, run: ()->this.speed }
+     * Default method: h.run() should return this.speed = 42.
+     */
+    @Test
+    void test_outline_default_method() {
+        Value v = ASTHelper.mockOutlineMethod().asf().interpret();
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(42L);
+    }
+
+    /**
+     * outline Human = { speed: Int, run: #()->this.speed }
+     * Literal (sealed) method: h.run() should return this.speed = 99.
+     */
+    @Test
+    void test_outline_literal_method() {
+        Value v = ASTHelper.mockOutlineMethodLiteral().asf().interpret();
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(99L);
+    }
+
+    /**
+     * Symbol literal type: man.gender should always be the symbol value Male.
+     */
+    @Test
+    void test_symbol_literal_type() {
+        Value v = ASTHelper.mockSymbolLiteralType().asf().interpret();
+        assertThat(v).isNotNull();
+        // Symbol values display as "Tag{}" (EntityValue with symbolTag and empty fields)
+        assertThat(v.toString()).isEqualTo("Male{}");
+    }
+
+    /**
+     * Entity literal type: meta field always holds #{ env: "prod", version: 1 }.
+     * Even when the caller provides meta={env="dev", version=2}, the literal constant wins.
+     */
+    @Test
+    void test_entity_literal_type() {
+        Value v = ASTHelper.mockEntityLiteralType().asf().interpret();
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("api");   // s.name
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("prod");  // s.meta.env — literal wins
+    }
+
+    /**
+     * Tuple literal type: coords field always holds #(0, 0).
+     * Even when the caller provides coords=(1,2), the literal constant wins.
+     */
+    @Test
+    void test_tuple_literal_type() {
+        Value v = ASTHelper.mockTupleLiteralType().asf().interpret();
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("center"); // o.label
+        assertThat(tv.get(1)).isInstanceOf(TupleValue.class);           // o.coords is a tuple
+        TupleValue coords = (TupleValue) tv.get(1);
+        assertThat(RunnerHelper.intVal(coords.get(0))).isEqualTo(0L);   // o.coords._1 == 0
+        assertThat(RunnerHelper.intVal(coords.get(1))).isEqualTo(0L);   // o.coords._2 == 0
+    }
 }

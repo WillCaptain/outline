@@ -133,10 +133,23 @@ body {
 
 .header-link { color: var(--muted); display: flex; align-items: center; transition: color .12s; }
 .header-link:hover { color: var(--accent); }
-
-.toggle-label { display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; }
-.toggle-label input { accent-color: var(--accent); cursor: pointer; }
-.toggle-text { font-size: 11px; color: var(--muted); }
+.header-brand {
+  font-family: var(--fn-ui);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  padding: 3px 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  transition: background .14s, border-color .14s;
+}
+.header-brand:hover {
+  background: rgba(79,172,254,.08);
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* ── Layout ─────────────────────────────────────────────────── */
 .layout {
@@ -254,12 +267,14 @@ body {
   padding: 8px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
 .myspace-hint { font-size: 10px; color: var(--dim); }
+.myspace-save-group { display: flex; gap: 4px; align-items: center; }
 .btn-save-new {
   font-size: 11px; padding: 3px 10px; border-radius: var(--r-sm);
   background: rgba(74,222,128,.12); color: var(--green);
   border: 1px solid rgba(74,222,128,.25); cursor: pointer; transition: all .12s;
 }
 .btn-save-new:hover { background: rgba(74,222,128,.22); }
+.btn-save-as { font-size: 10px; padding: 2px 7px; opacity: .8; }
 
 .snippet-list { overflow-y: auto; flex: 1; padding: 6px; }
 .snippet-item {
@@ -269,6 +284,7 @@ body {
   cursor: pointer; transition: all .12s;
 }
 .snippet-item:hover { background: var(--bg-3); border-color: var(--border-2); }
+.snippet-active { border-color: var(--accent) !important; background: rgba(79,172,254,.06) !important; }
 .snippet-left { flex: 1; overflow: hidden; }
 .snippet-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .snippet-date { font-size: 10px; color: var(--muted); margin-top: 2px; }
@@ -618,7 +634,7 @@ body {
   :root { --sidebar-w: 0px; --results-w: 280px; }
   .sidebar { display: none; }
   .panel-resize-handle { display: none; }
-  .separator, .toggle-label { display: none; }
+  .separator { display: none; }
 }
 @media (max-width: 540px) {
   :root { --results-w: 100%; }

@@ -25,6 +25,7 @@ import org.twelve.gcp.outline.primitive.DOUBLE;
 import org.twelve.gcp.outline.primitive.INTEGER;
 import org.twelve.gcp.outline.primitive.NUMBER;
 import org.twelve.gcp.outline.primitive.STRING;
+import org.twelve.gcp.outline.primitive.SYMBOL;
 import org.twelve.gcp.outline.projectable.FirstOrderFunction;
 import org.twelve.gcp.outline.projectable.Function;
 import org.twelve.gcp.outline.projectable.Genericable;
@@ -1242,6 +1243,85 @@ public class InferenceTest {
         assertInstanceOf(org.twelve.gcp.interpreter.value.StringValue.class, result);
         assertEquals("prod",
                 ((org.twelve.gcp.interpreter.value.StringValue) result).value());
+    }
+
+    /**
+     * outline Human = { speed: Int, run: ()->this.speed }
+     * run is a default method — inferred as () → Int, no errors, callable.
+     */
+    @Test
+    void test_outline_default_method() {
+        AST ast = ASTHelper.mockOutlineMethod();
+        assertTrue(ast.asf().infer(), "inference should succeed");
+        assertTrue(ast.errors().isEmpty(),
+                "no errors expected for outline default method; got: " + ast.errors());
+        org.twelve.gcp.outline.Outline result = ast.program().body().statements().getLast().outline();
+        assertInstanceOf(INTEGER.class, result,
+                "h.run() should infer Int; got: " + result);
+    }
+
+    /**
+     * outline Human = { speed: Int, run: #()->this.speed }
+     * run is a literal (sealed) method — no errors, callable.
+     */
+    @Test
+    void test_outline_literal_method() {
+        AST ast = ASTHelper.mockOutlineMethodLiteral();
+        assertTrue(ast.asf().infer(), "inference should succeed");
+        assertTrue(ast.errors().isEmpty(),
+                "no errors expected for outline literal method; got: " + ast.errors());
+        org.twelve.gcp.outline.Outline result = ast.program().body().statements().getLast().outline();
+        assertInstanceOf(INTEGER.class, result,
+                "h.run() should infer Int; got: " + result);
+    }
+
+    /**
+     * outline Gender = Male | Female; outline Man = Human{ age: Int, gender: #Male }.
+     * gender is a Symbol literal type — no errors, infers as SYMBOL, NOT_ASSIGNABLE if overridden.
+     */
+    @Test
+    void test_symbol_literal_type() {
+        AST ast = ASTHelper.mockSymbolLiteralType();
+        assertTrue(ast.asf().infer(), "inference should succeed");
+        assertTrue(ast.errors().isEmpty(),
+                "no errors expected for symbol literal type; got: " + ast.errors());
+        org.twelve.gcp.outline.Outline result = ast.program().body().statements().getLast().outline();
+        assertInstanceOf(org.twelve.gcp.outline.primitive.Literal.class, result,
+                "man.gender should infer as Literal(Male); got: " + result);
+        assertInstanceOf(SYMBOL.class, ((org.twelve.gcp.outline.primitive.Literal) result).outline(),
+                "Literal should wrap SYMBOL; got: " + ((org.twelve.gcp.outline.primitive.Literal) result).outline());
+    }
+
+    /**
+     * outline Service = { name: String, meta: #{ env: "prod", version: 1 } };
+     * let s = Service{name="api", meta={env="dev",version=2}};
+     * Expects 1 NOT_ASSIGNABLE error on 'meta' (entity literal type is immutable).
+     */
+    @Test
+    void test_entity_literal_type() {
+        AST ast = ASTHelper.mockEntityLiteralType();
+        assertTrue(ast.asf().infer());
+        long notAssignable = ast.errors().stream()
+                .filter(e -> e.errorCode() == GCPErrCode.NOT_ASSIGNABLE)
+                .count();
+        assertEquals(1, notAssignable,
+                "expected 1 NOT_ASSIGNABLE error for meta (entity literal); got: " + ast.errors());
+    }
+
+    /**
+     * outline Origin = { label: String, coords: #(0, 0) };
+     * let o = Origin{label="center", coords=(1,2)};
+     * Expects 1 NOT_ASSIGNABLE error on 'coords' (tuple literal type is immutable).
+     */
+    @Test
+    void test_tuple_literal_type() {
+        AST ast = ASTHelper.mockTupleLiteralType();
+        assertTrue(ast.asf().infer());
+        long notAssignable = ast.errors().stream()
+                .filter(e -> e.errorCode() == GCPErrCode.NOT_ASSIGNABLE)
+                .count();
+        assertEquals(1, notAssignable,
+                "expected 1 NOT_ASSIGNABLE error for coords (tuple literal); got: " + ast.errors());
     }
 
     @Test

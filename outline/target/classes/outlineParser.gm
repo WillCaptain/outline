@@ -92,6 +92,7 @@ factor_type
     ;
 literal_type
     : '#' literal
+    | '#' Symbol
     ;
 
 tuple_type

@@ -4,18 +4,21 @@
 
 // ── State ──────────────────────────────────────────────────────
 const state = {
-  editor        : null,
-  examples      : [],
-  snippets      : JSON.parse(localStorage.getItem('outline_snippets') || '[]'),
-  lastResult    : null,
-  inferDebounce : null,
-  hoverProvider : null,
-  typeDecos     : [],
-  diagDecos     : [],
-  showInline    : JSON.parse(localStorage.getItem('outline_inline') ?? 'true'),
-  isDark        : JSON.parse(localStorage.getItem('outline_dark') ?? 'true'),
+  editor           : null,
+  examples         : [],
+  snippets         : JSON.parse(localStorage.getItem('outline_snippets') || '[]'),
+  lastResult       : null,
+  inferDebounce    : null,
+  hoverProvider    : null,
+  typeDecos        : [],
+  diagDecos        : [],
+  showInline       : true,   // inline type hints always on (toggle removed)
+  isDark           : JSON.parse(localStorage.getItem('outline_dark') ?? 'true'),
   // panel resize
-  resultsWidth  : parseInt(localStorage.getItem('outline_results_w') || '360', 10),
+  resultsWidth     : parseInt(localStorage.getItem('outline_results_w') || '360', 10),
+  // active snippet tracking for re-save
+  activeSnippetIdx : -1,
+  _progChange      : false,  // suppress activeSnippetIdx reset during programmatic setValue
 };
 
 // ── Monaco bootstrap ───────────────────────────────────────────
@@ -55,8 +58,12 @@ require(['vs/editor/editor.main'], () => {
     clearResults();
   });
 
-  // Auto-infer on change (debounced)
+  // Auto-infer on change (debounced); user edits clear the active snippet lock
   state.editor.onDidChangeModelContent(() => {
+    if (!state._progChange) {
+      state.activeSnippetIdx = -1;
+      updateSaveBtn();
+    }
     clearTimeout(state.inferDebounce);
     updateLineMeta();
     state.inferDebounce = setTimeout(() => runCode('infer'), 700);
@@ -232,13 +239,13 @@ function renderResults(data, mode) {
 
   if (errors.length > 0) {
     setStatus('error', `✗ ${errors.length} error${errors.length > 1 ? 's' : ''}`);
-    if (data.hasParseError) switchTab('errors');
+    switchTab('errors');
   } else if (warns.length > 0) {
     setStatus('warn', `⚠ ${warns.length} warning${warns.length > 1 ? 's' : ''}`);
-    if (mode === 'run') switchTab('inference');
+    switchTab('inference');
   } else {
     setStatus('ok', `✓ ${syms.length} inferred`);
-    if (mode === 'run') switchTab('inference');
+    switchTab('inference');
   }
 }
 
@@ -463,13 +470,14 @@ function renderSnippets() {
     return;
   }
   list.innerHTML = state.snippets.map((s, i) => `
-    <div class="snippet-item" data-idx="${i}">
+    <div class="snippet-item${state.activeSnippetIdx === i ? ' snippet-active' : ''}" data-idx="${i}">
       <div class="snippet-left">
         <div class="snippet-name">${esc(s.name)}</div>
         <div class="snippet-date">${new Date(s.ts).toLocaleDateString()}</div>
       </div>
       <div class="snippet-actions">
         <button class="snippet-btn snippet-run" data-idx="${i}" title="Load & Run">▶</button>
+        <button class="snippet-btn snippet-upd" data-idx="${i}" title="Overwrite with current editor code">💾</button>
         <button class="snippet-btn snippet-del" data-idx="${i}" title="Delete">✕</button>
       </div>
     </div>
@@ -483,24 +491,60 @@ function renderSnippets() {
   });
   list.querySelectorAll('.snippet-run').forEach(btn =>
     btn.addEventListener('click', e => { e.stopPropagation(); loadSnippetAndRun(+btn.dataset.idx); }));
+  list.querySelectorAll('.snippet-upd').forEach(btn =>
+    btn.addEventListener('click', e => { e.stopPropagation(); updateSnippet(+btn.dataset.idx); }));
   list.querySelectorAll('.snippet-del').forEach(btn =>
     btn.addEventListener('click', e => { e.stopPropagation(); deleteSnippet(+btn.dataset.idx); }));
 }
 
 function loadSnippet(idx) {
-  if (state.snippets[idx]) state.editor.setValue(state.snippets[idx].code);
+  if (!state.snippets[idx]) return;
+  state._progChange = true;
+  state.editor.setValue(state.snippets[idx].code);
+  state._progChange = false;
+  state.activeSnippetIdx = idx;
+  updateSaveBtn();
 }
 function loadSnippetAndRun(idx) {
   loadSnippet(idx);
   setTimeout(() => runCode('run'), 80);
 }
 function deleteSnippet(idx) {
+  if (state.activeSnippetIdx === idx) {
+    state.activeSnippetIdx = -1;
+    updateSaveBtn();
+  } else if (state.activeSnippetIdx > idx) {
+    state.activeSnippetIdx--;
+  }
   state.snippets.splice(idx, 1);
   saveSnippets();
   renderSnippets();
 }
+function updateSnippet(idx) {
+  if (!state.snippets[idx]) return;
+  state.snippets[idx].code = state.editor.getValue();
+  state.snippets[idx].ts   = Date.now();
+  saveSnippets();
+  renderSnippets();
+  showToast(`"${state.snippets[idx].name}" updated`, 'ok');
+}
 function saveSnippets() {
   localStorage.setItem('outline_snippets', JSON.stringify(state.snippets));
+}
+function updateSaveBtn() {
+  const btnSave   = el('btn-save');
+  const btnSaveAs = el('btn-save-as');
+  if (!btnSave) return;
+  if (state.activeSnippetIdx >= 0 && state.snippets[state.activeSnippetIdx]) {
+    const name = state.snippets[state.activeSnippetIdx].name;
+    btnSave.textContent = '💾 Update';
+    btnSave.title = `Overwrite "${name}" with current code`;
+    if (btnSaveAs) btnSaveAs.style.display = '';
+  } else {
+    btnSave.textContent = '＋ Save';
+    btnSave.title = 'Save current editor code';
+    if (btnSaveAs) btnSaveAs.style.display = 'none';
+  }
 }
 
 // ── Sharing ────────────────────────────────────────────────────
@@ -690,18 +734,17 @@ function bindEvents() {
     el('sidebar').classList.toggle('collapsed');
   });
 
-  // Inline types toggle
-  const inlineTgl = el('toggle-inline-types');
-  inlineTgl.checked = state.showInline;
-  inlineTgl.addEventListener('change', () => {
-    state.showInline = inlineTgl.checked;
-    localStorage.setItem('outline_inline', JSON.stringify(state.showInline));
-    if (state.lastResult) updateInlineAnnotations(state.lastResult.symbols || []);
-    else state.typeDecos = state.editor.deltaDecorations(state.typeDecos, []);
+  // Save / Update modal
+  el('btn-save').addEventListener('click', () => {
+    if (state.activeSnippetIdx >= 0) {
+      updateSnippet(state.activeSnippetIdx);
+    } else {
+      openSaveModal();
+    }
   });
-
-  // Save modal
-  el('btn-save').addEventListener('click', openSaveModal);
+  if (el('btn-save-as')) {
+    el('btn-save-as').addEventListener('click', openSaveModal);
+  }
   el('modal-cancel').addEventListener('click', closeSaveModal);
   el('modal-close').addEventListener('click', closeSaveModal);
   el('modal-confirm').addEventListener('click', confirmSave);

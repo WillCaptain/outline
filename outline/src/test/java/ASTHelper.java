@@ -1491,4 +1491,103 @@ public class ASTHelper {
                 """;
         return parser.parse(new ASF(), code);
     }
+
+    /**
+     * outline Human = { speed: Int, run: ()->this.speed }
+     * run is a DEFAULT method (overridable at construction).
+     * let h = Human{speed = 42}; h.run() → 42
+     */
+    public static AST mockOutlineMethod() {
+        String code = """
+                outline Human = {
+                    speed: Int,
+                    run: ()->this.speed
+                };
+                let h = Human{speed = 42};
+                h.run()
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * outline Human = { speed: Int, run: #()->this.speed }
+     * run is a LITERAL (sealed) method — always ()->this.speed, cannot be overridden.
+     * let h = Human{speed = 99}; h.run() → 99
+     */
+    public static AST mockOutlineMethodLiteral() {
+        String code = """
+                outline Human = {
+                    speed: Int,
+                    run: #()->this.speed
+                };
+                let h = Human{speed = 99};
+                h.run()
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Tests entity literal type:
+     *   outline Service = {
+     *       name:   String,
+     *       meta:   #{ env = "prod", version = 1 }   // always this exact entity, immutable
+     *   };
+     *   let s = Service{name="api", meta={env="dev", version=2}};  // meta assignment → NOT_ASSIGNABLE
+     *   (s.name, s.meta.env)
+     */
+    public static AST mockEntityLiteralType() {
+        String code = """
+                outline Service = {
+                    name: String,
+                    meta: #{ env = "prod", version = 1 }
+                };
+                let s = Service{name = "api", meta = {env = "dev", version = 2}};
+                (s.name, s.meta.env)
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Tests tuple literal type:
+     *   outline Origin = {
+     *       label:  String,
+     *       coords: #(0, 0)   // always the origin tuple, immutable
+     *   };
+     *   let o = Origin{label="center", coords=(1,2)};  // coords assignment → NOT_ASSIGNABLE
+     *   (o.label, o.coords)
+     */
+    public static AST mockTupleLiteralType() {
+        String code = """
+                outline Origin = {
+                    label:  String,
+                    coords: #(0, 0)
+                };
+                let o = Origin{label = "center", coords = (1, 2)};
+                (o.label, o.coords)
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * outline Gender = Male | Female;
+     * outline Human  = { gender: Gender };
+     * outline Man    = Human{ age: Int, gender: #Male };
+     * let man = Man{age = 50};
+     * man.gender  → Male (literal wins)
+     */
+    public static AST mockSymbolLiteralType() {
+        String code = """
+                outline Gender = Male | Female;
+                outline Human = {
+                    gender: Gender
+                };
+                outline Man = Human{
+                    age: Int,
+                    gender: #Male
+                };
+                let man = Man{age = 50};
+                man.gender
+                """;
+        return parser.parse(new ASF(), code);
+    }
 }
