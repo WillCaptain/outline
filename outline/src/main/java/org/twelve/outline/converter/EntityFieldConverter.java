@@ -3,6 +3,7 @@ package org.twelve.outline.converter;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.identifier.Identifier;
+import org.twelve.gcp.node.expression.typeable.ArrayTypeNode;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
@@ -10,6 +11,7 @@ import org.twelve.outline.common.Constants;
 import org.twelve.outline.wrappernode.ArgumentWrapper;
 import org.twelve.outline.wrappernode.EntityFieldWithDefaultWrapper;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.twelve.outline.common.Tool.cast;
@@ -58,6 +60,20 @@ public class EntityFieldConverter extends Converter {
                 || Constants.SYMBOL.equals(typeName)) {  // symbol literal collapsed (e.g. alias: Male)
             Node defaultNode = converters.get(typeName).convert(ast, typeOrDefault);
             return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
+        }
+
+        // MSLL may parse array-type annotations ([T]) as an 'array' expression node
+        // instead of 'array_type'. The collapsed structure is: '[' ID ']' (3 nodes).
+        // Extract the element node and build an ArrayTypeNode directly.
+        if (Constants.ARRAY.equals(typeName)) {
+            NonTerminalNode arr = (NonTerminalNode) typeOrDefault;
+            List<ParseNode> arrNodes = arr.nodes();
+            if (arrNodes.size() == 3) {
+                ParseNode elemNode = arrNodes.get(1);
+                TypeNode elemType = cast(converters.get(Constants.COLON_ + elemNode.name()).convert(ast, elemNode));
+                return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast, elemType));
+            }
+            return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast));
         }
 
         // entity_field: ID ':' declared_outline  →  plain type annotation

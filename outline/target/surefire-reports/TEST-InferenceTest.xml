@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="InferenceTest" time="2.362" tests="68" errors="1" skipped="1" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="InferenceTest" time="0.662" tests="68" errors="0" skipped="1" failures="0">
   <properties>
     <property name="socksProxyHost" value="127.0.0.1"/>
     <property name="http.proxyHost" value="127.0.0.1"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260228144851701_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-02-28T14-48-51_645-jvmRun1 surefire-20260228144851701_1tmp surefire_0-20260228144851701_2tmp"/>
+    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260228160828806_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-02-28T16-08-28_768-jvmRun1 surefire-20260228160828806_1tmp surefire_0-20260228160828806_2tmp"/>
     <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:"/>
@@ -33,7 +33,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260228144851701_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260228160828806_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="java.runtime.version" value="21.0.6"/>
@@ -64,158 +64,80 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="test_inference_of_dict_definition" classname="InferenceTest" time="0.016"/>
-  <testcase name="test_assign_mismatch_inference" classname="InferenceTest" time="0.003"/>
-  <testcase name="test_declared_match" classname="InferenceTest" time="0.032"/>
-  <testcase name="test_complex_literal" classname="InferenceTest" time="0.02"/>
-  <testcase name="test_import_and_extend_outline" classname="InferenceTest" time="0.04"/>
-  <testcase name="test_inference_of_string_methods" classname="InferenceTest" time="0.039"/>
-  <testcase name="test_declare_infer" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_reference_call_Lazy" classname="InferenceTest" time="0.033"/>
-  <testcase name="test_declared_poly_mismatch_assignment_inference" classname="InferenceTest" time="0.005"/>
-  <testcase name="test_inference_of_unpack" classname="InferenceTest" time="0.033"/>
-  <testcase name="test_inference_if" classname="InferenceTest" time="0.035"/>
-  <testcase name="test_inference_of_number_methods" classname="InferenceTest" time="0.014"/>
-  <testcase name="test_inference_of_array_reduce" classname="InferenceTest" time="0.008"/>
-  <testcase name="test_as" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_outline_default_method" classname="InferenceTest" time="0.008"/>
-  <testcase name="test_inter_invoke" classname="InferenceTest" time="0.026"/>
-  <testcase name="test_inference_of_bool_methods" classname="InferenceTest" time="0.005"/>
-  <testcase name="test_debug_extend_outline_parse" classname="InferenceTest" time="0.02"/>
-  <testcase name="test_with" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_inherited_person_entity_with_override_member" classname="InferenceTest" time="0.03"/>
-  <testcase name="test_var_reassign_ok" classname="InferenceTest" time="0.004"/>
-  <testcase name="test_outline_literal_method" classname="InferenceTest" time="0.004"/>
-  <testcase name="test_inherited_this" classname="InferenceTest" time="0.023"/>
-  <testcase name="test_entity_literal_type" classname="InferenceTest" time="0.007"/>
-  <testcase name="test_more_option" classname="InferenceTest" time="0.011"/>
-  <testcase name="test_simple_person_entity" classname="InferenceTest" time="0.005"/>
-  <testcase name="test_outline_entity_template" classname="InferenceTest" time="0.012"/>
-  <testcase name="test_outline_type_member_access_error" classname="InferenceTest" time="0.015"/>
-  <testcase name="test_inference_of_reference_in_entity" classname="InferenceTest" time="0.017"/>
-  <testcase name="test_symbol_literal_type" classname="InferenceTest" time="0.012"/>
-  <testcase name="test_generic_is_as" classname="InferenceTest" time="0.007"/>
-  <testcase name="test_future_reference_from_entity" classname="InferenceTest" time="0.049"/>
-  <testcase name="test_inference_of_array_definition" classname="InferenceTest" time="0.017"/>
-  <testcase name="test_outline_entity_default_fill" classname="InferenceTest" time="0.012"/>
+  <testcase name="test_inference_of_dict_definition" classname="InferenceTest" time="0.008"/>
+  <testcase name="test_assign_mismatch_inference" classname="InferenceTest" time="0.001"/>
+  <testcase name="test_declared_match" classname="InferenceTest" time="0.011"/>
+  <testcase name="test_complex_literal" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_import_and_extend_outline" classname="InferenceTest" time="0.009"/>
+  <testcase name="test_inference_of_string_methods" classname="InferenceTest" time="0.014"/>
+  <testcase name="test_declare_infer" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_reference_call_Lazy" classname="InferenceTest" time="0.018"/>
+  <testcase name="test_declared_poly_mismatch_assignment_inference" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_inference_of_unpack" classname="InferenceTest" time="0.007"/>
+  <testcase name="test_inference_if" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_inference_of_number_methods" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_inference_of_array_reduce" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_as" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_outline_default_method" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_inter_invoke" classname="InferenceTest" time="0.02"/>
+  <testcase name="test_inference_of_bool_methods" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_debug_extend_outline_parse" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_with" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_inherited_person_entity_with_override_member" classname="InferenceTest" time="0.008"/>
+  <testcase name="test_var_reassign_ok" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_outline_literal_method" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_inherited_this" classname="InferenceTest" time="0.011"/>
+  <testcase name="test_entity_literal_type" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_more_option" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_simple_person_entity" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_outline_entity_template" classname="InferenceTest" time="0.009"/>
+  <testcase name="test_outline_type_member_access_error" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_inference_of_reference_in_entity" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_symbol_literal_type" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_generic_is_as" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_future_reference_from_entity" classname="InferenceTest" time="0.014"/>
+  <testcase name="test_inference_of_array_definition" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_outline_entity_default_fill" classname="InferenceTest" time="0.003"/>
   <testcase name="test_function_project_change_function_declaration" classname="InferenceTest" time="0.001"/>
-  <testcase name="test_simple_person_entity_with_override_member" classname="InferenceTest" time="0.032"/>
+  <testcase name="test_simple_person_entity_with_override_member" classname="InferenceTest" time="0.004"/>
   <testcase name="test_continue_break" classname="InferenceTest" time="0.0">
     <skipped message="continue/break not yet implemented — see Javadoc above for roadmap"/>
   </testcase>
-  <testcase name="test_literal_outline" classname="InferenceTest" time="0.011"/>
-  <testcase name="test_inherited_person_entity" classname="InferenceTest" time="0.012"/>
-  <testcase name="test_future_reference_from_outline" classname="InferenceTest" time="0.66"/>
-  <testcase name="test_recursive_extension" classname="InferenceTest" time="0.116">
-    <error message="Cannot invoke &quot;org.twelve.outline.converter.Converter.convert(org.twelve.gcp.ast.AST, org.twelve.msll.parsetree.ParseNode)&quot; because the return value of &quot;java.util.Map.get(Object)&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "org.twelve.outline.converter.Converter.convert(org.twelve.gcp.ast.AST, org.twelve.msll.parsetree.ParseNode)" because the return value of "java.util.Map.get(Object)" is null
-	at org.twelve.outline.converter.EntityFieldConverter.convert(EntityFieldConverter.java:65)
-	at org.twelve.outline.converter.Converter.convert(Converter.java:18)
-	at org.twelve.outline.converter.EntityTypeConverter.convert(EntityTypeConverter.java:44)
-	at org.twelve.outline.converter.Converter.convert(Converter.java:18)
-	at org.twelve.outline.ExtendOutlineConverter.convert(ExtendOutlineConverter.java:63)
-	at org.twelve.outline.converter.Converter.convert(Converter.java:18)
-	at org.twelve.outline.converter.OutlineDefinitionConverter.convert(OutlineDefinitionConverter.java:35)
-	at org.twelve.outline.converter.ProgramConverter.convert(ProgramConverter.java:26)
-	at org.twelve.outline.GCPConverter.convert(GCPConverter.java:185)
-	at org.twelve.outline.OutlineParser.parse(OutlineParser.java:141)
-	at ASTHelper.mockRecurExtend(ASTHelper.java:1440)
-	at InferenceTest.test_recursive_extension(InferenceTest.java:1130)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:727)
-	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
-	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
-	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
-	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
-	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
-	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
-	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
-	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
-	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:217)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:213)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:138)
-	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:68)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
-	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
-	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
-	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
-	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
-	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
-	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
-	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
-	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
-	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:147)
-	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:127)
-	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:90)
-	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:55)
-	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:102)
-	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:54)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:86)
-	at org.junit.platform.launcher.core.DefaultLauncherSession$DelegatingLauncher.execute(DefaultLauncherSession.java:86)
-	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
-	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
-	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
-	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
-	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
-	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
-	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
-	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
-]]></error>
+  <testcase name="test_literal_outline" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_inherited_person_entity" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_future_reference_from_outline" classname="InferenceTest" time="0.285"/>
+  <testcase name="test_recursive_extension" classname="InferenceTest" time="0.018">
+    <system-out><![CDATA[[TEST] errors=[]
+[TEST] base={filter: (<i>->Bool)->{...},data: [Integer],map: (<i>-><o>)->{...}}
+[TEST] mapped={...}
+[TEST] filtered={...}
+]]></system-out>
   </testcase>
-  <testcase name="test_import_export_values" classname="InferenceTest" time="0.047"/>
-  <testcase name="test_let_reassign_error" classname="InferenceTest" time="0.009"/>
-  <testcase name="test_protected_member_external_access_error" classname="InferenceTest" time="0.031"/>
-  <testcase name="test_option_is_as" classname="InferenceTest" time="0.032"/>
-  <testcase name="test_function_definition_inference" classname="InferenceTest" time="0.022"/>
-  <testcase name="test_outline_instance_member_access_ok" classname="InferenceTest" time="0.017"/>
-  <testcase name="test_built_in_entity" classname="InferenceTest" time="0.001"/>
-  <testcase name="test_nested_entity" classname="InferenceTest" time="0.033"/>
-  <testcase name="test_inference_of_reference_in_function" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_explicit_poly_inference" classname="InferenceTest" time="0.059"/>
-  <testcase name="test_inference_of_array_methods" classname="InferenceTest" time="0.104"/>
-  <testcase name="test_declared_assignment_type_mismatch_inference" classname="InferenceTest" time="0.004"/>
-  <testcase name="test_import_export_outline" classname="InferenceTest" time="0.236"/>
-  <testcase name="test_literal_inference" classname="InferenceTest" time="0.029"/>
-  <testcase name="test_import_alias_resolves_correctly" classname="InferenceTest" time="0.024"/>
-  <testcase name="test_tuple_literal_type" classname="InferenceTest" time="0.018"/>
-  <testcase name="test_initialization_inference" classname="InferenceTest" time="0.025"/>
-  <testcase name="test_poly_is_as" classname="InferenceTest" time="0.028"/>
-  <testcase name="test_symbol_match" classname="InferenceTest" time="0.045"/>
-  <testcase name="test_binary_expression" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_inference_of_basic_adt" classname="InferenceTest" time="0.01"/>
-  <testcase name="test_override_function_definition_inference" classname="InferenceTest" time="0.006"/>
-  <testcase name="test_inference_of_dict_methods" classname="InferenceTest" time="0.014"/>
-  <testcase name="test_inference_of_array_map" classname="InferenceTest" time="0.009"/>
-  <testcase name="test_match" classname="InferenceTest" time="0.044"/>
-  <testcase name="test_tuple" classname="InferenceTest" time="0.013"/>
-  <testcase name="test_protected_member_internal_access_ok" classname="InferenceTest" time="0.007"/>
+  <testcase name="test_import_export_values" classname="InferenceTest" time="0.007"/>
+  <testcase name="test_let_reassign_error" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_protected_member_external_access_error" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_option_is_as" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_function_definition_inference" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_outline_instance_member_access_ok" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_built_in_entity" classname="InferenceTest" time="0.0"/>
+  <testcase name="test_nested_entity" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_inference_of_reference_in_function" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_explicit_poly_inference" classname="InferenceTest" time="0.005"/>
+  <testcase name="test_inference_of_array_methods" classname="InferenceTest" time="0.011"/>
+  <testcase name="test_declared_assignment_type_mismatch_inference" classname="InferenceTest" time="0.001"/>
+  <testcase name="test_import_export_outline" classname="InferenceTest" time="0.008"/>
+  <testcase name="test_literal_inference" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_import_alias_resolves_correctly" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_tuple_literal_type" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_initialization_inference" classname="InferenceTest" time="0.006"/>
+  <testcase name="test_poly_is_as" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_symbol_match" classname="InferenceTest" time="0.011"/>
+  <testcase name="test_binary_expression" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_inference_of_basic_adt" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_override_function_definition_inference" classname="InferenceTest" time="0.002"/>
+  <testcase name="test_inference_of_dict_methods" classname="InferenceTest" time="0.004"/>
+  <testcase name="test_inference_of_array_map" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_match" classname="InferenceTest" time="0.011"/>
+  <testcase name="test_tuple" classname="InferenceTest" time="0.003"/>
+  <testcase name="test_protected_member_internal_access_ok" classname="InferenceTest" time="0.002"/>
 </testsuite>

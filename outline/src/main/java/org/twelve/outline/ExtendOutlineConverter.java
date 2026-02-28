@@ -65,8 +65,17 @@ public class ExtendOutlineConverter extends Converter {
         if (nodes.isEmpty()) {
             return base;
         }
-        EntityTypeNode extension = cast(converters.get(Constants.COLON_ + nodes.getFirst().name())
-                .convert(ast, nodes.removeFirst()));
+
+        ParseNode extNode = nodes.getFirst();
+        // MSLL grammar ambiguity: when a lambda '->' inside the entity body is misinterpreted
+        // as func_type's '->', a spurious 'non_compound_type' sibling may appear after the
+        // real entity_type.  Skip it – the entity_type already captured the full body.
+        if (!extNode.name().equals(Constants.ENTITY_TYPE.substring(1))) {
+            return base;
+        }
+        nodes.removeFirst();
+        EntityTypeNode extension = cast(converters.get(Constants.COLON_ + extNode.name())
+                .convert(ast, extNode));
         return new ExtendTypeNode(ast, new ArrayList<>(), base, null, extension);
     }
 }

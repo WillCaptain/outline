@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: ExternalTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.024 s <<< FAILURE! -- in ExternalTest
-ExternalTest.test_external_builder_interpret -- Time elapsed: 0.013 s <<< ERROR!
+Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.014 s <<< FAILURE! -- in ExternalTest
+ExternalTest.test_external_builder_interpret -- Time elapsed: 0.006 s <<< ERROR!
 java.lang.RuntimeException: Member 'name' not found on external_builder{__typeArgs__ = Human}
 	at org.twelve.gcp.interpreter.interpretation.MemberAccessorInterpretation.interpret(MemberAccessorInterpretation.java:28)
 	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:245)
