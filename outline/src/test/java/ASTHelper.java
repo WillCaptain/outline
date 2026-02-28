@@ -900,7 +900,7 @@ public class ASTHelper {
                   y
                 };
                 let r = fx<a>(x: [String : a])->{
-                  let b = ["Will":30];
+                  var b = ["Will":30];
                   b = x;
                   let c: a = x["Will"];
                   c

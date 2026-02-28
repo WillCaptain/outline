@@ -8,6 +8,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class RunnerHelper {
+    /** Parse code into a fresh single-module AST (does NOT run). */
+    public static AST parse(String code) {
+        ASF asf = new ASF();
+        return new OutlineParser().parse(asf, code);
+    }
+
     /** Parse code into a fresh single-module ASF and run it. */
     public static Value run(String code) {
         ASF asf = new ASF();

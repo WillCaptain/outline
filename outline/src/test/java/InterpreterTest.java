@@ -1805,4 +1805,29 @@ public class InterpreterTest {
         assertThat(RunnerHelper.intVal(coords.get(0))).isEqualTo(0L);   // o.coords._1 == 0
         assertThat(RunnerHelper.intVal(coords.get(1))).isEqualTo(0L);   // o.coords._2 == 0
     }
+
+    /**
+     * Poly type annotation extraction:
+     *   let db = 10 & "Will" & {name="Will"};
+     *   let ent:{name:String} = db;   // extracts EntityValue
+     *   let num:Int            = db;  // extracts IntValue
+     *   let str:String         = db;  // extracts StringValue
+     *   (ent,num,str)
+     */
+    @Test
+    void test_poly_type_annotation_extraction() {
+        Value v = RunnerHelper.run("""
+                let db = 10&"Will"&{name="Will"};
+                let ent:{name:String} = db;
+                let num:Int = db;
+                let str:String = db;
+                (ent,num,str)
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(tv.get(0)).isInstanceOf(EntityValue.class);
+        assertThat(RunnerHelper.strVal(((EntityValue) tv.get(0)).get("name"))).isEqualTo("Will");
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(10L);
+        assertThat(RunnerHelper.strVal(tv.get(2))).isEqualTo("Will");
+    }
 }

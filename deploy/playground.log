@@ -1,0 +1,23 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+2026-02-28T14:50:01.833+08:00  INFO 31967 --- [outline-playground] [           main] o.t.o.playground.PlaygroundApplication   : Starting PlaygroundApplication v1.0-SNAPSHOT using Java 21.0.6 with PID 31967 (/Users/imac/Documents/code/github/outline/deploy/outline-playground-1.0-SNAPSHOT.jar started by imac in /Users/imac/Documents/code/github/outline/deploy)
+2026-02-28T14:50:01.834+08:00  INFO 31967 --- [outline-playground] [           main] o.t.o.playground.PlaygroundApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-02-28T14:50:02.316+08:00  INFO 31967 --- [outline-playground] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-02-28T14:50:02.325+08:00  INFO 31967 --- [outline-playground] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-28T14:50:02.325+08:00  INFO 31967 --- [outline-playground] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-02-28T14:50:02.361+08:00  INFO 31967 --- [outline-playground] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-28T14:50:02.362+08:00  INFO 31967 --- [outline-playground] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 502 ms
+2026-02-28T14:50:02.488+08:00  INFO 31967 --- [outline-playground] [           main] o.t.o.p.service.ExamplesRepository       : Loaded 27 built-in examples
+2026-02-28T14:50:04.129+08:00  INFO 31967 --- [outline-playground] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-02-28T14:50:04.234+08:00  INFO 31967 --- [outline-playground] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-02-28T14:50:04.245+08:00  INFO 31967 --- [outline-playground] [           main] o.t.o.playground.PlaygroundApplication   : Started PlaygroundApplication in 2.602 seconds (process running for 2.848)
+2026-02-28T14:52:24.455+08:00  INFO 31967 --- [outline-playground] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-02-28T14:52:24.458+08:00  INFO 31967 --- [outline-playground] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-02-28T14:52:24.489+08:00  INFO 31967 --- [outline-playground] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 30 ms

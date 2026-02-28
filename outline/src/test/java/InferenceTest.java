@@ -354,10 +354,15 @@ public class InferenceTest {
         assertTrue(ast.inferred());
         Entity person = cast(ast.program().body().statements().get(3).nodes().getFirst().nodes().getFirst().outline());
         List<EntityMember> members = person.members().stream().filter(m -> !m.isDefault()).toList();
-        assertEquals(5, members.size());
-        assertInstanceOf(STRING.class, members.get(2).outline());
-        assertInstanceOf(Poly.class, members.get(3).outline());
-        Poly getName = cast(members.get(3).outline());
+        // person.members() = [name(phase-1), get_name(phase-2), get_my_name(phase-2)]
+        // interact(own=[get_name(override), get_other_name], base=[name, get_name, get_my_name]):
+        //   → [get_other_name, name, get_name(Poly), get_my_name]
+        assertEquals(4, members.size());
+        // index 1: name field is STRING
+        assertInstanceOf(STRING.class, members.get(1).outline());
+        // index 2: get_name is Poly (original ()->String  +  override last_name->{100})
+        assertInstanceOf(Poly.class, members.get(2).outline());
+        Poly getName = cast(members.get(2).outline());
         assertSame(ast.Unit, ((Genericable<?, ?>) ((Function<?, ?>) getName.options().get(0)).argument()).declaredToBe());
         Function<?, ?> overrides = cast(getName.options().get(1));
         assertInstanceOf(Option.class, ((Genericable<?, ?>) overrides.argument()).definedToBe());
@@ -1336,5 +1341,78 @@ public class InferenceTest {
         assertInstanceOf(org.twelve.gcp.interpreter.value.IntValue.class, result);
         assertEquals(80,
                 ((org.twelve.gcp.interpreter.value.IntValue) result).value());
+    }
+
+    @Test
+    void test_let_reassign_error() {
+        // let a = 100; a = 200  →  NOT_ASSIGNABLE on 'a'
+        AST ast = RunnerHelper.parse("let a = 100; a = 200;");
+        ast.asf().infer();
+        assertEquals(1, ast.errors().size());
+        assertEquals(GCPErrCode.NOT_ASSIGNABLE, ast.errors().getFirst().errorCode());
+        assertEquals("a", ast.errors().getFirst().node().lexeme());
+    }
+
+    @Test
+    void test_var_reassign_ok() {
+        // var a = 100; a = 200  →  no error
+        AST ast = RunnerHelper.parse("var a = 100; a = 200;");
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty());
+    }
+
+    @Test
+    void test_protected_member_external_access_error() {
+        // let a = {_age = 100}; a._age  →  NOT_ACCESSIBLE on '_age'
+        AST ast = RunnerHelper.parse("let a = {_age = 100}; a._age;");
+        ast.asf().infer();
+        assertEquals(1, ast.errors().size());
+        assertEquals(GCPErrCode.NOT_ACCESSIBLE, ast.errors().getFirst().errorCode());
+        assertEquals("_age", ast.errors().getFirst().node().lexeme());
+    }
+
+    @Test
+    void test_protected_member_internal_access_ok() {
+        // _-prefixed members are accessible via this inside the entity
+        AST ast = RunnerHelper.parse("""
+                let a = {
+                    _age = 100,
+                    getAge = ()->this._age
+                };
+                a.getAge();
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty());
+    }
+
+    @Test
+    void test_outline_type_member_access_error() {
+        // Human.gender where Human is a type definition should report OUTLINE_USED_AS_VALUE
+        AST ast = RunnerHelper.parse("""
+                outline Gender = Male|Female;
+                outline Human = {
+                    gender:Gender
+                };
+                let a = Human.gender;
+                """);
+        ast.asf().infer();
+        assertFalse(ast.errors().isEmpty());
+        assertEquals(GCPErrCode.OUTLINE_USED_AS_VALUE, ast.errors().getFirst().errorCode());
+        assertEquals("Human", ast.errors().getFirst().node().lexeme());
+    }
+
+    @Test
+    void test_outline_instance_member_access_ok() {
+        // Instance member access must still work
+        AST ast = RunnerHelper.parse("""
+                outline Gender = Male|Female;
+                outline Human = {
+                    gender:Gender
+                };
+                let man = Human{gender=Male};
+                man.gender;
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty());
     }
 }
