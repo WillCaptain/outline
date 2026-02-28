@@ -1807,6 +1807,40 @@ public class InterpreterTest {
     }
 
     /**
+     * Recursive outline extension with this{...} copy-constructor:
+     *   outline Base = <i,o>{ data:[i], map: (mapper:i->o)->this{data=data.map(d->mapper(d))} };
+     *   outline Extend = <i>Base<i>{ filter: (f:i->Bool)->this{data=data.filter(d->f(d))} };
+     *   let base    = Extend{data=[1,2,3]};
+     *   let mapped  = base.map(d->d+1);       // [2,3,4]
+     *   let filtered= mapped.filter(d->d>2);  // [3,4]
+     *   filtered.data  →  [3, 4]
+     */
+    @Test
+    void test_recursive_extension() {
+        Value v = RunnerHelper.run(ASTHelper.mockRecurExtend());
+        List<Value> arr = RunnerHelper.arrVal(v);
+        assertThat(arr).hasSize(2);
+        assertThat(RunnerHelper.intVal(arr.get(0))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(arr.get(1))).isEqualTo(4L);
+    }
+
+    /**
+     * var-declared entity members can be mutated via member-accessor assignment at runtime.
+     *   let base = { var height = 100, let label = "hello" };
+     *   base.height = 200;
+     *   base.height  →  200
+     */
+    @Test
+    void test_entity_var_member_assignment() {
+        Value v = RunnerHelper.run("""
+                let base = { var height = 100, let label = "hello" };
+                base.height = 200;
+                base.height
+                """);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(200L);
+    }
+
+    /**
      * Poly type annotation extraction:
      *   let db = 10 & "Will" & {name="Will"};
      *   let ent:{name:String} = db;   // extracts EntityValue
@@ -1829,5 +1863,17 @@ public class InterpreterTest {
         assertThat(RunnerHelper.strVal(((EntityValue) tv.get(0)).get("name"))).isEqualTo("Will");
         assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(10L);
         assertThat(RunnerHelper.strVal(tv.get(2))).isEqualTo("Will");
+    }
+
+    @Test
+    void test_negative_number() {
+        Value v = RunnerHelper.run("let a = -1; a");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(-1L);
+    }
+
+    @Test
+    void test_long_literal() {
+        Value v = RunnerHelper.run("let a = 1L; a");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
     }
 }

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: InferenceTest
 -------------------------------------------------------------------------------
-Tests run: 68, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.662 s -- in InferenceTest
+Tests run: 73, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.946 s -- in InferenceTest

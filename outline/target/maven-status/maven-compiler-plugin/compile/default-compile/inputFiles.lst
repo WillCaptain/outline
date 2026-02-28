@@ -44,6 +44,7 @@
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/IntLiteralConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/IntTypeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/LiteralTypeConverter.java
+/Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/LongLiteralConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/LongTypeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/MapNodeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/MapTypeConverter.java

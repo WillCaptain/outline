@@ -1415,4 +1415,76 @@ public class InferenceTest {
         ast.asf().infer();
         assertTrue(ast.errors().isEmpty());
     }
+
+    /**
+     * Entity literal members declared with 'let' are immutable and cannot be reassigned
+     * via member-accessor assignment from outside the entity.
+     * Members declared with 'var' are mutable and can be reassigned.
+     *
+     *   let base = { var height = 100, let label = "hello" };
+     *   base.label  = "world";  // NOT ALLOWED – let member
+     *   base.height = 200;      // ALLOWED   – var member
+     */
+    @Test
+    void test_entity_member_let_not_assignable() {
+        AST ast = RunnerHelper.parse("""
+                let base = { var height = 100, let label = "hello" };
+                base.label = "world";
+                base.height = 200;
+                """);
+        ast.asf().infer();
+        assertEquals(1, ast.errors().size());
+        assertEquals(GCPErrCode.NOT_ASSIGNABLE, ast.errors().getFirst().errorCode());
+        assertEquals("label", ast.errors().getFirst().node().lexeme());
+    }
+
+    /**
+     * var-declared entity members can be reassigned; let-declared cannot.
+     * Tests the full scenario from the spec:
+     *
+     *   let base = {
+     *       var _age = 10,
+     *       let get_age = ()->this._age,
+     *       var height = 100
+     *   };
+     *   base.get_age = ()->0;  // NOT ALLOWED
+     *   base.height  = 200;    // ALLOWED
+     */
+    @Test
+    void test_entity_member_var_let_mixed() {
+        AST ast = RunnerHelper.parse("""
+                let base = {
+                    var _age = 10,
+                    let get_age = ()->this._age,
+                    var height = 100
+                };
+                base.get_age = ()->0;
+                base.height = 200;
+                """);
+        ast.asf().infer();
+        assertEquals(1, ast.errors().size());
+        assertEquals(GCPErrCode.NOT_ASSIGNABLE, ast.errors().getFirst().errorCode());
+        assertEquals("get_age", ast.errors().getFirst().node().lexeme());
+    }
+
+    @Test
+    void test_negative_number() {
+        AST ast = RunnerHelper.parse("let a = -1;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_long_literal() {
+        AST ast = RunnerHelper.parse("let a:Long = 1L;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_long_literal_inferred() {
+        AST ast = RunnerHelper.parse("let a = 1L;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
 }

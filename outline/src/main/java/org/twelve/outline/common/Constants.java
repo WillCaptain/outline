@@ -111,4 +111,7 @@ public final class Constants {
     public static final String SYMBOL_UNPACK = "symbol_unpack";
 
     public static final String EXTEND_OUTLINE = ":extend_outline";
+
+    // Long literal suffix (1L / 1l)
+    public static final String LONG_LIT        = "LONG_LIT";
 }

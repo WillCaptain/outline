@@ -53,6 +53,7 @@ Outline                    : 'outline';
 Macro                      : 'macro';
 Sharp                      : '#';
 //-----------literal------------
+LONG_LIT               :/"(0|[1-9][0-9_]*)[lL]"/;
 INT                    :/"0|[1-9][0-9_]*"/;
 
 //----------identifier--------

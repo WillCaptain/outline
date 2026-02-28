@@ -233,7 +233,7 @@ factor
     : '(' expression ')'
     ;
 number
-    : INT ('.' INT)? | DOUBLE | FLOAT
+    : LONG_LIT | INT ('.' INT)? | DOUBLE | FLOAT
     ;
 expression_statement
     : expression ((',' expression)* ';')?

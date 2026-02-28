@@ -21,6 +21,18 @@ public final class Tool {
         return (T) obj;
     }
     public static Number parseNumber(String s) {
+        if (s.endsWith("L") || s.endsWith("l")) {
+            try { return Long.parseLong(s.substring(0, s.length() - 1)); }
+            catch (NumberFormatException ignored) {}
+        }
+        if (s.endsWith("D") || s.endsWith("d")) {
+            try { return Double.parseDouble(s.substring(0, s.length() - 1)); }
+            catch (NumberFormatException ignored) {}
+        }
+        if (s.endsWith("F") || s.endsWith("f")) {
+            try { return Float.parseFloat(s.substring(0, s.length() - 1)); }
+            catch (NumberFormatException ignored) {}
+        }
         try {
             return Integer.valueOf(s);
         } catch (NumberFormatException e1) {

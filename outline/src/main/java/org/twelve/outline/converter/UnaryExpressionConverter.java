@@ -22,12 +22,12 @@ public class UnaryExpressionConverter extends Converter {
     public Node convert(AST ast, ParseNode source, Node related) {
         ParseNode left = ((NonTerminalNode)source).node(0);
         ParseNode right = ((NonTerminalNode)source).node(1);
-        if(UnaryOperator.from(left.lexeme())==null){//right
+        if(UnaryOperator.from(left.lexeme())==null){// left is operand → postfix (e.g. a++)
             return new UnaryExpression(cast(converters.get(left.name()).convert(ast,left)),
-                    new OperatorNode<>(ast,UnaryOperator.from(right.lexeme())), UnaryPosition.PREFIX);
-        }else{//left
+                    new OperatorNode<>(ast,UnaryOperator.from(right.lexeme())), UnaryPosition.POSTFIX);
+        }else{// left is operator → prefix (e.g. -1, !x)
             return new UnaryExpression(cast(converters.get(right.name()).convert(ast,right)),
-                    new OperatorNode<>(ast,UnaryOperator.from(left.lexeme())), UnaryPosition.POSTFIX);
+                    new OperatorNode<>(ast,UnaryOperator.from(left.lexeme())), UnaryPosition.PREFIX);
         }
     }
 }

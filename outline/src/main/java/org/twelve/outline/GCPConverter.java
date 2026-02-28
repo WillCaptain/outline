@@ -81,6 +81,7 @@ public class GCPConverter {
         this.converters.put(Constants.FLOAT, new FloatLiteralConverter(converters));
         this.converters.put(Constants.INT, new IntLiteralConverter(converters));
         this.converters.put(Constants.NUMBER, new NumberLiteralConverter(converters));
+        this.converters.put(Constants.LONG_LIT, new LongLiteralConverter(converters));
         this.converters.put(Constants.UNDER_LINE, new UnderlineConverter(converters));
         // literal non-terminal: delegate to its single child (STRING, INT, entity, etc.)
         this.converters.put(Constants.LITERAL, new Converter(converters) {

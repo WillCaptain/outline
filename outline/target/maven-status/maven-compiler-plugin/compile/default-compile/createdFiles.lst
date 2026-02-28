@@ -55,6 +55,7 @@ org/twelve/outline/converter/IntTypeConverter.class
 org/twelve/outline/common/Tool.class
 org/twelve/outline/converter/DoubleTypeConverter.class
 org/twelve/outline/converter/ReferenceCallTypeConverter.class
+org/twelve/outline/converter/LongLiteralConverter.class
 org/twelve/outline/converter/ThisConverter.class
 org/twelve/outline/converter/FactorTypeConverter.class
 org/twelve/outline/converter/IDTypeConverter.class
