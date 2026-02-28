@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/../msll/pom.xml" />
         <option value="$PROJECT_DIR$/outline/pom.xml" />
         <option value="$PROJECT_DIR$/../gcp-python/pom.xml" />
+        <option value="$PROJECT_DIR$/../entitir/ontology/pom.xml" />
       </list>
     </option>
   </component>

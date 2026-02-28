@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="ExternalTest" time="0.013" tests="2" errors="2" skipped="0" failures="0">
+  <properties>
+    <property name="socksProxyHost" value="127.0.0.1"/>
+    <property name="http.proxyHost" value="127.0.0.1"/>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:"/>
+    <property name="https.proxyPort" value="7890"/>
+    <property name="java.vm.vendor" value="Homebrew"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="CN"/>
+    <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home/lib"/>
+    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260228111329476_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-02-28T11-13-29_435-jvmRun1 surefire-20260228111329476_1tmp surefire_0-20260228111329476_2tmp"/>
+    <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/imac"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-01-21"/>
+    <property name="java.home" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home"/>
+    <property name="file.separator" value="/"/>
+    <property name="https.proxyHost" value="127.0.0.1"/>
+    <property name="basedir" value="/Users/imac/Documents/code/github/outline/outline"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260228111329476_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
+    <property name="java.runtime.version" value="21.0.6"/>
+    <property name="user.name" value="imac"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="15.2"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Homebrew"/>
+    <property name="localRepository" value="/Users/imac/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/Homebrew/homebrew-core/issues"/>
+    <property name="java.io.tmpdir" value="/var/folders/_p/1g0q6jxn7t16hn9cfkb2pf4w0000gn/T/"/>
+    <property name="java.version" value="21.0.6"/>
+    <property name="user.dir" value="/Users/imac/Documents/code/github/outline/outline"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="socksProxyPort" value="7890"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/imac/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Homebrew"/>
+    <property name="java.vm.version" value="21.0.6"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
+    <property name="java.class.version" value="65.0"/>
+    <property name="http.proxyPort" value="7890"/>
+  </properties>
+  <testcase name="test_external_builder_interpret" classname="ExternalTest" time="0.007">
+    <error message="Found 2 syntax error(s):&#10;token: Symbol:Male doesn&apos;t match any grammar definition at line: 4, position from 8 to 12&#10;gender:#Male&#10; the possible productions should be matched would be:factor_820&apos;-&gt;Symbol &#10;zero_more_124778&apos;-&gt;EPSILON &#10;zero_one_120288&apos;-&gt;EPSILON &#10;complex_expression-&gt;ternary_expression zero_one_120156&apos;(ignored) &#10;factor_581&apos;-&gt;factor_702&apos;(ignored) &#10;zero_one_52&apos;-&gt;EPSILON &#10;adt_type-&gt;factor_104570&apos;(ignored) one_more_104890&apos;(ignored) &#10;and_expression-&gt;equality_expression zero_more_122046&apos;(ignored) &#10;relational_expression-&gt;numeric_expression zero_more_123190&apos;(ignored) &#10;zero_one_113313&apos;-&gt;EPSILON &#10;symbol_type-&gt;Symbol factor_112218&apos;(ignored) &#10;zero_one_120156&apos;-&gt;EPSILON &#10;zero_more_122046&apos;-&gt;EPSILON &#10;factor_101133&apos;-&gt;Symbol &#10;factor_109334&apos;-&gt;declared_outline &#10;factor_117429&apos;-&gt;symbol_unpack &#10;factor_117429&apos;-&gt;Symbol &#10;factor_105746&apos;-&gt;factor_type &#10;factor_105746&apos;-&gt;symbol_type &#10;symbol_unpack-&gt;zero_one_114371&apos;(ignored) factor_114394&apos;(ignored) &#10;factor_113510&apos;-&gt;symbol_unpack &#10;zero_one_114371&apos;-&gt;Symbol &#10;expression-&gt;assignment zero_one_113039&apos;(ignored) &#10;match_arm-&gt;factor_117429&apos;(ignored) zero_one_118034&apos;(ignored) Arrow expression &#10;array_enum_items-&gt;expression zero_more_131571&apos;(ignored) &#10;zero_one_128384&apos;-&gt;factor_128403&apos;(ignored) &#10;zero_one_130049&apos;-&gt;EPSILON &#10;factor_expression_alpha&apos;-&gt;EPSILON &#10;zero_one_129771&apos;-&gt;EPSILON &#10;factor_expression_beta&apos;-&gt;Symbol &#10;zero_one_113039&apos;-&gt;EPSILON &#10;zero_more_143919&apos;-&gt;EPSILON &#10;zero_more_123190&apos;-&gt;EPSILON &#10;zero_one_120516&apos;-&gt;EPSILON &#10;zero_more_72&apos;-&gt;EPSILON &#10;factor_104570&apos;-&gt;factor_type &#10;factor_104570&apos;-&gt;symbol_type &#10;factor_128403&apos;-&gt;expression zero_more_128594&apos;(ignored) &#10;factor_6173&apos;-&gt;Symbol &#10;zero_more_122274&apos;-&gt;EPSILON &#10;factor_131318&apos;-&gt;array_enum_items &#10;factor_22017&apos;-&gt;Symbol &#10;zero_more_121818&apos;-&gt;EPSILON &#10;zero_more_120902&apos;-&gt;EPSILON &#10;factor_106986&apos;-&gt;Symbol &#10;factor_99899&apos;-&gt;Symbol &#10;one_more_95&apos;-&gt;statement zero_more_142780&apos;(ignored) &#10;zero_one_104097&apos;-&gt;expression &#10;or_expression-&gt;and_expression zero_more_121818&apos;(ignored) &#10;non_compound_type-&gt;func_type &#10;non_compound_type-&gt;factor_type &#10;zero_more_131227&apos;-&gt;statement zero_more_131227&apos;(ignored) &#10;zero_one_112631&apos;-&gt;EPSILON &#10;zero_more_141327&apos;-&gt;EPSILON &#10;poly_or_option_expression-&gt;or_expression zero_more_120902&apos;(ignored) &#10;zero_one_131299&apos;-&gt;factor_131318&apos;(ignored) &#10;non_func_type-&gt;adt_type &#10;non_func_type-&gt;factor_type &#10;zero_one_108835&apos;-&gt;EPSILON &#10;ternary_expression-&gt;poly_or_option_expression zero_one_120516&apos;(ignored) &#10;zero_more_142956&apos;-&gt;EPSILON &#10;match_arms&apos;-&gt;match_arm zero_more_117202&apos;(ignored) zero_one_117398&apos;(ignored) &#10;extend_outline-&gt;non_compound_type zero_one_102864&apos;(ignored) &#10;extend_outline-&gt;adt_type &#10;factor_111386&apos;-&gt;declared_outline &#10;statement-&gt;expression_statement &#10;factor_type-&gt;factor_106986&apos;(ignored) zero_one_108835&apos;(ignored) &#10;declared_outline-&gt;func_type &#10;declared_outline-&gt;non_func_type &#10;tuple_ids&apos;-&gt;unpack_fragment&apos;(ignored) &#10;unpack_fragment&apos;-&gt;symbol_unpack &#10;factor_101551&apos;-&gt;Symbol &#10;func_type-&gt;zero_one_112631&apos;(ignored) non_func_type Arrow declared_outline &#10;zero_more_125694&apos;-&gt;EPSILON &#10;zero_one_118182&apos;-&gt;EPSILON &#10;expression_statement-&gt;expression zero_one_130049&apos;(ignored) &#10;equality_expression-&gt;relational_expression zero_more_122274&apos;(ignored) &#10;factor_100317&apos;-&gt;Symbol &#10;zero_more_142780&apos;-&gt;statement zero_more_142780&apos;(ignored) &#10;factor_702&apos;-&gt;factor_820&apos;(ignored) zero_one_4386&apos;(ignored) zero_more_20288&apos;(ignored) &#10;factor_expression-&gt;factor_expression_beta&apos;(ignored) factor_expression_alpha&apos;(ignored) &#10;zero_more_143188&apos;-&gt;EPSILON &#10;factor_43189&apos;-&gt;Symbol &#10;factor_108962&apos;-&gt;declared_outline &#10;numeric_expression-&gt;term_expression zero_more_124778&apos;(ignored) &#10;zero_one_127667&apos;-&gt;EPSILON &#10;root-&gt;zero_one_52&apos;(ignored) zero_more_72&apos;(ignored) one_more_95&apos;(ignored) zero_one_118&apos;(ignored) &#10;assignment-&gt;complex_expression zero_one_118182&apos;(ignored) &#10;term_expression-&gt;unary_expression zero_more_125694&apos;(ignored) &#10;unary_expression-&gt;factor_expression zero_one_127667&apos;(ignored) &#10;&#10;─────────────────────────────────&#10;unexpected token: let, expected token in END is END, at line:8, position: 0 - 3&#10;let person_2 = __external_builder__&lt;Human&gt;{age=40,name=&quot;Will&quot;};//built by external with arguments" type="org.twelve.msll.exception.AggregateGrammarSyntaxException"><![CDATA[org.twelve.msll.exception.AggregateGrammarSyntaxException: 
+Found 2 syntax error(s):
+token: Symbol:Male doesn't match any grammar definition at line: 4, position from 8 to 12
+gender:#Male
+ the possible productions should be matched would be:factor_820'->Symbol 
+zero_more_124778'->EPSILON 
+zero_one_120288'->EPSILON 
+complex_expression->ternary_expression zero_one_120156'(ignored) 
+factor_581'->factor_702'(ignored) 
+zero_one_52'->EPSILON 
+adt_type->factor_104570'(ignored) one_more_104890'(ignored) 
+and_expression->equality_expression zero_more_122046'(ignored) 
+relational_expression->numeric_expression zero_more_123190'(ignored) 
+zero_one_113313'->EPSILON 
+symbol_type->Symbol factor_112218'(ignored) 
+zero_one_120156'->EPSILON 
+zero_more_122046'->EPSILON 
+factor_101133'->Symbol 
+factor_109334'->declared_outline 
+factor_117429'->symbol_unpack 
+factor_117429'->Symbol 
+factor_105746'->factor_type 
+factor_105746'->symbol_type 
+symbol_unpack->zero_one_114371'(ignored) factor_114394'(ignored) 
+factor_113510'->symbol_unpack 
+zero_one_114371'->Symbol 
+expression->assignment zero_one_113039'(ignored) 
+match_arm->factor_117429'(ignored) zero_one_118034'(ignored) Arrow expression 
+array_enum_items->expression zero_more_131571'(ignored) 
+zero_one_128384'->factor_128403'(ignored) 
+zero_one_130049'->EPSILON 
+factor_expression_alpha'->EPSILON 
+zero_one_129771'->EPSILON 
+factor_expression_beta'->Symbol 
+zero_one_113039'->EPSILON 
+zero_more_143919'->EPSILON 
+zero_more_123190'->EPSILON 
+zero_one_120516'->EPSILON 
+zero_more_72'->EPSILON 
+factor_104570'->factor_type 
+factor_104570'->symbol_type 
+factor_128403'->expression zero_more_128594'(ignored) 
+factor_6173'->Symbol 
+zero_more_122274'->EPSILON 
+factor_131318'->array_enum_items 
+factor_22017'->Symbol 
+zero_more_121818'->EPSILON 
+zero_more_120902'->EPSILON 
+factor_106986'->Symbol 
+factor_99899'->Symbol 
+one_more_95'->statement zero_more_142780'(ignored) 
+zero_one_104097'->expression 
+or_expression->and_expression zero_more_121818'(ignored) 
+non_compound_type->func_type 
+non_compound_type->factor_type 
+zero_more_131227'->statement zero_more_131227'(ignored) 
+zero_one_112631'->EPSILON 
+zero_more_141327'->EPSILON 
+poly_or_option_expression->or_expression zero_more_120902'(ignored) 
+zero_one_131299'->factor_131318'(ignored) 
+non_func_type->adt_type 
+non_func_type->factor_type 
+zero_one_108835'->EPSILON 
+ternary_expression->poly_or_option_expression zero_one_120516'(ignored) 
+zero_more_142956'->EPSILON 
+match_arms'->match_arm zero_more_117202'(ignored) zero_one_117398'(ignored) 
+extend_outline->non_compound_type zero_one_102864'(ignored) 
+extend_outline->adt_type 
+factor_111386'->declared_outline 
+statement->expression_statement 
+factor_type->factor_106986'(ignored) zero_one_108835'(ignored) 
+declared_outline->func_type 
+declared_outline->non_func_type 
+tuple_ids'->unpack_fragment'(ignored) 
+unpack_fragment'->symbol_unpack 
+factor_101551'->Symbol 
+func_type->zero_one_112631'(ignored) non_func_type Arrow declared_outline 
+zero_more_125694'->EPSILON 
+zero_one_118182'->EPSILON 
+expression_statement->expression zero_one_130049'(ignored) 
+equality_expression->relational_expression zero_more_122274'(ignored) 
+factor_100317'->Symbol 
+zero_more_142780'->statement zero_more_142780'(ignored) 
+factor_702'->factor_820'(ignored) zero_one_4386'(ignored) zero_more_20288'(ignored) 
+factor_expression->factor_expression_beta'(ignored) factor_expression_alpha'(ignored) 
+zero_more_143188'->EPSILON 
+factor_43189'->Symbol 
+factor_108962'->declared_outline 
+numeric_expression->term_expression zero_more_124778'(ignored) 
+zero_one_127667'->EPSILON 
+root->zero_one_52'(ignored) zero_more_72'(ignored) one_more_95'(ignored) zero_one_118'(ignored) 
+assignment->complex_expression zero_one_118182'(ignored) 
+term_expression->unary_expression zero_more_125694'(ignored) 
+unary_expression->factor_expression zero_one_127667'(ignored) 
+
+─────────────────────────────────
+unexpected token: let, expected token in END is END, at line:8, position: 0 - 3
+let person_2 = __external_builder__<Human>{age=40,name="Will"};//built by external with arguments
+	at org.twelve.msll.parser.MsllParser.lambda$parse$2(MsllParser.java:432)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+  </testcase>
+  <testcase name="test_external_builder_inference" classname="ExternalTest" time="0.005">
+    <error message="Found 2 syntax error(s):&#10;token: Symbol:Male doesn&apos;t match any grammar definition at line: 4, position from 8 to 12&#10;gender:#Male&#10; the possible productions should be matched would be:factor_820&apos;-&gt;Symbol &#10;zero_more_124778&apos;-&gt;EPSILON &#10;zero_one_120288&apos;-&gt;EPSILON &#10;complex_expression-&gt;ternary_expression zero_one_120156&apos;(ignored) &#10;factor_581&apos;-&gt;factor_702&apos;(ignored) &#10;zero_one_52&apos;-&gt;EPSILON &#10;adt_type-&gt;factor_104570&apos;(ignored) one_more_104890&apos;(ignored) &#10;and_expression-&gt;equality_expression zero_more_122046&apos;(ignored) &#10;relational_expression-&gt;numeric_expression zero_more_123190&apos;(ignored) &#10;zero_one_113313&apos;-&gt;EPSILON &#10;symbol_type-&gt;Symbol factor_112218&apos;(ignored) &#10;zero_one_120156&apos;-&gt;EPSILON &#10;zero_more_122046&apos;-&gt;EPSILON &#10;factor_101133&apos;-&gt;Symbol &#10;factor_109334&apos;-&gt;declared_outline &#10;factor_117429&apos;-&gt;symbol_unpack &#10;factor_117429&apos;-&gt;Symbol &#10;factor_105746&apos;-&gt;factor_type &#10;factor_105746&apos;-&gt;symbol_type &#10;symbol_unpack-&gt;zero_one_114371&apos;(ignored) factor_114394&apos;(ignored) &#10;factor_113510&apos;-&gt;symbol_unpack &#10;zero_one_114371&apos;-&gt;Symbol &#10;expression-&gt;assignment zero_one_113039&apos;(ignored) &#10;match_arm-&gt;factor_117429&apos;(ignored) zero_one_118034&apos;(ignored) Arrow expression &#10;array_enum_items-&gt;expression zero_more_131571&apos;(ignored) &#10;zero_one_128384&apos;-&gt;factor_128403&apos;(ignored) &#10;zero_one_130049&apos;-&gt;EPSILON &#10;factor_expression_alpha&apos;-&gt;EPSILON &#10;zero_one_129771&apos;-&gt;EPSILON &#10;factor_expression_beta&apos;-&gt;Symbol &#10;zero_one_113039&apos;-&gt;EPSILON &#10;zero_more_143919&apos;-&gt;EPSILON &#10;zero_more_123190&apos;-&gt;EPSILON &#10;zero_one_120516&apos;-&gt;EPSILON &#10;zero_more_72&apos;-&gt;EPSILON &#10;factor_104570&apos;-&gt;factor_type &#10;factor_104570&apos;-&gt;symbol_type &#10;factor_128403&apos;-&gt;expression zero_more_128594&apos;(ignored) &#10;factor_6173&apos;-&gt;Symbol &#10;zero_more_122274&apos;-&gt;EPSILON &#10;factor_131318&apos;-&gt;array_enum_items &#10;factor_22017&apos;-&gt;Symbol &#10;zero_more_121818&apos;-&gt;EPSILON &#10;zero_more_120902&apos;-&gt;EPSILON &#10;factor_106986&apos;-&gt;Symbol &#10;factor_99899&apos;-&gt;Symbol &#10;one_more_95&apos;-&gt;statement zero_more_142780&apos;(ignored) &#10;zero_one_104097&apos;-&gt;expression &#10;or_expression-&gt;and_expression zero_more_121818&apos;(ignored) &#10;non_compound_type-&gt;func_type &#10;non_compound_type-&gt;factor_type &#10;zero_more_131227&apos;-&gt;statement zero_more_131227&apos;(ignored) &#10;zero_one_112631&apos;-&gt;EPSILON &#10;zero_more_141327&apos;-&gt;EPSILON &#10;poly_or_option_expression-&gt;or_expression zero_more_120902&apos;(ignored) &#10;zero_one_131299&apos;-&gt;factor_131318&apos;(ignored) &#10;non_func_type-&gt;adt_type &#10;non_func_type-&gt;factor_type &#10;zero_one_108835&apos;-&gt;EPSILON &#10;ternary_expression-&gt;poly_or_option_expression zero_one_120516&apos;(ignored) &#10;zero_more_142956&apos;-&gt;EPSILON &#10;match_arms&apos;-&gt;match_arm zero_more_117202&apos;(ignored) zero_one_117398&apos;(ignored) &#10;extend_outline-&gt;non_compound_type zero_one_102864&apos;(ignored) &#10;extend_outline-&gt;adt_type &#10;factor_111386&apos;-&gt;declared_outline &#10;statement-&gt;expression_statement &#10;factor_type-&gt;factor_106986&apos;(ignored) zero_one_108835&apos;(ignored) &#10;declared_outline-&gt;func_type &#10;declared_outline-&gt;non_func_type &#10;tuple_ids&apos;-&gt;unpack_fragment&apos;(ignored) &#10;unpack_fragment&apos;-&gt;symbol_unpack &#10;factor_101551&apos;-&gt;Symbol &#10;func_type-&gt;zero_one_112631&apos;(ignored) non_func_type Arrow declared_outline &#10;zero_more_125694&apos;-&gt;EPSILON &#10;zero_one_118182&apos;-&gt;EPSILON &#10;expression_statement-&gt;expression zero_one_130049&apos;(ignored) &#10;equality_expression-&gt;relational_expression zero_more_122274&apos;(ignored) &#10;factor_100317&apos;-&gt;Symbol &#10;zero_more_142780&apos;-&gt;statement zero_more_142780&apos;(ignored) &#10;factor_702&apos;-&gt;factor_820&apos;(ignored) zero_one_4386&apos;(ignored) zero_more_20288&apos;(ignored) &#10;factor_expression-&gt;factor_expression_beta&apos;(ignored) factor_expression_alpha&apos;(ignored) &#10;zero_more_143188&apos;-&gt;EPSILON &#10;factor_43189&apos;-&gt;Symbol &#10;factor_108962&apos;-&gt;declared_outline &#10;numeric_expression-&gt;term_expression zero_more_124778&apos;(ignored) &#10;zero_one_127667&apos;-&gt;EPSILON &#10;root-&gt;zero_one_52&apos;(ignored) zero_more_72&apos;(ignored) one_more_95&apos;(ignored) zero_one_118&apos;(ignored) &#10;assignment-&gt;complex_expression zero_one_118182&apos;(ignored) &#10;term_expression-&gt;unary_expression zero_more_125694&apos;(ignored) &#10;unary_expression-&gt;factor_expression zero_one_127667&apos;(ignored) &#10;&#10;─────────────────────────────────&#10;unexpected token: let, expected token in END is END, at line:8, position: 0 - 3&#10;let person_2 = __external_builder__&lt;Human&gt;{age=40,name=&quot;Will&quot;};//built by external with arguments" type="org.twelve.msll.exception.AggregateGrammarSyntaxException"><![CDATA[org.twelve.msll.exception.AggregateGrammarSyntaxException: 
+Found 2 syntax error(s):
+token: Symbol:Male doesn't match any grammar definition at line: 4, position from 8 to 12
+gender:#Male
+ the possible productions should be matched would be:factor_820'->Symbol 
+zero_more_124778'->EPSILON 
+zero_one_120288'->EPSILON 
+complex_expression->ternary_expression zero_one_120156'(ignored) 
+factor_581'->factor_702'(ignored) 
+zero_one_52'->EPSILON 
+adt_type->factor_104570'(ignored) one_more_104890'(ignored) 
+and_expression->equality_expression zero_more_122046'(ignored) 
+relational_expression->numeric_expression zero_more_123190'(ignored) 
+zero_one_113313'->EPSILON 
+symbol_type->Symbol factor_112218'(ignored) 
+zero_one_120156'->EPSILON 
+zero_more_122046'->EPSILON 
+factor_101133'->Symbol 
+factor_109334'->declared_outline 
+factor_117429'->symbol_unpack 
+factor_117429'->Symbol 
+factor_105746'->factor_type 
+factor_105746'->symbol_type 
+symbol_unpack->zero_one_114371'(ignored) factor_114394'(ignored) 
+factor_113510'->symbol_unpack 
+zero_one_114371'->Symbol 
+expression->assignment zero_one_113039'(ignored) 
+match_arm->factor_117429'(ignored) zero_one_118034'(ignored) Arrow expression 
+array_enum_items->expression zero_more_131571'(ignored) 
+zero_one_128384'->factor_128403'(ignored) 
+zero_one_130049'->EPSILON 
+factor_expression_alpha'->EPSILON 
+zero_one_129771'->EPSILON 
+factor_expression_beta'->Symbol 
+zero_one_113039'->EPSILON 
+zero_more_143919'->EPSILON 
+zero_more_123190'->EPSILON 
+zero_one_120516'->EPSILON 
+zero_more_72'->EPSILON 
+factor_104570'->factor_type 
+factor_104570'->symbol_type 
+factor_128403'->expression zero_more_128594'(ignored) 
+factor_6173'->Symbol 
+zero_more_122274'->EPSILON 
+factor_131318'->array_enum_items 
+factor_22017'->Symbol 
+zero_more_121818'->EPSILON 
+zero_more_120902'->EPSILON 
+factor_106986'->Symbol 
+factor_99899'->Symbol 
+one_more_95'->statement zero_more_142780'(ignored) 
+zero_one_104097'->expression 
+or_expression->and_expression zero_more_121818'(ignored) 
+non_compound_type->func_type 
+non_compound_type->factor_type 
+zero_more_131227'->statement zero_more_131227'(ignored) 
+zero_one_112631'->EPSILON 
+zero_more_141327'->EPSILON 
+poly_or_option_expression->or_expression zero_more_120902'(ignored) 
+zero_one_131299'->factor_131318'(ignored) 
+non_func_type->adt_type 
+non_func_type->factor_type 
+zero_one_108835'->EPSILON 
+ternary_expression->poly_or_option_expression zero_one_120516'(ignored) 
+zero_more_142956'->EPSILON 
+match_arms'->match_arm zero_more_117202'(ignored) zero_one_117398'(ignored) 
+extend_outline->non_compound_type zero_one_102864'(ignored) 
+extend_outline->adt_type 
+factor_111386'->declared_outline 
+statement->expression_statement 
+factor_type->factor_106986'(ignored) zero_one_108835'(ignored) 
+declared_outline->func_type 
+declared_outline->non_func_type 
+tuple_ids'->unpack_fragment'(ignored) 
+unpack_fragment'->symbol_unpack 
+factor_101551'->Symbol 
+func_type->zero_one_112631'(ignored) non_func_type Arrow declared_outline 
+zero_more_125694'->EPSILON 
+zero_one_118182'->EPSILON 
+expression_statement->expression zero_one_130049'(ignored) 
+equality_expression->relational_expression zero_more_122274'(ignored) 
+factor_100317'->Symbol 
+zero_more_142780'->statement zero_more_142780'(ignored) 
+factor_702'->factor_820'(ignored) zero_one_4386'(ignored) zero_more_20288'(ignored) 
+factor_expression->factor_expression_beta'(ignored) factor_expression_alpha'(ignored) 
+zero_more_143188'->EPSILON 
+factor_43189'->Symbol 
+factor_108962'->declared_outline 
+numeric_expression->term_expression zero_more_124778'(ignored) 
+zero_one_127667'->EPSILON 
+root->zero_one_52'(ignored) zero_more_72'(ignored) one_more_95'(ignored) zero_one_118'(ignored) 
+assignment->complex_expression zero_one_118182'(ignored) 
+term_expression->unary_expression zero_more_125694'(ignored) 
+unary_expression->factor_expression zero_one_127667'(ignored) 
+
+─────────────────────────────────
+unexpected token: let, expected token in END is END, at line:8, position: 0 - 3
+let person_2 = __external_builder__<Human>{age=40,name="Will"};//built by external with arguments
+	at org.twelve.msll.parser.MsllParser.lambda$parse$2(MsllParser.java:432)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+  </testcase>
+</testsuite>

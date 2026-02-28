@@ -65,9 +65,9 @@
   {
     "id": "literal-type",
     "title": "Literal Types",
-    "description": "Literal types pin a field to a fixed constant value — no assignment needed.",
+    "description": "Literal types pin a field to a fixed constant — the value is part of the type and is auto-filled at construction.",
     "category": "types",
-    "code": "// Literal type: the field value IS the type.\n// #\"human\" means specie can only ever be \"human\".\noutline Gender = Male(String,Int) | Female{name:String, age:Int};\noutline Human = {\n    gender: Gender,\n    specie: #\"human\"   // literal type — always \"human\"\n};\n\n// person.specie is automatically \"human\" — no need to set it\nlet person:Human = {\n    gender = Male(\"Will\", 49)\n};\n\nperson.specie;   // → \"human\""
+    "code": "// Literal type: the field value IS the type.\n// #\"human\" means specie can only ever be \"human\" — auto-filled, immutable.\noutline Human = {\n    name:   String,\n    specie: #\"human\"   // literal type — always \"human\", auto-filled\n};\n\n// specie is never specified — it is filled automatically\nlet alice = Human{name = \"Alice\"};\nlet bob   = Human{name = \"Bob\"};\n\nalice.specie;   // → \"human\""
   },
   {
     "id": "match-adt",
@@ -110,5 +110,76 @@
     "description": "GCP propagates generic type variables through arbitrary call chains.",
     "category": "advanced",
     "code": "// ── ∀α. α → α  (identity — works for any type)\nlet id      = x -> x;\n\n// ── ∀α β. α → β → α  (const combinator)\nlet konst   = a -> b -> a;\n\n// ── (B→C) → (A→B) → A → C  (function composition)\nlet compose = f -> g -> x -> f(g(x));\n\n// ── argument order flip\nlet flip    = f -> x -> y -> f(y)(x);\n\nlet inc    = x -> x + 1;\nlet double = x -> x * 2;\nlet sub    = x -> y -> x - y;\n\nlet r1 = id(42);                    // 42    — generic over Int\nlet r2 = konst(\"hello\")(999);       // \"hello\" — generic over String\nlet r3 = compose(double)(inc)(5);   // (5+1)*2 = 12\nlet r4 = flip(sub)(3)(10);          // 10-3 = 7\n\nr3;"
+  },
+
+  {
+    "id": "gcpx-structural-synthesis",
+    "title": "★ Structural Type Synthesis",
+    "description": "GCP synthesises the complete entity type from HOW functions use it — zero declarations, zero annotations.",
+    "category": "unique",
+    "code": "// ── What TypeScript needs:\n//    (p: { given: string; surname: string }) => ...  ← explicit annotation required\n//\n// ── What Haskell needs:\n//    data Person = Person { given :: String, surname :: String }  ← named type declaration\n//\n// ── What GCP needs:  nothing.\n// The structural type of `p` is synthesised entirely from how\n// `full_name` and `greeting` access its fields.\n\nlet full_name = p -> (p.given + \" \") + p.surname;\nlet greeting  = p -> (\"Hello, \" + full_name(p)) + \"!\";\n\n// GCP infers: p : { given: String, surname: String }\n// Extra fields (age, title) are allowed — structural subtyping.\n\nlet alice = {given = \"Alice\", surname = \"Smith\", age = 30};\nlet bob   = {given = \"Bob\",   surname = \"Jones\", title = \"Dr.\"};\n\ngreeting(alice);   // → \"Hello, Alice Smith!\""
+  },
+
+  {
+    "id": "gcpx-backward-inference",
+    "title": "★ Backward Constraint Propagation",
+    "description": "Type flows BACKWARD through a HOF chain: the entity type is inferred from how the selector uses it, not from the entity itself.",
+    "category": "unique",
+    "code": "// `lift` is a fully generic combinator — no type annotations anywhere.\n// GCP infers the complete type of `entity` BACKWARD through the chain:\n//\n//   sel    reads  entity.score  (Int field)\n//   pred   expects an Int        (n >= 60)\n//   → entity : { score: Int }\n//\n// TypeScript requires: <T, U, V>(sel: (e: T) => U) => (pred: (u: U) => V) => (e: T) => V\n//   — THREE explicit generic parameters with arrow types\n// Haskell:  lift sel pred = pred . sel  — fine but entity must be a DECLARED data type\n\nlet lift = sel -> pred -> entity -> pred(sel(entity));\n\nlet get_score  = player -> player.score;\nlet is_passing = n -> n >= 60;\nlet is_ace     = n -> n >= 90;\n\nlet check_pass = lift(get_score)(is_passing);\nlet check_ace  = lift(get_score)(is_ace);\n\ncheck_pass({name = \"Alice\", score = 85, rank = 3});   // → true\ncheck_ace( {name = \"Alice\", score = 95, rank = 1});   // → true (ace threshold)"
+  },
+
+  {
+    "id": "gcpx-deep-hof-error",
+    "title": "★ Deep HOF Error Detection",
+    "description": "GCP traces a missing field through nested HOF composition — error caught at call site, not inside the combinator.",
+    "category": "unique",
+    "code": "// lift(sel)(pred)(entity) = pred(sel(entity))\n// — a generic 3-level HOF with ZERO type annotations.\n//\n// GCP propagates constraints BACKWARD through the chain:\n//   1. is_passing  needs  n.points    → sel result must have { points: Int }\n//   2. get_score   returns player.test → player.test must have { points: Int }\n//   3. alice.test = { score=85, gpa=3.5 } — no 'points' field!\n//   → ERROR reported at check_pass(alice)\n//\n// No other type system catches this without EXPLICIT type annotations on lift.\n\nlet lift = sel -> pred -> entity -> pred(sel(entity));\n\nlet get_score  = player -> player.test;        // selects the 'test' sub-entity\nlet is_passing = n -> n.points >= 60;          // needs n.points : Int\nlet is_ace     = n -> n.score  >= 90;          // needs n.score  : Int\n\nlet check_pass = lift(get_score)(is_passing);\nlet check_ace  = lift(get_score)(is_ace);\n\n// alice.test has { score, gpa } but NOT { points }\n// → check_pass(alice) is a TYPE ERROR: 'points' field missing\nlet alice = {name = \"Alice\", test = {score = 85, gpa = 3.5}, rank = 3};\n\nlet pass = check_pass(alice);   // ← ERROR: points not found in alice.test\nlet ace  = check_ace(alice);    // ✓  score exists\n\n(pass, ace)"
+  },
+
+  {
+    "id": "gcpx-entity-template",
+    "title": "★ Entity Templates: Defaults & Literals",
+    "description": "Default-value fields auto-fill but can be overridden; literal-type fields are constant forever. Both are absent from TypeScript and Haskell without boilerplate.",
+    "category": "unique",
+    "code": "// Outline entity templates support two kinds of auto-filled fields:\n//\n//   alias:  \"guest\"        → DEFAULT VALUE — String field with a preset default.\n//                            Auto-fills if omitted, but CAN be overridden.\n//\n//   issuer: #\"GCP-System\"  → LITERAL TYPE  — the type IS the value.\n//                            Always \"GCP-System\"; never assigned, never overridden.\n//\n// TypeScript: literal types are constraints only — you must still write the value.\n// Haskell:    no direct equivalent without phantom types / Template Haskell.\n// GCP:        both fill automatically at construction time.\n\noutline ApiKey = {\n    key:    String,\n    alias:  \"guest\",          // default value — auto-fills as \"guest\", overridable\n    access: String,\n    issuer: #\"GCP-System\"    // literal type  — always \"GCP-System\", immutable\n};\n\n// Only required fields needed — alias and issuer fill automatically\nlet k1 = ApiKey{key = \"abc123\", access = \"admin\"};\n// k1.alias   → \"guest\"        (default applied)\n// k1.issuer  → \"GCP-System\"   (literal type filled)\n\n// Override the default alias\nlet k2 = ApiKey{key = \"xyz789\", access = \"read\", alias = \"alice\"};\n// k2.alias  → \"alice\"         (default overridden)\n\nk1.issuer;   // → \"GCP-System\""
+  },
+  {
+    "id": "gcpx-literal-constant",
+    "title": "★ Literal Types as Constant Fields",
+    "description": "GCP literal types ARE the value — conforming entities auto-fill the field without ever assigning it. TypeScript literal types are constraints only; Haskell has no equivalent.",
+    "category": "unique",
+    "code": "// TypeScript:  type ApiKey = { issuer: \"GCP-System\" }\n//   → you MUST still write  { issuer: \"GCP-System\" }  in every object literal\n//   → literal types are type CONSTRAINTS, not runtime values\n//\n// Haskell:  impossible without phantom types / singletons (highly verbose)\n//\n// GCP:  #\"GCP-System\" IS the value.\n//   Any entity conforming to ApiKey gets `issuer` for FREE — never assigned.\n\noutline AccessLevel = ReadOnly | ReadWrite | Admin;\noutline ApiKey = {\n    key:    String,\n    access: AccessLevel,\n    issuer: #\"GCP-System\"   // ← literal type — auto-fills, always \"GCP-System\"\n};\n\nlet make_key = k -> lvl -> ApiKey{key = k, access = lvl};\n\nlet k1 = make_key(\"abc123\")(Admin);\nlet k2 = make_key(\"xyz789\")(ReadOnly);\n\n// `issuer` was NEVER mentioned in make_key — yet it is guaranteed:\nk1.issuer;   // → \"GCP-System\""
+  },
+
+  {
+    "id": "gcpx-constraint-convergence",
+    "title": "★ Constraint Convergence",
+    "description": "Two independent functions each constrain a DIFFERENT field of the same entity — GCP merges them into one complete structural type.",
+    "category": "unique",
+    "code": "// Both functions work on the same `emp` entity but access DIFFERENT fields.\n// Neither function alone determines the full type.\n// GCP merges their constraints: emp : { salary: Int, years: Int }\n//\n// TypeScript: (emp: { salary: number; years: number }) => ... — must declare\n// Haskell:    data Emp = Emp { salary :: Int, years :: Int }  — must declare\n//\n// GCP: zero declarations — structural type emerges from usage.\n\nlet gross    = emp -> emp.salary * 12;   // constrains emp.salary : Int\nlet is_senior = emp -> emp.years >= 10;  // constrains emp.years  : Int\n\n// Extra fields (name, dept) pass through — structural subtyping\nlet alice = {salary = 5000, years = 12, name = \"Alice\"};\nlet bob   = {salary = 4000, years = 5,  name = \"Bob\"};\n\nlet earn_alice = gross(alice);       // 60000\nlet earn_bob   = gross(bob);         // 48000\nlet senior     = is_senior(alice);   // true\n\nearn_alice;"
+  },
+
+  {
+    "id": "gcpx-adt-dispatch",
+    "title": "★ ADT Dispatch + Structural Inference",
+    "description": "GCP combines ADT pattern matching with pure structural entity inference — the entity shape is inferred from all access patterns with zero type declarations.",
+    "category": "unique",
+    "code": "// `ticket` type is NEVER declared.\n// GCP infers it from all access patterns across both functions:\n//   urgency_of   reads  ticket.priority  → Priority (ADT)\n//   urgency_of   reads  ticket.deadline  → Int\n// → ticket : { priority: Priority, deadline: Int }\n//\n// In TypeScript: interface Ticket { priority: Priority; deadline: number }\n// In Haskell:    data Ticket = Ticket { priority :: Priority, deadline :: Int }\n\noutline Priority = Low | Medium | High;\n\nlet urgency_score = pri -> days ->\n    match pri {\n        High   -> 3 > days,\n        Medium -> 7 > days,\n        _      -> false\n    };\n\nlet is_urgent = ticket -> urgency_score(ticket.priority)(ticket.deadline);\n\nlet t1 = {priority = High,   deadline = 2, owner = \"Alice\"};\nlet t2 = {priority = Medium, deadline = 10, owner = \"Bob\"};\nlet t3 = {priority = Low,    deadline = 1,  owner = \"Carol\"};\n\nis_urgent(t1);   // → true   (High, 2 days left)"
+  },
+
+  {
+    "id": "gcpx-required-field",
+    "title": "★ Required Field Enforcement",
+    "description": "GCP distinguishes required fields from default-value and literal-type fields at construction time — missing required fields are caught as type errors with a clear message.",
+    "category": "unique",
+    "code": "// outline Product has:\n//   id, price   → REQUIRED — must be provided at construction\n//   category    → DEFAULT VALUE (\"general\") — auto-fills, can be overridden\n//   sku         → LITERAL TYPE (#\"AUTO\")   — always \"AUTO\", immutable\n//\n// TypeScript: no notion of default-filled vs literal fields without boilerplate\n// Haskell:    record defaults require RecordWildCards + manual wiring\n// GCP:        all three field kinds are native language features\n\noutline Product = {\n    id:       String,\n    price:    Int,\n    category: \"general\",  // default-value field — auto-fills, overridable\n    sku:      #\"AUTO\"    // literal-type field  — always \"AUTO\", immutable\n};\n\n// ✓ Only required fields — defaults fill automatically\nlet p1 = Product{id = \"P001\", price = 99};\n// p1.category → \"general\"  (default applied)\n// p1.sku      → \"AUTO\"     (literal type filled)\n\n// ✓ Override the default category\nlet p2 = Product{id = \"P002\", price = 149, category = \"premium\"};\n// p2.category → \"premium\"  (default overridden)\n// p2.sku      → \"AUTO\"     (literal, cannot change)\n\n// ✗ ERROR: 'price' is required but not provided\nlet p3 = Product{id = \"P003\"};\n\np1.sku;   // → \"AUTO\""
+  },
+
+  {
+    "id": "gcpx-external-builder",
+    "title": "★ External Builder Protocol",
+    "description": "GCP's __external_builder__ syntax lets runtime plugins construct typed entities — GCP verifies the type at compile time while the plugin supplies the value at runtime.",
+    "category": "unique",
+    "code": "// External builders: __name__<OutlineType>{overrides}\n//\n// GCP checks the type at compile time — the outline type constrains what\n// fields are valid.  At runtime, a registered plugin fills in the values.\n//\n// __external_builder__ is the built-in default: it constructs an entity\n// from the supplied field overrides (same semantics as OutlineType{...}\n// but the construction is delegated to the runtime layer).\n//\n// This lets the same GCP code work against different backends\n// (memory, database, HTTP, etc.) by swapping only the registered plugin.\n\noutline Profile = {\n    id:     String,\n    name:   String,\n    role:   #\"user\"    // literal-type — always \"user\", auto-filled\n};\n\n// Construct via external builder with explicit field overrides.\n// GCP infers: p : { id: String, name: String, role: String }\nlet p = __external_builder__<Profile>{id = \"u001\", name = \"Alice\"};\n\n// Field access — type-safe, GCP inferred String for both\nlet pname = p.name;   // → \"Alice\"\nlet prole = p.role;   // → \"user\"  (literal type auto-filled)\n\n(pname, prole)"
   }
 ]

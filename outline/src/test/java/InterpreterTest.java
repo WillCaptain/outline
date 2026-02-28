@@ -3,7 +3,6 @@ import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.interpreter.value.*;
-import org.twelve.gcp.outline.primitive.STRING;
 import org.twelve.outline.OutlineParser;
 
 import java.util.List;
@@ -13,7 +12,6 @@ import org.twelve.msll.exception.GrammarSyntaxException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.twelve.gcp.common.Tool.cast;
 
 /**
  * End-to-end interpreter tests using the OutlineParser to produce real ASTs from GCP source code.
@@ -70,7 +68,7 @@ public class InterpreterTest {
 
     @Test
     void test_literal_outline(){
-        AST ast = ASTHelper.literalOutline();
+        AST ast = ASTHelper.mockLiteralOutline();
         //ast.asf().infer();只有执行了infer，interpret才成功，这是不对的
         // execution: person.specie should evaluate to "human"
         org.twelve.gcp.interpreter.value.Value result = ast.asf().interpret();
@@ -1705,5 +1703,25 @@ public class InterpreterTest {
                 father.son.girl_friend.name
                 """;
         assertThat(RunnerHelper.strVal(RunnerHelper.run(code))).isEqualTo("someone");
+    }
+
+    @Test
+    void test_complex_literal() {
+        Value v = RunnerHelper.run("""
+                outline ApiKey = {
+                    key:    String,
+                    alias:  "guest",          // default value — auto-fills as "guest", overridable
+                    access: String,
+                    issuer: #"GCP-System"    // literal type  — always "GCP-System", immutable
+                };
+                
+                let k = ApiKey{key = "abc123", access = "admin",issuer="other",alias = "alice"};
+                
+                (k.issuer, k.alias)
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.strVal(tv.get(0))).isEqualTo("GCP-System" );
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("alice");
     }
 }

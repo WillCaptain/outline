@@ -4,5 +4,7 @@ InferenceTest.class
 ParserStructureTest.class
 ComplexInterpretTest.class
 GCPInferenceTest.class
+ErrorDebugTest.class
+ExternalTest.class
 InterpreterTest.class
 BuiltinTypeTest.class

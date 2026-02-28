@@ -4,6 +4,7 @@
     <excludeFromCompile>
       <directory url="file://$PROJECT_DIR$/outline/src/main/resources/archetype-resources" includeSubdirectories="true" />
       <directory url="file://$PROJECT_DIR$/../gcp-python/src/main/resources/archetype-resources" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/../entitir/ontology/src/main/resources/archetype-resources" includeSubdirectories="true" />
     </excludeFromCompile>
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
@@ -12,6 +13,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="gcp-python" />
+        <module name="ontology" />
       </profile>
       <profile name="Annotation profile for outline" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />

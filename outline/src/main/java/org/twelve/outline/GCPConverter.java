@@ -71,6 +71,7 @@ public class GCPConverter {
         this.converters.put(Constants.FALSE, boolTypeConverter);
         //wrapper
         this.converters.put(Constants.ARGUMENT, new ArgumentConverter(converters));
+        this.converters.put(Constants.ENTITY_FIELD, new EntityFieldConverter(converters));
         ReferenceTypeConverter refConverter = new ReferenceTypeConverter(converters);
         this.converters.put(Constants.REFERENCE_TYPE,refConverter );
         this.converters.put(Constants.COLON_+Constants.REFERENCE_TYPE,refConverter );
@@ -81,6 +82,14 @@ public class GCPConverter {
         this.converters.put(Constants.INT, new IntLiteralConverter(converters));
         this.converters.put(Constants.NUMBER, new NumberLiteralConverter(converters));
         this.converters.put(Constants.UNDER_LINE, new UnderlineConverter(converters));
+        // literal non-terminal: delegate to its single child (STRING, INT, entity, etc.)
+        this.converters.put(Constants.LITERAL, new Converter(converters) {
+            @Override
+            public Node convert(AST ast, ParseNode source, Node related) {
+                ParseNode child = ((org.twelve.msll.parsetree.NonTerminalNode) source).node(0);
+                return converters.get(child.name()).convert(ast, child);
+            }
+        });
 
         //id
         this.converters.put(Constants.ID, new Converter(converters) {

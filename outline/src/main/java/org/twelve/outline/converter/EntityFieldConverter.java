@@ -1,0 +1,64 @@
+package org.twelve.outline.converter;
+
+import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.node.expression.identifier.Identifier;
+import org.twelve.gcp.node.expression.typeable.TypeNode;
+import org.twelve.msll.parsetree.NonTerminalNode;
+import org.twelve.msll.parsetree.ParseNode;
+import org.twelve.outline.common.Constants;
+import org.twelve.outline.wrappernode.ArgumentWrapper;
+import org.twelve.outline.wrappernode.EntityFieldWithDefaultWrapper;
+
+import java.util.Map;
+
+import static org.twelve.outline.common.Tool.cast;
+
+/**
+ * Converts an {@code entity_field} parse node into either:
+ * <ul>
+ *   <li>{@link ArgumentWrapper}               – for {@code fieldName: TypeName} (plain type annotation)</li>
+ *   <li>{@link EntityFieldWithDefaultWrapper} – for {@code fieldName: "value"} (default-value shorthand)</li>
+ * </ul>
+ */
+public class EntityFieldConverter extends Converter {
+
+    public EntityFieldConverter(Map<String, Converter> converters) {
+        super(converters);
+    }
+
+    @Override
+    public Node convert(AST ast, ParseNode source, Node related) {
+        NonTerminalNode field = cast(source);
+        Identifier identifier = cast(converters.get(field.node(0).name()).convert(ast, field.node(0)));
+
+        if (field.nodes().size() < 3) {
+            // bare ID – no type annotation, no default
+            return new ArgumentWrapper(ast, identifier, null);
+        }
+
+        ParseNode typeOrDefault = field.node(2);
+        String typeName = typeOrDefault.name();
+
+        // entity_field: ID ':' literal  →  default-value field (e.g. alias: "alice")
+        // The MSLL parser may either wrap the literal in a 'literal' non-terminal, or
+        // collapse it directly to the terminal token (STRING, INT, FLOAT, DOUBLE, number).
+        if (Constants.LITERAL.equals(typeName)) {
+            Node defaultNode = converters.get(Constants.LITERAL).convert(ast, typeOrDefault);
+            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
+        }
+        if (Constants.STRING.equals(typeName) || Constants.INT.equals(typeName)
+                || Constants.FLOAT.equals(typeName) || Constants.DOUBLE.equals(typeName)
+                || Constants.NUMBER.equals(typeName)) {
+            // Bare terminal literal — use its specific converter directly.
+            Node defaultNode = converters.get(typeName).convert(ast, typeOrDefault);
+            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
+        }
+
+        // entity_field: ID ':' declared_outline  →  plain type annotation
+        TypeNode typeNode = cast(
+            converters.get(Constants.COLON_ + typeName).convert(ast, typeOrDefault)
+        );
+        return new ArgumentWrapper(ast, identifier, typeNode);
+    }
+}

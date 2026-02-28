@@ -9,6 +9,7 @@ import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.common.Constants;
 import org.twelve.outline.wrappernode.ArgumentWrapper;
+import org.twelve.outline.wrappernode.EntityFieldWithDefaultWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,28 +26,46 @@ public class EntityTypeConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         List<ParseNode> nodes = new ArrayList<>(((NonTerminalNode) source).nodes());
-        ParseNode node = nodes.removeFirst();
+        ParseNode first = nodes.removeFirst();
 
         List<ReferenceNode> refs = new ArrayList<>();
-        if (node.name().equals(Constants.REFERENCE_TYPE)) {
-            refs = convertReferences(converters, cast(node), ast);
+        if (first.name().equals(Constants.REFERENCE_TYPE)) {
+            refs = convertReferences(converters, cast(first), ast);
         }
 
-        List<Variable> fields = nodes.stream().filter(n -> !("{<(,)>}").contains(n.lexeme()))
-//                        !n.lexeme().equals("{") && !n.lexeme().equals("}") && !n.lexeme().equals(","))
-                .map(n -> {
-                    Node converted = converters.get(n.name()).convert(ast, n);
-                    if (converted instanceof ArgumentWrapper) {
-                        return new Variable(((ArgumentWrapper) converted).argument(), false, ((ArgumentWrapper) converted).typeNode());
-                    } else {
-                        return new Variable(cast(converted), false, null);
-                    }
-                })
-                .toList();
-        if (fields.isEmpty()) {
-            return new EntityTypeNode(ast);
-        } else {
-            return new EntityTypeNode(refs, fields);
+        EntityTypeNode entityTypeNode = refs.isEmpty() ? null : null; // built below after collecting fields
+
+        List<Variable> fields = new ArrayList<>();
+        List<Node> defaultNodes = new ArrayList<>(); // parallel list: null or default-value AST node
+
+        for (ParseNode n : nodes) {
+            if (("{<(,)>}").contains(n.lexeme())) continue;
+
+            Node converted = converters.get(n.name()).convert(ast, n);
+
+            if (converted instanceof EntityFieldWithDefaultWrapper dfw) {
+                // alias: "alice"  →  Variable with no declared type; default stored separately
+                fields.add(new Variable(dfw.field(), false, null));
+                defaultNodes.add(dfw.defaultValueNode());
+            } else if (converted instanceof ArgumentWrapper aw) {
+                fields.add(new Variable(aw.argument(), false, aw.typeNode()));
+                defaultNodes.add(null);
+            } else {
+                fields.add(new Variable(cast(converted), false, null));
+                defaultNodes.add(null);
+            }
         }
+
+        EntityTypeNode result = fields.isEmpty() ? new EntityTypeNode(ast) : new EntityTypeNode(refs, fields);
+
+        // register default values into the EntityTypeNode
+        for (int i = 0; i < fields.size(); i++) {
+            Node def = defaultNodes.get(i);
+            if (def != null) {
+                result.addDefault(fields.get(i).name(), def);
+            }
+        }
+
+        return result;
     }
 }

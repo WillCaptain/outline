@@ -83,6 +83,7 @@ function registerOutlineLanguage() {
       root: [
         [/\/\/.*/, 'comment'],
         [/\/\*[\s\S]*?\*\//, 'comment'],
+        [/#"([^"\\]|\\.)*"/, 'string.literal-type'],   // #"value" — literal type
         [/"([^"\\]|\\.)*"/, 'string'],
         [/\b[A-Z]\w*\b/, 'type.identifier'],
         [/\b(let|var|if|else|match|outline|module|import|export|from|as|return|this|with|fx|baseNode|sync|macro)\b/, 'keyword'],
@@ -119,18 +120,19 @@ function defineThemes() {
   monaco.editor.defineTheme('outline-dark', {
     base: 'vs-dark', inherit: true,
     rules: [
-      { token: 'keyword',          foreground: '4facfe', fontStyle: 'bold' },
-      { token: 'type.identifier',  foreground: 'c084fc', fontStyle: 'bold' },
-      { token: 'type.primitive',   foreground: '67e8f9' },
-      { token: 'string',           foreground: 'a3e635' },
-      { token: 'number',           foreground: 'fbbf24' },
-      { token: 'number.float',     foreground: 'fb923c' },
-      { token: 'comment',          foreground: '4a5a7a', fontStyle: 'italic' },
-      { token: 'operator.special', foreground: '4facfe', fontStyle: 'bold' },
-      { token: 'operator',         foreground: '94a3b8' },
-      { token: 'constant.language',foreground: 'f472b6', fontStyle: 'bold' },
-      { token: 'identifier',       foreground: 'e2e8f0' },
-      { token: 'delimiter',        foreground: '64748b' },
+      { token: 'keyword',              foreground: '4facfe', fontStyle: 'bold' },
+      { token: 'type.identifier',      foreground: 'c084fc', fontStyle: 'bold' },
+      { token: 'type.primitive',       foreground: '67e8f9' },
+      { token: 'string',               foreground: 'a3e635' },
+      { token: 'string.literal-type',  foreground: 'f9a825', fontStyle: 'bold' },
+      { token: 'number',               foreground: 'fbbf24' },
+      { token: 'number.float',         foreground: 'fb923c' },
+      { token: 'comment',              foreground: '4a5a7a', fontStyle: 'italic' },
+      { token: 'operator.special',     foreground: '4facfe', fontStyle: 'bold' },
+      { token: 'operator',             foreground: '94a3b8' },
+      { token: 'constant.language',    foreground: 'f472b6', fontStyle: 'bold' },
+      { token: 'identifier',           foreground: 'e2e8f0' },
+      { token: 'delimiter',            foreground: '64748b' },
     ],
     colors: {
       'editor.background'             : '#13172b',
@@ -141,25 +143,30 @@ function defineThemes() {
       'editorLineNumber.activeForeground': '#5a7aaa',
       'editorCursor.foreground'       : '#4facfe',
       'editor.selectionHighlightBackground': '#2a355a',
+      'editorError.foreground'        : '#f87171',
+      'editorWarning.foreground'      : '#fbbf24',
     },
   });
 
   monaco.editor.defineTheme('outline-light', {
     base: 'vs', inherit: true,
     rules: [
-      { token: 'keyword',          foreground: '1d4ed8', fontStyle: 'bold' },
-      { token: 'type.identifier',  foreground: '7c3aed', fontStyle: 'bold' },
-      { token: 'type.primitive',   foreground: '0891b2' },
-      { token: 'string',           foreground: '15803d' },
-      { token: 'number',           foreground: 'b45309' },
-      { token: 'number.float',     foreground: 'c2410c' },
-      { token: 'comment',          foreground: '9ca3af', fontStyle: 'italic' },
-      { token: 'operator.special', foreground: '1d4ed8', fontStyle: 'bold' },
-      { token: 'constant.language',foreground: 'db2777', fontStyle: 'bold' },
+      { token: 'keyword',              foreground: '1d4ed8', fontStyle: 'bold' },
+      { token: 'type.identifier',      foreground: '7c3aed', fontStyle: 'bold' },
+      { token: 'type.primitive',       foreground: '0891b2' },
+      { token: 'string',               foreground: '15803d' },
+      { token: 'string.literal-type',  foreground: 'd97706', fontStyle: 'bold' },
+      { token: 'number',               foreground: 'b45309' },
+      { token: 'number.float',         foreground: 'c2410c' },
+      { token: 'comment',              foreground: '9ca3af', fontStyle: 'italic' },
+      { token: 'operator.special',     foreground: '1d4ed8', fontStyle: 'bold' },
+      { token: 'constant.language',    foreground: 'db2777', fontStyle: 'bold' },
     ],
     colors: {
       'editor.background'             : '#f8fafc',
       'editor.lineHighlightBackground': '#f1f5f9',
+      'editorError.foreground'        : '#dc2626',
+      'editorWarning.foreground'      : '#d97706',
     },
   });
 }
@@ -333,26 +340,86 @@ function renderErrors(diag) {
 }
 
 // ── Monaco diagnostic markers (squiggles) ──────────────────────
+
+// Extract the best available position from a diagnostic entry.
+// Returns { startLine, startCol, endLine, endCol } (all 1-based) or null.
+function extractDiagPos(d, model) {
+  const lineCount = model.getLineCount();
+
+  // Pull token text from message patterns like:  – 'token text'
+  // Take only content before the first display-newline (↵) and collapse runs of spaces.
+  const tokenM = d.message.match(/[–-]\s+'([^']*)'/);
+  const tokenFirstLine = tokenM
+    ? tokenM[1].split('↵')[0].replace(/\s{2,}/g, ' ').trim()
+    : '';
+  const tokenLen = tokenFirstLine.length;
+
+  // ── Case 1: server gave valid 1-based line, 0-based col  (@line N:M) ────────
+  if (d.line > 0 && d.line <= lineCount) {
+    const lineMax  = model.getLineMaxColumn(d.line);
+    // GCP reports cols as 0-based → add 1 for Monaco's 1-based system
+    const startCol = (d.col >= 0 && d.col + 1 < lineMax) ? d.col + 1 : 1;
+    const endCol   = tokenLen > 0
+      ? Math.min(startCol + tokenLen, lineMax)
+      : lineMax;
+    return { startLine: d.line, startCol, endLine: d.line, endCol };
+  }
+
+  // ── Case 2: @offset N  — GCP absolute 0-based char offset into source ───────
+  const offsetM = d.message.match(/@offset\s+(\d+)/);
+  if (offsetM) {
+    const offset = parseInt(offsetM[1], 10);
+    const pos = model.getPositionAt(offset);   // Monaco returns 1-based line/col
+    if (pos && pos.lineNumber > 0 && pos.lineNumber <= lineCount) {
+      const lineMax = model.getLineMaxColumn(pos.lineNumber);
+      const endCol  = tokenLen > 0
+        ? Math.min(pos.column + tokenLen, lineMax)
+        : Math.min(pos.column + 15, lineMax);
+      return { startLine: pos.lineNumber, startCol: pos.column, endLine: pos.lineNumber, endCol };
+    }
+  }
+
+  // ── Case 3: parse errors  (GCP uses 0-based lines AND cols here) ─────────────
+  // Two sub-formats:
+  //   "at line: N, position from X to Y"   (aggregate errors)
+  //   "at line:N, position: X - Y"         (single-token errors, EOF etc.)
+  const parseM =
+    d.message.match(/at line:\s*(\d+),\s*position from\s*(\d+)\s*to\s*(\d+)/) ||
+    d.message.match(/at line:\s*(\d+),\s*position:\s*(\d+)\s*-\s*(\d+)/);
+  if (parseM) {
+    const line1 = parseInt(parseM[1], 10) + 1;   // 0-based → 1-based
+    const sc    = parseInt(parseM[2], 10) + 1;   // 0-based col → 1-based
+    const ec    = parseInt(parseM[3], 10) + 2;   // end 0-based → 1-based, inclusive
+    if (line1 > 0 && line1 <= lineCount) {
+      const lineMax = model.getLineMaxColumn(line1);
+      // Clamp start to last valid column so we always get at least 1 visible char
+      const sc2 = Math.min(sc, lineMax - 1);
+      const ec2 = Math.min(Math.max(ec, sc2 + 1), lineMax);
+      return { startLine: line1, startCol: sc2, endLine: line1, endCol: ec2 };
+    }
+  }
+
+  return null;  // position unknown — diagnostic shown only in errors panel
+}
+
 function updateDiagMarkers(diagnostics) {
   if (!state.editor) return;
-  const model = state.editor.getModel();
-  const markers = (diagnostics || [])
-    .filter(d => d.line > 0)
-    .map(d => {
-      const lineMax = model.getLineMaxColumn(d.line);
-      const startCol = (d.col > 0 && d.col <= lineMax) ? d.col : 1;
-      return {
-        severity : d.severity === 'error'
-          ? monaco.MarkerSeverity.Error
-          : monaco.MarkerSeverity.Warning,
-        startLineNumber : d.line,
-        startColumn     : startCol,
-        endLineNumber   : d.line,
-        endColumn       : lineMax,
-        message         : d.message,
-        source          : 'GCP',
-      };
-    });
+  const model   = state.editor.getModel();
+  const markers = (diagnostics || []).flatMap(d => {
+    const pos = extractDiagPos(d, model);
+    if (!pos) return [];
+    return [{
+      severity        : d.severity === 'error'
+        ? monaco.MarkerSeverity.Error
+        : monaco.MarkerSeverity.Warning,
+      startLineNumber : pos.startLine,
+      startColumn     : pos.startCol,
+      endLineNumber   : pos.endLine,
+      endColumn       : pos.endCol,
+      message         : d.message,
+      source          : 'GCP',
+    }];
+  });
   monaco.editor.setModelMarkers(model, 'outline-server', markers);
 }
 

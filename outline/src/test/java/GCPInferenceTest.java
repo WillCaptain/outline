@@ -253,7 +253,6 @@ public class GCPInferenceTest {
         AST ast = ASTHelper.mockGcpHofProjection4();
         assertTrue(ast.asf().infer());
         Node call = ast.program().body().get(1).get(0);
-
         assertTrue(ast.errors().isEmpty());
         assertInstanceOf(INTEGER.class, call.outline());
     }
@@ -717,5 +716,20 @@ public class GCPInferenceTest {
         assertEquals("[String : Number]",outline.toString());
         assertFalse(ast.errors().isEmpty());
         assertEquals(GCPErrCode.OUTLINE_MISMATCH,ast.errors().getFirst().errorCode());
+    }
+
+    @Test
+    void test_complex_gcp_back_propagation(){
+        AST ast = ASTHelper.mockComplexPropagation();
+        ast.asf().infer();
+        // Print all variables' types and all errors for analysis
+        System.err.println("--- inferred=" + ast.inferred() + " errors=" + ast.errors().size() + " ---");
+        for (String name : new String[]{"lift","get_score","is_passing","is_ace","check_pass","check_ace","alice","pass","ace"}) {
+            var sym = ast.symbolEnv().lookupAll(name);
+            System.err.println("  SYM [" + name + "] : " + (sym != null ? sym.outline() : "NULL"));
+        }
+        ast.errors().forEach(e -> System.err.println("  ERR[" + e.errorCode() + "]: " + e.message().substring(0, Math.min(100, e.message().length()))));
+        assertTrue(ast.inferred());
+        assertFalse(ast.errors().isEmpty());//there must have inference error like:points not found, please fix
     }
 }

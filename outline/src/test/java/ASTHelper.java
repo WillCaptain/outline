@@ -1230,6 +1230,25 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
+    public static AST mockComplexPropagation() {
+        String code = """
+                let lift = sel -> pred -> entity -> pred(sel(entity));
+                
+                let get_score  = player -> player.test;
+                let is_passing = n -> n.points >= 60;//here need points
+                let is_ace     = n -> n.score >= 90;
+                
+                let check_pass = lift(get_score)(is_passing);
+                let check_ace  = lift(get_score)(is_ace);
+                
+                let alice = {name = "Alice", test = {score=85,gpa=3.5}, rank = 3};//test doesn't have points field
+                let pass = check_pass(alice);   // there should have inference error: points can't be found
+                let ace = check_ace( alice); 
+                (pass,ace) // → true (ace threshold)
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
     public static AST mockTypeSelfReturn() {
         String code = """
                 outline Aggregator = <a>{
@@ -1260,7 +1279,7 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
-    public static AST literalOutline() {
+    public static AST mockLiteralOutline() {
         String code = """
                 outline Gender = Male(String,Int)|Female{name:String, age:Int};
                 outline Human = {
@@ -1287,6 +1306,188 @@ public class ASTHelper {
                 };
                 
                 father.son.girl_friend.name
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockDeclaredMatch() {
+        String code = """
+                let me = Man{age=50,height=168}, you = Female(20,160);
+                
+                outline Human = Man{age:Int,height:String} | Female(Int,Int);
+                
+                let get_age = (person:Human)->match person{
+                    Man{age as a} -> a,// age is legal,Man should project Human.man to get age type
+                    Female(b,c) -> b,//(b,c) is legal, Female should project Human.Female to get b,c projected 
+                    _ -> 0
+                };
+                
+                get_age(you)
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Tests outline entity template construction semantics:
+     * <pre>
+     * outline ApiKey = {
+     *     key:    String,
+     *     alias:  "alice",          // String with default "alice"
+     *     access: String,
+     *     issuer: #"GCP-System"     // literal constant
+     * };
+     * let key1 = ApiKey{key="a", access="b"};   // ok – all required fields provided
+     * let key2 = ApiKey{alias="jack", age="c"};  // error – key and access missing
+     * let key3 = ApiKey{key="key"};              // error – access missing
+     * let key4 = ApiKey1{key="key", access="admin"}; // ApiKey1 undefined → auto-symbol
+     * key1.issuer  // → "GCP-System"
+     * </pre>
+     */
+    public static AST mockOutlineEntityTemplate() {
+        String code = """
+                outline ApiKey = {
+                    key:    String,
+                    alias:  "alice",
+                    access: String,
+                    issuer: #"GCP-System"
+                };
+                let key1 = ApiKey{key="a", access="b"};
+                let key2 = ApiKey{alias="jack", age="c"};
+                let key3 = ApiKey{key="key"};
+                let key4 = ApiKey1{key="key", access="admin"};
+                key1.issuer
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Minimal test for outline entity with default-value field and literal-type field.
+     * Verifies runtime value of the literal field when no explicit value is provided.
+     */
+    public static AST mockOutlineEntityDefaultFill() {
+        String code = """
+                outline Config = {
+                    host: String,
+                    env:  "prod",
+                    tag:  #"v1"
+                };
+                let cfg = Config{host="localhost"};
+                cfg.env
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Grammar note: parameterised ADT like `outline <t>Optional = t|Nothing` requires
+     * grammar extension (reference_type adt_type in extend_outline) AND Option to implement
+     * ReferAble for `Optional<Int>` projection — not yet supported.
+     * This mock uses the concrete `Int|Nothing` union type which is fully supported today.
+     */
+    public static AST mockMoreOption() {
+        String code = """
+                // Int|Nothing is a nullable Int: either an Int value or the Nothing symbol
+                var a:Int|Nothing = Nothing, b:Int|Nothing = Nothing;
+                a = 100;//legal - Int satisfies Int|Nothing
+                
+                let check_null = value->{
+                    if (value is Nothing){
+                        "nothing"
+                    }else{
+                        value
+                    }
+                };
+                
+                (check_null(a),check_null(b))//should be (Int|String, String)
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Demonstrates the generic ADT syntax `outline <t>Optional = t|Nothing`.
+     * The grammar rule `reference_type adt_type` in extend_outline is supported,
+     * but full inference (projecting Optional<Int>) awaits Option implementing ReferAble.
+     */
+    public static AST mockGenericOptional() {
+        String code = """
+                outline <t>Optional = t|Nothing;
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    /**
+     * Grammar note: chaining `entity-extension` directly (e.g. Extend{data=[1,2,3]}.map(...))
+     * does not parse because `entity?` is in complex_expression, whose result cannot be the
+     * left-hand side of a factor_expression '.' accessor.  Moving entity-extension into
+     * factor_expression (as a left-recursive rule) would enable chaining — a future grammar task.
+     * This mock avoids the chain by breaking it into separate let-bindings.
+     */
+    public static AST mockRecurExtend() {
+        String code = """
+                outline Base = <i,o>{
+                    data:[i],
+                    map: (mapper:i->o)->this{data=data.map(d->mapper(d))}//this{....}表达了新建一个this类型的对象
+                };
+                
+                outline Extend = <i>Base<i>{
+                    filter: (f:i->Bool)->this{data=data.filter(d->f(d))}
+                };
+                
+                let base = Extend{data=[1,2,3]};
+                let mapped = base.map(d->d+1);
+                let filtered = mapped.filter(d->d>2);
+                filtered.data//should be [Integer]
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockExternalBuilder() {
+        String code = """
+                outline Gender = Male|Female;
+                outline Human = {
+                    age:Int,
+                    name:String,
+                    gender:#Male
+                };
+                
+                let person_1 = __external_builder__<Human>;//completely built by external plugin on GCP module
+                let person_2 = __external_builder__<Human>{age=40,name="Will"};//built by external with arguments
+                (person_1.name,person_1.age,person_2.name,person_2.age)
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockInheritedThis() {
+        String code = """
+                let adder = {
+                                    var data = 20,
+                                    age = 10,
+                                    add = ()->{
+                                        this.data = this.data+10;
+                                        data = data+10;//data equals this.data in this situation
+                                        age = 20;//let is not allowed to be assigned
+                                        return this;
+                                    }
+                                };
+                               
+                                (adder{
+                                    get = ()-> data + this.data
+                                }).add().get()
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockComplexLiteral() {
+        String code = """
+                outline ApiKey = {
+                    key:    String,
+                    alias:  "guest",          // default value — auto-fills as "guest", overridable
+                    access: String,
+                    issuer: #"GCP-System"    // literal type  — always "GCP-System", immutable
+                };
+                
+                let k = ApiKey{key = "abc123", access = "admin",issuer="other",alias = "alice"};
+                
+                (k.issuer, k.alias)
                 """;
         return parser.parse(new ASF(), code);
     }

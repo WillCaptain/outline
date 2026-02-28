@@ -98,7 +98,10 @@ tuple_type
     : reference_type? '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
     ;
 entity_type
-    : reference_type? '{' (argument (','argument)* ','?)? '}'
+    : reference_type? '{' (entity_field (','entity_field)* ','?)? '}'
+    ;
+entity_field
+    : ID (':' (declared_outline | literal))?
     ;
 symbol_type
     : Symbol (tuple_type | entity_type)

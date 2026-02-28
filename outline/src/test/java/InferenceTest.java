@@ -916,7 +916,9 @@ public class InferenceTest {
 
     @Test
     void test_complex_literal() {
-
+        AST ast = ASTHelper.mockComplexLiteral();
+        assertTrue(ast.asf().infer());
+        assertFalse(ast.errors().isEmpty());//literal outline: issuer can't be assigned
     }
 
     // ─────────────────── import / export ─────────────────────────────────────
@@ -1073,7 +1075,7 @@ public class InferenceTest {
 
     @Test
     void test_literal_outline(){
-        AST ast = ASTHelper.literalOutline();
+        AST ast = ASTHelper.mockLiteralOutline();
         ast.asf().infer();
         assertTrue(ast.inferred());
         // diagnostic: show error detail
@@ -1100,12 +1102,159 @@ public class InferenceTest {
     }
 
     @Test
-    void test_outline_mutual_reference(){
-
+    void test_declared_match(){
+        AST ast = ASTHelper.mockDeclaredMatch();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        assertTrue(ast.errors().isEmpty());
     }
 
     @Test
+    void test_more_option(){
+        AST ast = ASTHelper.mockMoreOption();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("(String|Integer|Nothing,String|Integer|Nothing)", outline.toString());
+    }
+
+    @Test
+    void test_recursive_extension(){
+        AST ast = ASTHelper.mockRecurExtend();
+        ast.asf().infer();
+        System.out.println("[TEST] errors=" + ast.errors());
+        var stmts = ast.program().body().statements();
+        // base, mapped, filtered are at indices 2,3,4
+        System.out.println("[TEST] base=" + stmts.get(2).get(0).get(0).outline());
+        System.out.println("[TEST] mapped=" + stmts.get(3).get(0).get(0).outline());
+        System.out.println("[TEST] filtered=" + stmts.get(4).get(0).get(0).outline());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("[Integer]", outline.toString());
+        //todo: 添加在InterpretTest中添加interpret测试，断言输出结果
+    }
+
+    @Test
+    void test_built_in_entity(){
+        //todo:需要添加 Date,Console等标准类型，这些类型放在一个标准module里可以直接使用
+        //需要inference，interpreter全部测试通过
+
+    }
+
+    /**
+     * continue / break are imperative loop-control keywords that are not yet implemented
+     * in the Outline language.
+     *
+     * Current status (as of this test):
+     *  - Neither CONTINUE nor BREAK tokens exist in outlineLexer.gm.
+     *  - The grammar rules continueStatement / breakStatement are commented out in outlineParser.gm.
+     *  - No AST nodes, inference handlers, or interpreter handlers exist for either keyword.
+     *  - Outline has no imperative loop construct (while / for) — iteration is done through
+     *    higher-order functions: [1...n].filter(...), .map(...), .reduce(...).
+     *
+     * Functional equivalents:
+     *  - continue (skip element): use filter, e.g. arr.filter(x -> x != skip_value)
+     *  - break (early exit):      use find / fold with an accumulator sentinel
+     *
+     * To implement continue / break, the following work is required:
+     *  1. Lexer   – add CONTINUE and BREAK keyword tokens to outlineLexer.gm
+     *  2. Parser  – uncomment / add continueStatement and breakStatement grammar rules
+     *  3. AST     – add ContinueNode and BreakNode (+ converter in outline module)
+     *  4. Inference – add inference handlers (both are UNIT-typed statements)
+     *  5. Interpreter – implement via a BreakSignal / ContinueSignal exception or sentinel value,
+     *                   and make the loop / forEach interpreter catch them
+     */
+    @org.junit.jupiter.api.Disabled("continue/break not yet implemented — see Javadoc above for roadmap")
+    @Test
     void test_continue_break() {
-        //todo
+    }
+
+    /**
+     * outline ApiKey = { key: String, alias: "alice", access: String, issuer: #"GCP-System" };
+     *
+     * Verifies:
+     * 1. key1 = ApiKey{key="a", access="b"} – no errors, anonymous structural type
+     * 2. key2 = ApiKey{alias="jack", age="c"} – 1 error (key+access combined into one message)
+     * 3. key3 = ApiKey{key="key"} – 1 error (access missing)
+     * 4. key4 = ApiKey1{key="key", access="admin"} – ApiKey1 auto-symbol, type is SymbolEntity
+     * 5. key1.issuer runtime → "GCP-System"
+     */
+    @Test
+    void test_outline_entity_template() {
+        AST ast = ASTHelper.mockOutlineEntityTemplate();
+        ast.asf().infer();
+
+        // AST deduplicates errors by (node, errorCode), so multiple missing fields on the same
+        // entity construction are reported as one combined error per construction.
+        // key2: 'key','access' combined → 1 error; key3: 'access' → 1 error → total 2
+        long missingFieldErrors = ast.errors().stream()
+                .filter(e -> e.errorCode() == org.twelve.gcp.exception.GCPErrCode.MISSING_REQUIRED_FIELD)
+                .count();
+        assertEquals(2, missingFieldErrors,
+                "expected 2 MISSING_REQUIRED_FIELD errors (1 combined for key2, 1 for key3)");
+
+        // key1 should be an anonymous Entity (base == ANY, not SymbolEntity)
+        org.twelve.gcp.ast.Node key1Node = ast.program().body().statements().get(1)
+                .nodes().getFirst().nodes().getFirst();
+        org.twelve.gcp.outline.Outline key1Type = key1Node.outline();
+        assertInstanceOf(org.twelve.gcp.outline.adt.Entity.class, key1Type);
+        assertFalse(key1Type instanceof org.twelve.gcp.outline.adt.SymbolEntity,
+                "key1 should be anonymous entity, not SymbolEntity");
+
+        // key1 type should have 4 non-default members: key, alias, access, issuer
+        org.twelve.gcp.outline.adt.Entity key1Entity = cast(key1Type);
+        List<org.twelve.gcp.outline.adt.EntityMember> key1Members =
+                key1Entity.members().stream().filter(m -> !m.isDefault()).toList();
+        assertEquals(4, key1Members.size(),
+                "key1 should have key, alias, access, issuer (4 members)");
+
+        // key4 should be a SymbolEntity with ApiKey1 tag
+        org.twelve.gcp.ast.Node key4Node = ast.program().body().statements().get(4)
+                .nodes().getFirst().nodes().getFirst();
+        assertInstanceOf(org.twelve.gcp.outline.adt.SymbolEntity.class, key4Node.outline(),
+                "key4 should be a SymbolEntity (ApiKey1 is undefined → auto-symbol)");
+
+        // Runtime: key1.issuer should return "GCP-System"
+        org.twelve.gcp.interpreter.value.Value result = ast.asf().interpret();
+        assertInstanceOf(org.twelve.gcp.interpreter.value.StringValue.class, result);
+        assertEquals("GCP-System",
+                ((org.twelve.gcp.interpreter.value.StringValue) result).value());
+    }
+
+    /**
+     * outline Config = { host: String, env: "prod", tag: #"v1" };
+     * let cfg = Config{host="localhost"};
+     * cfg.env   → "prod"   (default-value field filled at runtime)
+     */
+    @Test
+    void test_outline_entity_default_fill() {
+        AST ast = ASTHelper.mockOutlineEntityDefaultFill();
+        ast.asf().infer();
+
+        // Only 1 error expected: access is missing  – wait, Config has host (required), env (default), tag (literal)
+        // key3 = Config{host="localhost"} → host provided, env defaults to "prod", tag="#v1" → no errors
+        assertTrue(ast.errors().isEmpty(),
+                "Config{host='localhost'} should have no errors; got: " + ast.errors());
+
+        // Runtime: cfg.env should return "prod"
+        org.twelve.gcp.interpreter.value.Value result = ast.asf().interpret();
+        assertInstanceOf(org.twelve.gcp.interpreter.value.StringValue.class, result);
+        assertEquals("prod",
+                ((org.twelve.gcp.interpreter.value.StringValue) result).value());
+    }
+
+    @Test
+    void test_inherited_this() {
+        AST ast = ASTHelper.mockInheritedThis();
+        assertTrue(ast.asf().infer());
+        assertEquals(1, ast.errors().size());
+        assertEquals(GCPErrCode.NOT_ASSIGNABLE, ast.errors().getFirst().errorCode());
+        assertEquals("age", ast.errors().getFirst().node().lexeme());
+        // Runtime
+        org.twelve.gcp.interpreter.value.Value result = ast.asf().interpret();
+        assertInstanceOf(org.twelve.gcp.interpreter.value.IntValue.class, result);
+        assertEquals(80,
+                ((org.twelve.gcp.interpreter.value.IntValue) result).value());
     }
 }

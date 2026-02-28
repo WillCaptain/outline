@@ -63,6 +63,7 @@ org/twelve/outline/converter/EqualityExprConverter.class
 org/twelve/outline/converter/LongTypeConverter.class
 org/twelve/outline/converter/TupleUnpackNodeConverter.class
 org/twelve/outline/converter/ReturnConverter.class
+org/twelve/outline/wrappernode/EntityFieldWithDefaultWrapper.class
 org/twelve/outline/converter/StringLiteralConverter.class
 org/twelve/outline/converter/ArgumentConverter.class
 org/twelve/outline/converter/WithConverter.class
@@ -76,7 +77,9 @@ org/twelve/outline/converter/TernaryExprConverter.class
 org/twelve/outline/converter/ArrayEnumItemsConverter.class
 org/twelve/outline/converter/BlockConverter.class
 org/twelve/outline/converter/TermExprConverter.class
+org/twelve/outline/converter/EntityFieldConverter.class
 org/twelve/outline/common/Constants.class
+org/twelve/outline/GCPConverter$2.class
 org/twelve/outline/converter/NumberLiteralConverter.class
 org/twelve/outline/converter/EntityConverter.class
 org/twelve/outline/converter/ExpresionStatementConverter.class

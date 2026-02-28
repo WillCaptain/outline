@@ -24,6 +24,7 @@
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/DoubleTypeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/EntityConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/EntityExtensionConverter.java
+/Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/EntityFieldConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/EntityTypeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/EntityUnpackNodeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/EqualityExprConverter.java
@@ -79,4 +80,5 @@
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/VarDeclareConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/WithConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/wrappernode/ArgumentWrapper.java
+/Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/wrappernode/EntityFieldWithDefaultWrapper.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/wrappernode/ReferenceWrapper.java
