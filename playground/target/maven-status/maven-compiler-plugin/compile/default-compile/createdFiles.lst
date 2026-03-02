@@ -6,6 +6,7 @@ org/twelve/outline/playground/model/CompileResponse.class
 org/twelve/outline/playground/model/SymbolInfo.class
 org/twelve/outline/playground/service/ExamplesRepository$1.class
 org/twelve/outline/playground/model/ExampleCode.class
+org/twelve/outline/playground/model/ConsoleEntry.class
 org/twelve/outline/playground/controller/PlaygroundController.class
 org/twelve/outline/playground/service/OutlineCompilerService.class
 org/twelve/outline/playground/service/ExamplesRepository$2.class

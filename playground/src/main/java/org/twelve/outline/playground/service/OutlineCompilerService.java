@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OutlineCompilerService {
@@ -40,6 +41,7 @@ public class OutlineCompilerService {
         List<DiagnosticInfo> diagnostics = new ArrayList<>();
         List<SymbolInfo> symbols = new ArrayList<>();
         String output = null;
+        List<ConsoleEntry> consoleLogs = new ArrayList<>();
         boolean hasParseError = false;
         long inferenceMs = 0;
         long executionMs = 0;
@@ -71,13 +73,19 @@ public class OutlineCompilerService {
             // ── 3. Extract symbol types ─────────────────────────────────────
             symbols = extractSymbols(ast);
 
-            // ── 4. Execute ──────────────────────────────────────────────────
+            // ── 4. Execute (capture print / Console.log / .warn / .error) ───
             long t1 = System.currentTimeMillis();
+            org.twelve.gcp.interpreter.stdlib.ConsoleCapture.start();
             try {
                 Value result = asf.interpret();
                 output = formatValue(result);
             } catch (Exception e) {
                 output = "⚠ Runtime error: " + e.getMessage();
+            } finally {
+                consoleLogs = org.twelve.gcp.interpreter.stdlib.ConsoleCapture.collect()
+                        .stream()
+                        .map(e -> new ConsoleEntry(e.level().name().toLowerCase(), e.message()))
+                        .collect(Collectors.toList());
             }
             executionMs = System.currentTimeMillis() - t1;
 
@@ -93,7 +101,7 @@ public class OutlineCompilerService {
             diagnostics.add(DiagnosticInfo.error("Internal error: " + ex.getMessage()));
         }
 
-        return new CompileResponse(symbols, diagnostics, output,
+        return new CompileResponse(symbols, diagnostics, output, consoleLogs,
                 hasParseError, inferenceMs, executionMs);
     }
 

@@ -1142,38 +1142,95 @@ public class InferenceTest {
     }
 
     @Test
-    void test_built_in_entity(){
-        //todo:需要添加 Date,Console等标准类型，这些类型放在一个标准module里可以直接使用
-        //需要inference，interpreter全部测试通过
+    void test_built_in_entity() throws Exception {
+        // ── Math: constant fields and pure functions ─────────────────────────
+        AST astMath = RunnerHelper.parse("""
+                let pi     = Math.pi;
+                let e      = Math.e;
+                let r      = Math.sqrt(4.0);
+                let fl     = Math.floor(3.7);
+                let ce     = Math.ceil(3.1);
+                let ro     = Math.round(3.5);
+                let mx     = Math.max(3)(7);
+                let mn     = Math.min(3)(7);
+                let pw     = Math.pow(2.0)(10.0);
+                let rnd    = Math.random();
+                """);
+        assertTrue(astMath.asf().infer(), "Math inference failed");
+        assertTrue(astMath.errors().isEmpty(), "Math errors: " + astMath.errors());
 
-    }
+        Outline pi  = lhsOf(astMath, 0);
+        Outline e   = lhsOf(astMath, 1);
+        Outline sqr = lhsOf(astMath, 2);
+        Outline fl  = lhsOf(astMath, 3);
+        Outline ce  = lhsOf(astMath, 4);
+        Outline ro  = lhsOf(astMath, 5);
+        Outline mx  = lhsOf(astMath, 6);
+        Outline mn  = lhsOf(astMath, 7);
+        Outline pw  = lhsOf(astMath, 8);
+        Outline rnd = lhsOf(astMath, 9);
 
-    /**
-     * continue / break are imperative loop-control keywords that are not yet implemented
-     * in the Outline language.
-     *
-     * Current status (as of this test):
-     *  - Neither CONTINUE nor BREAK tokens exist in outlineLexer.gm.
-     *  - The grammar rules continueStatement / breakStatement are commented out in outlineParser.gm.
-     *  - No AST nodes, inference handlers, or interpreter handlers exist for either keyword.
-     *  - Outline has no imperative loop construct (while / for) — iteration is done through
-     *    higher-order functions: [1...n].filter(...), .map(...), .reduce(...).
-     *
-     * Functional equivalents:
-     *  - continue (skip element): use filter, e.g. arr.filter(x -> x != skip_value)
-     *  - break (early exit):      use find / fold with an accumulator sentinel
-     *
-     * To implement continue / break, the following work is required:
-     *  1. Lexer   – add CONTINUE and BREAK keyword tokens to outlineLexer.gm
-     *  2. Parser  – uncomment / add continueStatement and breakStatement grammar rules
-     *  3. AST     – add ContinueNode and BreakNode (+ converter in outline module)
-     *  4. Inference – add inference handlers (both are UNIT-typed statements)
-     *  5. Interpreter – implement via a BreakSignal / ContinueSignal exception or sentinel value,
-     *                   and make the loop / forEach interpreter catch them
-     */
-    @org.junit.jupiter.api.Disabled("continue/break not yet implemented — see Javadoc above for roadmap")
-    @Test
-    void test_continue_break() {
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, pi,  "Math.pi should be Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, e,   "Math.e should be Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, sqr, "Math.sqrt → Double");
+        assertInstanceOf(INTEGER.class,                                   fl,  "Math.floor → Int");
+        assertInstanceOf(INTEGER.class,                                   ce,  "Math.ceil → Int");
+        assertInstanceOf(INTEGER.class,                                   ro,  "Math.round → Int");
+        assertInstanceOf(NUMBER.class,                                    mx,  "Math.max → Number");
+        assertInstanceOf(NUMBER.class,                                    mn,  "Math.min → Number");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, pw,  "Math.pow → Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, rnd, "Math.random → Double");
+
+        // ── Console: access method types via the module entity ───────────────
+        // Console.log is a String→Unit function; Console.read is a Unit→String function.
+        // We verify by binding the function itself (not calling it).
+        AST astConsole = RunnerHelper.parse("""
+                let log_fn  = Console.log;
+                let warn_fn = Console.warn;
+                let err_fn  = Console.error;
+                let read_fn = Console.read;
+                """);
+        assertTrue(astConsole.asf().infer(), "Console inference failed");
+        assertTrue(astConsole.errors().isEmpty(), "Console errors: " + astConsole.errors());
+
+        // log_fn : String → Unit  →  FirstOrderFunction
+        assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
+                lhsOf(astConsole, 0), "Console.log → FirstOrderFunction");
+        // warn_fn: String → Unit
+        assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
+                lhsOf(astConsole, 1), "Console.warn → FirstOrderFunction");
+        // err_fn: String → Unit
+        assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
+                lhsOf(astConsole, 2), "Console.error → FirstOrderFunction");
+        // read_fn: Unit → String  →  FirstOrderFunction
+        assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
+                lhsOf(astConsole, 3), "Console.read → FirstOrderFunction");
+
+        // ── Date: now() returns an entity with year:Int, format:String→String ─
+        AST astDate = RunnerHelper.parse("""
+                let d      = Date.now();
+                let yr     = Date.now().year;
+                let mo     = Date.now().month;
+                let day    = Date.now().day;
+                let fmt    = Date.now().format("YYYY-MM-DD");
+                let ts     = Date.now().timestamp();
+                let dow    = Date.now().day_of_week();
+                let parsed = Date.parse("2025-06-15");
+                let pyr    = Date.parse("2025-06-15").year;
+                """);
+        assertTrue(astDate.asf().infer(), "Date inference failed");
+        assertTrue(astDate.errors().isEmpty(), "Date errors: " + astDate.errors());
+
+        assertInstanceOf(Entity.class,  lhsOf(astDate, 0), "Date.now() → Entity (DateRecord)");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 1), "Date.now().year → Int");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 2), "Date.now().month → Int");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 3), "Date.now().day → Int");
+        assertInstanceOf(STRING.class,  lhsOf(astDate, 4), "Date.now().format() → String");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.LONG.class,
+                                        lhsOf(astDate, 5), "Date.now().timestamp() → Long");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 6), "Date.now().day_of_week() → Int");
+        assertInstanceOf(Entity.class,  lhsOf(astDate, 7), "Date.parse() → Entity (DateRecord)");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 8), "Date.parse().year → Int");
     }
 
     /**

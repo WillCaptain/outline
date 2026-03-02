@@ -218,10 +218,12 @@ function renderResults(data, mode) {
   const errors  = diag.filter(d => d.severity === 'error');
   const warns   = diag.filter(d => d.severity === 'warning');
   const syms    = data.symbols      || [];
+  const logs    = data.consoleLogs  || [];
 
   // Badges
   setBadge('badge-inference', syms.length);
   setBadge('badge-errors', errors.length + warns.length, true);
+  setBadge('badge-console', logs.length);
 
   // Stats bar
   const statsBar = document.getElementById('stats-bar');
@@ -234,12 +236,16 @@ function renderResults(data, mode) {
   updateInlineAnnotations(syms);
   registerHover(syms);
   renderOutput(data);
+  renderConsole(logs);
   renderErrors(diag);
-  updateDiagMarkers(diag);     // ← NEW: Monaco squiggles
+  updateDiagMarkers(diag);
 
   if (errors.length > 0) {
     setStatus('error', `✗ ${errors.length} error${errors.length > 1 ? 's' : ''}`);
     switchTab('errors');
+  } else if (logs.length > 0 && mode === 'run') {
+    setStatus('ok', `✓ ${logs.length} log${logs.length > 1 ? 's' : ''}`);
+    switchTab('console');
   } else if (warns.length > 0) {
     setStatus('warn', `⚠ ${warns.length} warning${warns.length > 1 ? 's' : ''}`);
     switchTab('inference');
@@ -344,6 +350,25 @@ function renderErrors(diag) {
       state.editor.focus();
     });
   });
+}
+
+function renderConsole(logs) {
+  const list = el('console-log-list');
+  if (!logs || !logs.length) {
+    list.innerHTML = '<div class="console-empty">No console output — use <code>print(x)</code>, <code>Console.log(x)</code>, <code>Console.warn(x)</code> or <code>Console.error(x)</code></div>';
+    return;
+  }
+  const ICONS = { log: '›', warn: '⚠', error: '✗' };
+  list.innerHTML = logs.map((entry, i) => {
+    const level = (entry.level || 'log').toLowerCase();
+    const icon  = ICONS[level] || '›';
+    const msg   = typeof entry === 'string' ? entry : (entry.message || '');
+    return `<div class="console-line console-${level}">
+      <span class="console-idx">${i + 1}</span>
+      <span class="console-icon">${icon}</span>
+      <span class="console-text">${esc(msg)}</span>
+    </div>`;
+  }).join('');
 }
 
 // ── Monaco diagnostic markers (squiggles) ──────────────────────
@@ -698,6 +723,10 @@ function bindEvents() {
     const text = el('output-box').innerText;
     navigator.clipboard.writeText(text).then(() => showToast('Copied!', 'ok'));
   });
+  el('btn-clear-console').addEventListener('click', () => {
+    el('console-log-list').innerHTML = '<div class="console-empty">No console output — use <code>print(x)</code>, <code>Console.log(x)</code>, <code>Console.warn(x)</code> or <code>Console.error(x)</code></div>';
+    setBadge('badge-console', 0);
+  });
 
   // Theme
   el('btn-theme').addEventListener('click', () => {
@@ -862,8 +891,10 @@ function clearResults() {
       <div class="no-errors-icon">✓</div>
       <div>No errors detected</div>
     </div>`;
+  el('console-log-list').innerHTML     = '<div class="console-empty">No console output — use <code>print(x)</code>, <code>Console.log(x)</code>, <code>Console.warn(x)</code> or <code>Console.error(x)</code></div>';
   setBadge('badge-inference', 0);
   setBadge('badge-errors', 0, true);
+  setBadge('badge-console', 0);
   setStatus('', 'Ready');
   state.typeDecos = state.editor.deltaDecorations(state.typeDecos, []);
   if (state.hoverProvider) { state.hoverProvider.dispose(); state.hoverProvider = null; }

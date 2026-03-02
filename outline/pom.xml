@@ -41,6 +41,13 @@
       <version>3.24.2</version>
       <scope>test</scope>
     </dependency>
+    <!-- Test plugin for __test__ external builder (loaded dynamically, NOT on classpath) -->
+    <dependency>
+      <groupId>org.twelve</groupId>
+      <artifactId>ext-builder-test</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -59,6 +66,33 @@
             </path>
           </annotationProcessorPaths>
         </configuration>
+      </plugin>
+      <!-- Copy ext-builder-test JAR into target/test-plugins/ before tests run.
+           The file is renamed to ext_builder_test.jar so PluginLoader picks it up. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>copy-test-plugin-jar</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.twelve</groupId>
+                  <artifactId>ext-builder-test</artifactId>
+                  <version>1.0-SNAPSHOT</version>
+                  <outputDirectory>${project.build.directory}/test-plugins</outputDirectory>
+                  <destFileName>ext_builder_test.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

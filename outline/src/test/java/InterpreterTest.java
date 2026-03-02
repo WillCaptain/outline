@@ -2008,4 +2008,89 @@ public class InterpreterTest {
                 """);
         assertThat(RunnerHelper.strVal(v)).isEqualTo("Will!");
     }
+
+    // =========================================================================
+    // Built-in entity modules: Date, Console, Math
+    // =========================================================================
+
+    @Test
+    void test_built_in_entity_math() {
+        // pi and e are Double constants
+        assertThat(((org.twelve.gcp.interpreter.value.FloatValue)
+                RunnerHelper.run("Math.pi")).value()).isCloseTo(Math.PI, org.assertj.core.data.Offset.offset(1e-10));
+        assertThat(((org.twelve.gcp.interpreter.value.FloatValue)
+                RunnerHelper.run("Math.e")).value()).isCloseTo(Math.E, org.assertj.core.data.Offset.offset(1e-10));
+
+        // sqrt(4.0) == 2.0
+        assertThat(((org.twelve.gcp.interpreter.value.FloatValue)
+                RunnerHelper.run("Math.sqrt(4.0)")).value()).isCloseTo(2.0, org.assertj.core.data.Offset.offset(1e-10));
+
+        // floor / ceil / round
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Math.floor(3.7)"))).isEqualTo(3L);
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Math.ceil(3.1)"))).isEqualTo(4L);
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Math.round(3.5)"))).isEqualTo(4L);
+
+        // max / min (curried)
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Math.max(3)(7)"))).isEqualTo(7L);
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Math.min(3)(7)"))).isEqualTo(3L);
+
+        // pow(2.0)(10.0) == 1024.0  (Double → Double → Double)
+        assertThat(((org.twelve.gcp.interpreter.value.FloatValue)
+                RunnerHelper.run("Math.pow(2.0)(10.0)")).value()).isCloseTo(1024.0, org.assertj.core.data.Offset.offset(1e-6));
+
+        // random() returns a Double in [0,1)
+        Value rnd = RunnerHelper.run("Math.random()");
+        assertThat(rnd).isInstanceOf(org.twelve.gcp.interpreter.value.FloatValue.class);
+        double d = ((org.twelve.gcp.interpreter.value.FloatValue) rnd).value();
+        assertThat(d).isBetween(0.0, 1.0);
+    }
+
+    @Test
+    void test_built_in_entity_console() {
+        // Console.log returns Unit without throwing
+        Value logged = RunnerHelper.run("""
+                Console.log("stdlib test")
+                """);
+        assertThat(logged).isInstanceOf(org.twelve.gcp.interpreter.value.UnitValue.class);
+    }
+
+    @Test
+    void test_built_in_entity_date() {
+        // Date.now().year should be >= 2025
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Date.now().year")))
+                .isGreaterThanOrEqualTo(2025L);
+
+        // Date.now().month is 1..12
+        long month = RunnerHelper.intVal(RunnerHelper.run("Date.now().month"));
+        assertThat(month).isBetween(1L, 12L);
+
+        // Date.now().day is 1..31
+        long day = RunnerHelper.intVal(RunnerHelper.run("Date.now().day"));
+        assertThat(day).isBetween(1L, 31L);
+
+        // Date.now().format("YYYY-MM-DD") matches "NNNN-NN-NN"
+        Value fmt = RunnerHelper.run("""
+                Date.now().format("YYYY-MM-DD")
+                """);
+        assertThat(RunnerHelper.strVal(fmt)).matches("\\d{4}-\\d{2}-\\d{2}");
+
+        // Date.now().timestamp() is a positive number
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("Date.now().timestamp()")))
+                .isGreaterThan(0L);
+
+        // Date.parse("2025-06-15").year == 2025
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("""
+                Date.parse("2025-06-15").year
+                """))).isEqualTo(2025L);
+
+        // Date.parse("2025-06-15").month == 6
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("""
+                Date.parse("2025-06-15").month
+                """))).isEqualTo(6L);
+
+        // Date.parse("2025-06-15").day == 15
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("""
+                Date.parse("2025-06-15").day
+                """))).isEqualTo(15L);
+    }
 }

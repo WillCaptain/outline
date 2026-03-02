@@ -139,6 +139,10 @@
       <button class="result-tab" data-tab="output">
         <span class="tab-label">▶ Output</span>
       </button>
+      <button class="result-tab" data-tab="console">
+        <span class="tab-label">▮ Console</span>
+        <span class="tab-badge" id="badge-console" style="display:none">0</span>
+      </button>
       <button class="result-tab" data-tab="errors">
         <span class="tab-label">⚠ Errors</span>
         <span class="tab-badge tab-badge-error" id="badge-errors" style="display:none">0</span>
@@ -196,6 +200,17 @@
           <button class="btn-copy" id="btn-copy-output" title="Copy output">⎘ Copy</button>
         </div>
         <pre class="output-box" id="output-box"><span class="placeholder-text">Press ▶ Run to execute your code</span></pre>
+      </div>
+    </div>
+
+    <!-- ── Console tab ───────────────────────────────────────────── -->
+    <div class="tab-content" id="tab-console">
+      <div class="console-toolbar">
+        <span class="console-title">Console Output</span>
+        <button class="btn-copy" id="btn-clear-console" title="Clear console">✕ Clear</button>
+      </div>
+        <div class="console-log-list" id="console-log-list">
+        <div class="console-empty">No console output — use <code>print(x)</code>, <code>Console.log(x)</code>, <code>Console.warn(x)</code> or <code>Console.error(x)</code></div>
       </div>
     </div>
 

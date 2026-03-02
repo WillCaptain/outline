@@ -1451,7 +1451,7 @@ public class ASTHelper {
                 
                 let person_1 = __external_builder__<Human>;//completely built by external plugin on GCP module
                 let person_2 = __external_builder__<Human>{age=40,name="Will"};//built by external with arguments
-                (person_1.name,person_1.age,person_2.name,person_2.age)
+                (person_1.name,person_1.age,person_1.gender,person_2.name,person_2.age,person_2.gender)
                 """;
         return parser.parse(new ASF(), code);
     }
