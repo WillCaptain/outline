@@ -1532,4 +1532,59 @@ public class InferenceTest {
         assertTrue(ast.asf().infer());
         assertTrue(ast.errors().isEmpty());
     }
+
+    @Test
+    void test_outline_numeric_defaults_display() {
+        // outline A = { age:100, height:168 } — type should display as {age:Int, height:Int}, not {}
+        AST ast = RunnerHelper.parse("""
+                outline A = {
+                    age:100,
+                    height:168
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        Outline aOutline = cast(ast.symbolEnv().lookupAll("A").outline());
+        String display = aOutline.toString();
+        assertTrue(display.contains("age"), "Expected type to contain 'age', got: " + display);
+        assertTrue(display.contains("height"), "Expected type to contain 'height', got: " + display);
+    }
+
+    @Test
+    void test_poly_entity_arg_no_project_fail() {
+        // f_ent(value) where value is Poly — should NOT produce a PROJECT_FAIL error
+        AST ast = RunnerHelper.parse("""
+                let value = 10 & "Will" & {name="Bob"};
+                let f_ent = (value:{name:String}) -> value.name;
+                let ent = f_ent(value);
+                """);
+        assertTrue(ast.asf().infer());
+        long projectFails = ast.errors().stream()
+                .filter(e -> e.errorCode() == GCPErrCode.PROJECT_FAIL).count();
+        assertEquals(0, projectFails, "f_ent(value) should not produce PROJECT_FAIL errors");
+    }
+
+    @Test
+    void test_poly_str_with_extension_no_error() {
+        // f_str("aaa"{age=20}) — should work: String extended with {age:Int} satisfies (value:String)->value.age
+        AST ast = RunnerHelper.parse("""
+                let f_str = (value:String) -> value.age;
+                let age_2 = f_str("aaa"{age=20});
+                """);
+        assertTrue(ast.asf().infer());
+        long projectFails = ast.errors().stream()
+                .filter(e -> e.errorCode() == GCPErrCode.PROJECT_FAIL).count();
+        assertEquals(0, projectFails, "f_str(\"aaa\"{age=20}) should not produce PROJECT_FAIL errors");
+    }
+
+    @Test
+    void test_poly_str_without_extension_has_error() {
+        // f_str(value) where value's String component lacks 'age' — should have an inference error
+        AST ast = RunnerHelper.parse("""
+                let value = 10 & "Will" & {name="Bob"};
+                let f_str = (value:String) -> value.age;
+                let age_1 = f_str(value);
+                """);
+        assertTrue(ast.asf().infer());
+        assertFalse(ast.errors().isEmpty(), "f_str(value) should produce an inference error (String has no 'age')");
+    }
 }

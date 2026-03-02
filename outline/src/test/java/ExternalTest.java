@@ -27,8 +27,9 @@ public class ExternalTest {
 
     /**
      * external builder interpreter(when meet SYSTEM node) will create an instance in terms of the id<a,b>(arg1,arg2)
-     * for example:  __ontology_memo__<Human>{age=40,name="Will"}
-     * id is ontology_memo
+     * external builder MUST BE PLUGIN for gcp, __external__ is the only built in external builder,simply create a entity with default value or arguments value
+     * for example:  __external__<Human>{age=40,name="Will"}
+     * id is __external__
      * instance type is Human
      * arguments are age,name
      * id will help interpreter find the right builder pluain
@@ -42,5 +43,6 @@ public class ExternalTest {
         AST ast = ASTHelper.mockExternalBuilder();
         Value result = ast.asf().interpret();
         assertEquals("(\"\",0,\"Will\",40)", result.toString());
+        //todo
     }
 }
