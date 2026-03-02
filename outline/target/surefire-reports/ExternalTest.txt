@@ -1,8 +1,8 @@
 -------------------------------------------------------------------------------
 Test set: ExternalTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.018 s <<< FAILURE! -- in ExternalTest
-ExternalTest.test_external_builder_interpret -- Time elapsed: 0.008 s <<< ERROR!
+Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.016 s <<< FAILURE! -- in ExternalTest
+ExternalTest.test_external_builder_interpret -- Time elapsed: 0.007 s <<< ERROR!
 java.lang.RuntimeException: Member 'name' not found on external_builder{__typeArgs__ = Human}
 	at org.twelve.gcp.interpreter.interpretation.MemberAccessorInterpretation.interpret(MemberAccessorInterpretation.java:28)
 	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:245)
@@ -22,7 +22,7 @@ java.lang.RuntimeException: Member 'name' not found on external_builder{__typeAr
 	at org.twelve.gcp.interpreter.OutlineInterpreter.runAst(OutlineInterpreter.java:162)
 	at org.twelve.gcp.interpreter.OutlineInterpreter.run(OutlineInterpreter.java:149)
 	at org.twelve.gcp.ast.ASF.interpret(ASF.java:115)
-	at ExternalTest.test_external_builder_interpret(ExternalTest.java:30)
+	at ExternalTest.test_external_builder_interpret(ExternalTest.java:43)
 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
 	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:727)

@@ -84,6 +84,13 @@
     "code": "let father = {\n    name = \"will\",\n    son = {name=\"evan\", girl_friend={name=\"someone\"}, gender=\"male\"}\n};\n\n// Chained member access across three levels of nesting\nlet gf_name  = father.son.girl_friend.name;   // \"someone\"\nlet son_name = father.son.name;               // \"evan\"\nlet dad_name = father.name;                   // \"will\"\n\ngf_name;"
   },
   {
+    "id": "let-var-mutability",
+    "title": "let / var Member Mutability",
+    "description": "Entity members declared with `var` are mutable; `let` members are immutable. GCP enforces this at the type level — assignment to a `let` member is a compile-time error.",
+    "category": "types",
+    "code": "// Entity members can be declared `var` (mutable) or `let` (immutable).\n// GCP enforces mutability at the type level — assignment to a `let` member\n// is a compile-time error.\n\nlet counter = {\n    var count = 0,        // var — can be reassigned\n    let label = \"hits\"   // let — immutable, reassignment is a type error\n};\n\n// Mutate the var field — both assignments succeed\ncounter.count = counter.count + 1;\ncounter.count = counter.count + 1;\n\n// Trying to reassign a `let` member is caught at compile time:\n//   counter.label = \"x\";   // ← [semantic] not assignable\n\ncounter.count;   // → 2"
+  },
+  {
     "id": "arrays",
     "title": "Arrays & Pipelines",
     "description": "Ranges, map, filter, reduce — all inferred end-to-end. Note: reduce takes combiner first, then initial value.",
@@ -96,6 +103,22 @@
     "description": "A realistic data-processing pipeline — filter, map, reduce all chained.",
     "category": "collections",
     "code": "// Simulate a small data pipeline\nlet data = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3];\n\n// Step 1: filter values above threshold\nlet threshold = 3;\nlet hi = data.filter(x -> x > threshold);   // [4,5,9,6,5]\n\n// Step 2: double each value\nlet doubled = hi.map(x -> x * 2);            // [8,10,18,12,10]\n\n// Step 3: sum — note: reduce(combiner)(initial)\nlet result = doubled.reduce(acc -> x -> acc + x)(0);\n\nresult;"
+  },
+
+  {
+    "id": "some-every",
+    "title": "some / every — Short-Circuit Predicates",
+    "description": "Replaces break/continue with functional intent: .some stops on first match, .every stops on first mismatch — no mutable loop state needed.",
+    "category": "collections",
+    "code": "// .some(pred)  = \"loop with break on first TRUE\"  → returns Bool\n// .every(pred) = \"loop with break on first FALSE\" → returns Bool\n//\n// Both short-circuit: scanning stops the moment the result is determined.\n// Cleaner than a manual for-loop with a flag variable.\n\nlet nums = [1, 3, 5, 7, 8, 11, 13];\n\n// Stops at 8 — never visits 11, 13\nlet has_even = nums.some(x -> x % 2 == 0);    // true\n\n// Stops at 8 — never visits 11, 13\nlet all_odd  = nums.every(x -> x % 2 != 0);   // false\n\n// Works on entity arrays too: does any player score > 90?\nlet players = [\n    {name = \"Alice\", score = 85},\n    {name = \"Bob\",   score = 95},\n    {name = \"Carol\", score = 72}\n];\n\nlet has_ace  = players.some(p -> p.score > 90);    // true  (stops at Bob)\nlet all_pass = players.every(p -> p.score >= 70);  // true\n\n(has_even, all_odd, has_ace, all_pass)"
+  },
+
+  {
+    "id": "take-drop-while",
+    "title": "take_while / drop_while — Prefix Splitting",
+    "description": "Split an array at the first element that breaks a condition — a short-circuiting alternative to filtering when order and position matter.",
+    "category": "collections",
+    "code": "// .take_while(pred) → longest prefix whose elements all satisfy pred\n// .drop_while(pred) → suffix after dropping the matching prefix\n//\n// Both stop scanning at the first element that breaks the condition.\n// Unlike .filter, they respect position: once the condition fails,\n// no further elements are included / skipped.\n\nlet nums = [2, 4, 6, 7, 9, 10, 12];\n\n// Even-prefix and the rest\nlet evens = nums.take_while(x -> x % 2 == 0);   // [2, 4, 6]\nlet rest  = nums.drop_while(x -> x % 2 == 0);   // [7, 9, 10, 12]\n\n// Partition a sorted list at threshold 10 (ascending)\nlet sorted = [1, 3, 5, 8, 12, 15, 20];\nlet small  = sorted.take_while(x -> x < 10);    // [1, 3, 5, 8]\nlet large  = sorted.drop_while(x -> x < 10);    // [12, 15, 20]\n\n// Compute sum of the small partition\nlet small_sum = small.reduce(acc -> x -> acc + x)(0);   // 17\n\n(evens, rest, small, large, small_sum)"
   },
   {
     "id": "inference-power",
@@ -142,6 +165,13 @@
     "description": "Default-value fields auto-fill but can be overridden; literal-type fields are constant forever. Both are absent from TypeScript and Haskell without boilerplate.",
     "category": "unique",
     "code": "// Outline entity templates support two kinds of auto-filled fields:\n//\n//   alias:  \"guest\"        → DEFAULT VALUE — String field with a preset default.\n//                            Auto-fills if omitted, but CAN be overridden.\n//\n//   issuer: #\"GCP-System\"  → LITERAL TYPE  — the type IS the value.\n//                            Always \"GCP-System\"; never assigned, never overridden.\n//\n// TypeScript: literal types are constraints only — you must still write the value.\n// Haskell:    no direct equivalent without phantom types / Template Haskell.\n// GCP:        both fill automatically at construction time.\n\noutline ApiKey = {\n    key:    String,\n    alias:  \"guest\",          // default value — auto-fills as \"guest\", overridable\n    access: String,\n    issuer: #\"GCP-System\"    // literal type  — always \"GCP-System\", immutable\n};\n\n// Only required fields needed — alias and issuer fill automatically\nlet k1 = ApiKey{key = \"abc123\", access = \"admin\"};\n// k1.alias   → \"guest\"        (default applied)\n// k1.issuer  → \"GCP-System\"   (literal type filled)\n\n// Override the default alias\nlet k2 = ApiKey{key = \"xyz789\", access = \"read\", alias = \"alice\"};\n// k2.alias  → \"alice\"         (default overridden)\n\nk1.issuer;   // → \"GCP-System\""
+  },
+  {
+    "id": "gcpx-entity-extension",
+    "title": "★ Generic Entity Extension",
+    "description": "An Outline entity can extend a parameterized base outline, inheriting all its members. Calling `map` on an `Extend` value returns an `Extend` — so `filter` is still available on the result.",
+    "category": "unique",
+    "code": "// `Base<i,o>` defines a generic container with a `map` method.\n// `Extend<i>` inherits Base<i> and adds a `filter` method.\n//\n// The `this{data=...}` copy-constructor pattern returns the SAME entity type\n// with one field overwritten — so `mapped` is still an Extend and still has `filter`.\n//\n// TypeScript: no structural inheritance for generic classes without explicit re-declaration\n// Haskell:    functor/filterable require separate type class instances\n// GCP:        one-line extension, all methods inherited automatically\n\noutline Base = <i,o>{\n    data: [i],\n    map:  (mapper: i->o)->this{data=data.map(d->mapper(d))}\n};\n\noutline Extend = <i>Base<i>{\n    filter: (f: i->Bool)->this{data=data.filter(d->f(d))}\n};\n\nlet base     = Extend{data=[1,2,3]};\nlet mapped   = base.map(d->d+1);        // Extend with data=[2,3,4]\nlet filtered = mapped.filter(d->d>2);   // Extend with data=[3,4]\n\nfiltered.data   // → [3, 4]"
   },
   {
     "id": "gcpx-literal-constant",

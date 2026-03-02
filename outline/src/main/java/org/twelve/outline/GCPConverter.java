@@ -83,14 +83,16 @@ public class GCPConverter {
         this.converters.put(Constants.NUMBER, new NumberLiteralConverter(converters));
         this.converters.put(Constants.LONG_LIT, new LongLiteralConverter(converters));
         this.converters.put(Constants.UNDER_LINE, new UnderlineConverter(converters));
-        // literal non-terminal: delegate to its single child (STRING, INT, entity, etc.)
-        this.converters.put(Constants.LITERAL, new Converter(converters) {
+        // literal / expression_atom non-terminal: delegate to its single child
+        Converter singleChildDelegate = new Converter(converters) {
             @Override
             public Node convert(AST ast, ParseNode source, Node related) {
                 ParseNode child = ((org.twelve.msll.parsetree.NonTerminalNode) source).node(0);
                 return converters.get(child.name()).convert(ast, child);
             }
-        });
+        };
+        this.converters.put(Constants.LITERAL, singleChildDelegate);
+        this.converters.put("expression_atom", singleChildDelegate);
 
         //id
         this.converters.put(Constants.ID, new Converter(converters) {

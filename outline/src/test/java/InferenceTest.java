@@ -868,7 +868,7 @@ public class InferenceTest {
          * let c = x.take(2);               -> [Integer]
          * let d = x.drop(1);               -> [Integer]
          * let e = x.filter(i->i>0);        -> [Integer]
-         * x.forEach(i->i.to_str());        -> Unit  (bare statement)
+         * x.each(i->i.to_str());           -> Unit  (bare statement)
          * let g = x.any(i->i>0);           -> Bool
          * let h = x.all(i->i>0);           -> Bool
          * let k = x.find(i->i>0);          -> Integer
@@ -886,7 +886,7 @@ public class InferenceTest {
         assertEquals("[Integer]", lhsOf(ast, 3).toString());      // take
         assertEquals("[Integer]", lhsOf(ast, 4).toString());      // drop
         assertEquals("[Integer]", lhsOf(ast, 5).toString());      // filter
-        // stmt 6 is the bare forEach call — verify it inferred to Unit
+        // stmt 6 is the bare each call — verify it inferred to Unit
         assertSame(ast.Unit, ast.program().body().statements().get(6).get(0).outline());
         assertInstanceOf(BOOL.class, lhsOf(ast, 7));              // any
         assertInstanceOf(BOOL.class, lhsOf(ast, 8));              // all
@@ -1486,5 +1486,50 @@ public class InferenceTest {
         AST ast = RunnerHelper.parse("let a = 1L;");
         ast.asf().infer();
         assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_prefix_increment_ok() {
+        AST ast = RunnerHelper.parse("var i = 0; ++i;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_postfix_increment_ok() {
+        AST ast = RunnerHelper.parse("var i = 0; i++;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_prefix_decrement_ok() {
+        AST ast = RunnerHelper.parse("var i = 5; --i;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_postfix_decrement_ok() {
+        AST ast = RunnerHelper.parse("var i = 5; i--;");
+        ast.asf().infer();
+        assertEquals(0, ast.errors().size());
+    }
+
+    @Test
+    void test_increment_on_float_is_error() {
+        AST ast = RunnerHelper.parse("var f = 1.5; ++f;");
+        ast.asf().infer();
+        assertEquals(1, ast.errors().size());
+    }
+
+    @Test
+    void test_random_code_1(){
+        AST ast = RunnerHelper.parse("""
+                
+                let ent = 100;
+                let f_ent = (ent)->ent.name;""");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
     }
 }

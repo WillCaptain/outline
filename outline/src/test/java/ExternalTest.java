@@ -24,6 +24,19 @@ public class ExternalTest {
         Outline outline = ast.program().body().statements().getLast().outline();
         assertEquals("(String,Integer,String,Integer)", outline.toString());
     }
+
+    /**
+     * external builder interpreter(when meet SYSTEM node) will create an instance in terms of the id<a,b>(arg1,arg2)
+     * for example:  __ontology_memo__<Human>{age=40,name="Will"}
+     * id is ontology_memo
+     * instance type is Human
+     * arguments are age,name
+     * id will help interpreter find the right builder pluain
+     * instance type will help builder confirm the instance structure
+     * arguments will help builder initialize the instance
+     * plugin can be loaded under a certain /plugin folder.
+     * where is manifest file to help interpreter know pair between id and builder
+     */
     @Test
     void test_external_builder_interpret() {
         AST ast = ASTHelper.mockExternalBuilder();

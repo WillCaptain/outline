@@ -458,7 +458,7 @@ public class InterpreterTest {
 
     @Test
     void test_array_methods_from_asthelper() {
-        // mockArrayMethods uses len/reverse/take/drop/filter/forEach/any/all/find/sort/flat_map/min/max
+        // mockArrayMethods uses len/reverse/take/drop/filter/each/any/all/find/sort/flat_map/min/max
         Value v = RunnerHelper.run(ASTHelper.mockArrayMethods());
         // last expression is q = x.max() from [1,2,3]
         assertThat(RunnerHelper.intVal(v)).isEqualTo(3L);
@@ -1875,5 +1875,63 @@ public class InterpreterTest {
     void test_long_literal() {
         Value v = RunnerHelper.run("let a = 1L; a");
         assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
+    }
+
+    @Test
+    void test_prefix_increment_returns_new_value() {
+        Value v = RunnerHelper.run("var i = 0; ++i");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
+    }
+
+    @Test
+    void test_prefix_increment_updates_variable() {
+        Value v = RunnerHelper.run("var i = 0; ++i; i");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
+    }
+
+    @Test
+    void test_postfix_increment_returns_old_value() {
+        Value v = RunnerHelper.run("var i = 0; i++");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(0L);
+    }
+
+    @Test
+    void test_postfix_increment_updates_variable() {
+        Value v = RunnerHelper.run("var i = 0; i++; i");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
+    }
+
+    @Test
+    void test_prefix_decrement_returns_new_value() {
+        Value v = RunnerHelper.run("var i = 5; --i");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(4L);
+    }
+
+    @Test
+    void test_postfix_decrement_returns_old_value() {
+        Value v = RunnerHelper.run("var i = 5; i--");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(5L);
+    }
+
+    @Test
+    void test_postfix_decrement_updates_variable() {
+        Value v = RunnerHelper.run("var i = 5; i--; i");
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(4L);
+    }
+
+    @Test
+    void test_increment_in_expression() {
+        // ++i returns new value; subsequent use of i also sees new value
+        Value v = RunnerHelper.run("var i = 3; let j = ++i; (i, j)");
+        assertThat(RunnerHelper.intVal(((org.twelve.gcp.interpreter.value.TupleValue) v).get(0))).isEqualTo(4L);
+        assertThat(RunnerHelper.intVal(((org.twelve.gcp.interpreter.value.TupleValue) v).get(1))).isEqualTo(4L);
+    }
+
+    @Test
+    void test_postfix_in_expression() {
+        // i++ returns old value; i itself is updated
+        Value v = RunnerHelper.run("var i = 3; let j = i++; (i, j)");
+        assertThat(RunnerHelper.intVal(((org.twelve.gcp.interpreter.value.TupleValue) v).get(0))).isEqualTo(4L);
+        assertThat(RunnerHelper.intVal(((org.twelve.gcp.interpreter.value.TupleValue) v).get(1))).isEqualTo(3L);
     }
 }

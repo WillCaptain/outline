@@ -21,9 +21,12 @@ public class ExpressionConverter extends Converter {
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        ParseNode expression = ((NonTerminalNode) source).node(0);
+        ParseNode firstChild = ((NonTerminalNode) source).node(0);
+        if (Constants.FUNCTION.equals(firstChild.name())) {
+            return converters.get(Constants.FUNCTION).convert(ast, firstChild);
+        }
         NonTerminalNode is_as = cast(((NonTerminalNode) source).node(1));
-        Expression convertedExpression = cast(converters.get(expression.name()).convert(ast, expression));
+        Expression convertedExpression = cast(converters.get(firstChild.name()).convert(ast, firstChild));
         if(is_as.name().equals(Constants.AS_EXPRESSION)) {
             return parseAsExpression(ast, is_as, convertedExpression);
         }else{//is expression

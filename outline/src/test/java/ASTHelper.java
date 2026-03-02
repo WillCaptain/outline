@@ -610,7 +610,7 @@ public class ASTHelper {
     }
 
     /**
-     * Array built-in methods: len/reverse/take/drop/filter/forEach/any/all/find/sort/flat_map/min/max
+     * Array built-in methods: len/reverse/take/drop/filter/each/any/all/find/sort/flat_map/min/max
      */
     public static AST mockArrayMethods() {
         String code = """
@@ -620,7 +620,7 @@ public class ASTHelper {
                 let c = x.take(2);
                 let d = x.drop(1);
                 let e = x.filter(i->i>0);
-                x.forEach(i->i.to_str());
+                x.each(i->i.to_str());
                 let g = x.any(i->i>0);
                 let h = x.all(i->i>0);
                 let k = x.find(i->i>0);
@@ -1055,7 +1055,7 @@ public class ASTHelper {
                      min: fx<b>(a -> b) -> b,
                      max: fx<b>(a -> b) -> b,
                      reduce: fx<b>b->(a->b)->b,
-                     for_each: (a -> Unit) -> Unit,
+                     each: (a -> Unit) -> Unit,
                      aggregate: <b>(Aggregator<a> -> b) -> b,
                      group_by: <b>(a->b)->GroupBy<b,a>
                 };
