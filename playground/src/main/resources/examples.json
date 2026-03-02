@@ -227,5 +227,21 @@
     "description": "GCP's __external_builder__ syntax lets runtime plugins construct typed entities — GCP verifies the type at compile time while the plugin supplies the value at runtime.",
     "category": "unique",
     "code": "// External builders: __name__<OutlineType>{overrides}\n//\n// GCP checks the type at compile time — the outline type constrains what\n// fields are valid.  At runtime, a registered plugin fills in the values.\n//\n// __external_builder__ is the built-in default: it constructs an entity\n// from the supplied field overrides (same semantics as OutlineType{...}\n// but the construction is delegated to the runtime layer).\n//\n// This lets the same GCP code work against different backends\n// (memory, database, HTTP, etc.) by swapping only the registered plugin.\n\noutline Profile = {\n    id:     String,\n    name:   String,\n    role:   #\"user\"    // literal-type — always \"user\", auto-filled\n};\n\n// Construct via external builder with explicit field overrides.\n// GCP infers: p : { id: String, name: String, role: String }\nlet p = __external_builder__<Profile>{id = \"u001\", name = \"Alice\"};\n\n// Field access — type-safe, GCP inferred String for both\nlet pname = p.name;   // → \"Alice\"\nlet prole = p.role;   // → \"user\"  (literal type auto-filled)\n\n(pname, prole)"
+  },
+
+  {
+    "id": "gcpx-outline-numeric-defaults",
+    "title": "★ Outline Numeric Defaults (Long & Negative)",
+    "description": "Outline field defaults support the full numeric tower — Long literals (1L), negative integers (-1), and negative longs (-1L) are all valid default values.",
+    "category": "unique",
+    "code": "// Outline field defaults support Long literals and negative numbers:\n//\n//   count:  0L    → Long default (explicit Long literal)\n//   offset: -1    → negative Int default\n//   delta:  -1L   → negative Long default\n//\n// All three are valid default-value fields — auto-filled when omitted.\n\noutline Counter = {\n    name:   String,\n    count:  0L,     // Long literal default\n    offset: -1,     // negative Int default\n    delta:  -1L     // negative Long default\n};\n\n// Only 'name' is required — numeric defaults auto-fill\nlet c = Counter{name = \"hits\"};\n\n// c.count  → 0   (Long default)\n// c.offset → -1  (negative Int default)\n// c.delta  → -1  (negative Long default)\n\n(c.count, c.offset, c.delta)"
+  },
+
+  {
+    "id": "gcpx-poly-role-dispatch",
+    "title": "★ Poly: Role-Based Dispatch",
+    "description": "A Poly value simultaneously inhabits multiple types. Passing it to a typed function automatically extracts the matching component — natural role-based programming without interfaces or structural wrappers.",
+    "category": "unique",
+    "code": "// Poly (product of roles): 10 & \"Will\" & {name=\"Bob\"}\n// This single value IS all three at once:\n//   • Int        (the number 10)\n//   • String     (the string \"Will\")\n//   • {name:String} (the entity with name field)\n//\n// Role-based dispatch: each function receives only its relevant component.\n// No casting, no interfaces, no wrapper types needed.\n//\n// TypeScript: requires union types + explicit narrowing (if/instanceof)\n// Haskell:    requires type classes + instances\n// GCP:        poly + typed parameters = automatic role extraction\n\nlet value = 10 & \"Will\" & {name = \"Bob\"};\n\n// Each function declares the role it needs — GCP dispatches automatically\nlet f_ent = (value:{name:String}) -> value.name;   // needs entity role\nlet f_int = (value:Int)           -> value + 1;    // needs Int role\nlet f_str = (value:String)        -> value + \"!\";  // needs String role\n\nlet r1 = f_ent(value);   // → \"Bob\"   (entity component)\nlet r2 = f_int(value);   // → 11      (Int component)\nlet r3 = f_str(value);   // → \"Will!\" (String component)\n\n(r1, r2, r3)"
   }
 ]

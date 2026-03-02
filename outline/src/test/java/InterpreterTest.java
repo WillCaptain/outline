@@ -1934,4 +1934,78 @@ public class InterpreterTest {
         assertThat(RunnerHelper.intVal(((org.twelve.gcp.interpreter.value.TupleValue) v).get(0))).isEqualTo(4L);
         assertThat(RunnerHelper.intVal(((org.twelve.gcp.interpreter.value.TupleValue) v).get(1))).isEqualTo(3L);
     }
+
+    // =========================================================================
+    // Outline literal defaults: Long (1L) and negative number (-1)
+    // =========================================================================
+
+    @Test
+    void test_outline_long_literal_default() {
+        // outline field default value with Long literal (1L)
+        Value v = RunnerHelper.run("""
+                outline A = { d: 1L, name: String };
+                let a = A{name="x"};
+                a.d
+                """);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(1L);
+    }
+
+    @Test
+    void test_outline_negative_int_default() {
+        // outline field default value with negative integer (-1)
+        Value v = RunnerHelper.run("""
+                outline A = { c: -1, name: String };
+                let a = A{name="x"};
+                a.c
+                """);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(-1L);
+    }
+
+    @Test
+    void test_outline_negative_long_default() {
+        // outline field default value with negative Long literal (-1L)
+        Value v = RunnerHelper.run("""
+                outline A = { c: -1L, name: String };
+                let a = A{name="x"};
+                a.c
+                """);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(-1L);
+    }
+
+    // =========================================================================
+    // Poly role-based dispatch: passing a Poly to typed function parameters
+    // =========================================================================
+
+    @Test
+    void test_poly_role_dispatch_entity() {
+        // Poly value passed to a function expecting the entity component
+        Value v = RunnerHelper.run("""
+                let value = 10&"Will"&{name="Bob"};
+                let f_ent = (value:{name:String}) -> value.name;
+                f_ent(value)
+                """);
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Bob");
+    }
+
+    @Test
+    void test_poly_role_dispatch_int() {
+        // Poly value passed to a function expecting the Int component
+        Value v = RunnerHelper.run("""
+                let value = 10&"Will"&{name="Bob"};
+                let f_int = (value:Int) -> value + 1;
+                f_int(value)
+                """);
+        assertThat(RunnerHelper.intVal(v)).isEqualTo(11L);
+    }
+
+    @Test
+    void test_poly_role_dispatch_string() {
+        // Poly value passed to a function expecting the String component
+        Value v = RunnerHelper.run("""
+                let value = 10&"Will"&{name="Bob"};
+                let f_str = (value:String) -> value + "!";
+                f_str(value)
+                """);
+        assertThat(RunnerHelper.strVal(v)).isEqualTo("Will!");
+    }
 }

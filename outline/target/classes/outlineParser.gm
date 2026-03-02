@@ -121,7 +121,8 @@ reference_type
     ;
 //------------expressions-------------
 expression
-    : assignment (is_expression | as_expression)?
+    : lambda
+    | assignment (is_expression | as_expression)?
     ;
 is_expression
     : 'is' declared_outline ('as' (ID | symbol_unpack))?
@@ -160,7 +161,7 @@ match_if
     : 'if' or_expression
     ;
 assignment
-    : complex_expression (('='|'+='|'-='|'*='|'/=') assignment)?
+    : complex_expression (('='|'+='|'-='|'*='|'/=') expression)?
     ;
 complex_expression
     : if_expression
@@ -202,7 +203,7 @@ unary_expression
     |factor_expression ('++'|'--')?
     ;
 factor_expression
-    : literal
+    : expression_atom
     | ID
     | Symbol
     | block
@@ -215,12 +216,30 @@ factor_expression
     //| factor_expression '&' expression                                   # poly_expression
     //| '(' expression ')'                                                 # factor
     ;
+// expression_atom: literal values usable as atomic factors, excluding lambda.
+// Lambda is excluded here so it cannot appear as the left-hand operand of
+// relational operators (e.g. (x->x) < 9), which caused grammar ambiguity.
+// Lambda is accessible via the top-level `expression` rule instead.
+expression_atom
+    : This
+    | Base
+    | True
+    | False
+    | number
+    | STRING
+    | entity
+    | tuple
+    | array
+    | map
+    | factor
+    ;
 literal
     : This
     | Base
     | True
     | False
     | number
+    | '-' number
     | STRING
     | entity
     | tuple

@@ -1,26 +1,26 @@
 -------------------------------------------------------------------------------
 Test set: ExternalTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.016 s <<< FAILURE! -- in ExternalTest
-ExternalTest.test_external_builder_interpret -- Time elapsed: 0.007 s <<< ERROR!
+Tests run: 2, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.015 s <<< FAILURE! -- in ExternalTest
+ExternalTest.test_external_builder_interpret -- Time elapsed: 0.006 s <<< ERROR!
 java.lang.RuntimeException: Member 'name' not found on external_builder{__typeArgs__ = Human}
 	at org.twelve.gcp.interpreter.interpretation.MemberAccessorInterpretation.interpret(MemberAccessorInterpretation.java:28)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:245)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:332)
 	at org.twelve.gcp.node.expression.accessor.MemberAccessor.acceptInterpret(MemberAccessor.java:66)
-	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:262)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:181)
+	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:267)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:188)
 	at org.twelve.gcp.interpreter.interpretation.TupleInterpretation.interpret(TupleInterpretation.java:44)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:240)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:327)
 	at org.twelve.gcp.node.expression.TupleNode.acceptInterpret(TupleNode.java:46)
-	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:262)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:181)
+	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:267)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:188)
 	at org.twelve.gcp.interpreter.interpretation.ReturnInterpretation.interpret(ReturnInterpretation.java:13)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:255)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.visit(OutlineInterpreter.java:342)
 	at org.twelve.gcp.node.statement.ReturnStatement.acceptInterpret(ReturnStatement.java:40)
-	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:262)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:181)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.runAst(OutlineInterpreter.java:162)
-	at org.twelve.gcp.interpreter.OutlineInterpreter.run(OutlineInterpreter.java:149)
+	at org.twelve.gcp.ast.AbstractNode.interpret(AbstractNode.java:267)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.eval(OutlineInterpreter.java:188)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.runAst(OutlineInterpreter.java:169)
+	at org.twelve.gcp.interpreter.OutlineInterpreter.run(OutlineInterpreter.java:156)
 	at org.twelve.gcp.ast.ASF.interpret(ASF.java:115)
 	at ExternalTest.test_external_builder_interpret(ExternalTest.java:43)
 	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)

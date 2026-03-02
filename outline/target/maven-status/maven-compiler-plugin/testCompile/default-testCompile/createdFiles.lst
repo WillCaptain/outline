@@ -6,5 +6,6 @@ ComplexInterpretTest.class
 GCPInferenceTest.class
 ErrorDebugTest.class
 ExternalTest.class
+LTTest.class
 InterpreterTest.class
 BuiltinTypeTest.class

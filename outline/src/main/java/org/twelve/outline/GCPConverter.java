@@ -1,6 +1,9 @@
 package org.twelve.outline;
 
 import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.ast.Token;
+import org.twelve.gcp.node.expression.LiteralNode;
+import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.outline.converter.*;
 import org.twelve.gcp.ast.ASF;
@@ -83,11 +86,20 @@ public class GCPConverter {
         this.converters.put(Constants.NUMBER, new NumberLiteralConverter(converters));
         this.converters.put(Constants.LONG_LIT, new LongLiteralConverter(converters));
         this.converters.put(Constants.UNDER_LINE, new UnderlineConverter(converters));
-        // literal / expression_atom non-terminal: delegate to its single child
+        // literal / expression_atom non-terminal: delegate to its single child,
+        // or handle '-' number (negative literal) when the node has two children.
         Converter singleChildDelegate = new Converter(converters) {
             @Override
             public Node convert(AST ast, ParseNode source, Node related) {
-                ParseNode child = ((org.twelve.msll.parsetree.NonTerminalNode) source).node(0);
+                NonTerminalNode lit = (NonTerminalNode) source;
+                if (lit.nodes().size() == 2 && "-".equals(lit.node(0).lexeme())) {
+                    // literal → '-' number
+                    ParseNode numberNode = lit.node(1);
+                    String lexeme = "-" + numberNode.lexeme().trim();
+                    Token<?> token = new Token<>(parseNumber(lexeme), numberNode.location().start());
+                    return LiteralNode.parse(ast, token);
+                }
+                ParseNode child = lit.node(0);
                 return converters.get(child.name()).convert(ast, child);
             }
         };

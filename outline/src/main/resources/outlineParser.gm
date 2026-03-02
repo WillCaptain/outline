@@ -239,6 +239,7 @@ literal
     | True
     | False
     | number
+    | '-' number
     | STRING
     | entity
     | tuple

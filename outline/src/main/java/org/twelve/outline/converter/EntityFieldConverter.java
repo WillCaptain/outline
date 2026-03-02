@@ -52,6 +52,7 @@ public class EntityFieldConverter extends Converter {
         // MSLL may collapse  literal: <child>  →  <child>  for any single-production path.
         // Handle the most common collapsed cases: primitives, lambdas, entity/tuple literals.
         if (Constants.STRING.equals(typeName) || Constants.INT.equals(typeName)
+                || Constants.LONG_LIT.equals(typeName)
                 || Constants.FLOAT.equals(typeName) || Constants.DOUBLE.equals(typeName)
                 || Constants.NUMBER.equals(typeName)
                 || Constants.FUNCTION.equals(typeName)   // lambda collapsed
