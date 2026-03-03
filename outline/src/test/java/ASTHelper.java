@@ -371,7 +371,7 @@ public class ASTHelper {
     public static AST declaredPolyMismatchAssignment() {
         String code = """
                 module me
-                var age = "some"&(100|200);
+                var age = "some"&100;
                 age = 100.0;""";
         return parser.parse(new ASF(), code);
     }

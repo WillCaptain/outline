@@ -19,6 +19,8 @@ const state = {
   // active snippet tracking for re-save
   activeSnippetIdx : -1,
   _progChange      : false,  // suppress activeSnippetIdx reset during programmatic setValue
+  // tutorial
+  tutorial         : { data: null, flat: [], current: null },
 };
 
 // ── Monaco bootstrap ───────────────────────────────────────────
@@ -71,6 +73,7 @@ require(['vs/editor/editor.main'], () => {
 
   updateLineMeta();
   loadExamples();
+  loadTutorial();
   renderSnippets();
   bindEvents();
   bindResizeHandle();
@@ -479,11 +482,27 @@ function loadExample(id) {
   state.editor.setValue(ex.code.trim());
   document.querySelectorAll('.example-item').forEach(e_ =>
     e_.classList.toggle('active', e_.dataset.id === id));
+  // Bind comments to this example
+  _currentSnippetId = 'example:' + id;
+  _refreshCommentsIfActive();
   setTimeout(() => runCode('run'), 80);
 }
 
 // ── MySpace ────────────────────────────────────────────────────
+
+function renderMyspaceHeader() {
+  const hint = el('myspace-hint');
+  if (!hint) return;
+  if (state.auth) {
+    hint.innerHTML = `<span class="ms-user-dot"></span>Private workspace · <strong>${esc(state.auth.displayName || state.auth.phone)}</strong>`;
+  } else {
+    hint.innerHTML = `Local storage &nbsp;<button class="btn-ms-login" id="btn-ms-login">Login to sync ↑</button>`;
+    el('btn-ms-login')?.addEventListener('click', openAuthModal);
+  }
+}
+
 function renderSnippets() {
+  renderMyspaceHeader();
   const list = el('snippet-list');
   if (!state.snippets.length) {
     list.innerHTML = `
@@ -498,7 +517,10 @@ function renderSnippets() {
     <div class="snippet-item${state.activeSnippetIdx === i ? ' snippet-active' : ''}" data-idx="${i}">
       <div class="snippet-left">
         <div class="snippet-name">${esc(s.name)}</div>
-        <div class="snippet-date">${new Date(s.ts).toLocaleDateString()}</div>
+        <div class="snippet-meta">
+          ${new Date(s.ts || s.updatedAt || s.createdAt || Date.now()).toLocaleDateString()}
+          ${s.serverId ? '<span class="snippet-synced" title="Synced to cloud">☁</span>' : ''}
+        </div>
       </div>
       <div class="snippet-actions">
         <button class="snippet-btn snippet-run" data-idx="${i}" title="Load & Run">▶</button>
@@ -534,7 +556,16 @@ function loadSnippetAndRun(idx) {
   loadSnippet(idx);
   setTimeout(() => runCode('run'), 80);
 }
-function deleteSnippet(idx) {
+
+async function deleteSnippet(idx) {
+  const s = state.snippets[idx];
+  if (!s) return;
+  // Delete from server if synced
+  if (state.auth && s.serverId) {
+    try {
+      await fetch('/api/snippets/' + s.serverId, { method: 'DELETE', headers: authHeader() });
+    } catch {}
+  }
   if (state.activeSnippetIdx === idx) {
     state.activeSnippetIdx = -1;
     updateSaveBtn();
@@ -545,16 +576,70 @@ function deleteSnippet(idx) {
   saveSnippets();
   renderSnippets();
 }
-function updateSnippet(idx) {
-  if (!state.snippets[idx]) return;
-  state.snippets[idx].code = state.editor.getValue();
-  state.snippets[idx].ts   = Date.now();
+
+async function updateSnippet(idx) {
+  const s = state.snippets[idx];
+  if (!s) return;
+  s.code = state.editor.getValue();
+  s.ts   = Date.now();
+  // Update on server if synced
+  if (state.auth && s.serverId) {
+    try {
+      const res = await fetch('/api/snippets/' + s.serverId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ name: s.name, code: s.code }),
+      });
+      if (res.ok) { const data = await res.json(); s.serverId = data.id; }
+    } catch {}
+  }
   saveSnippets();
   renderSnippets();
-  showToast(`"${state.snippets[idx].name}" updated`, 'ok');
+  showToast(`"${s.name}" updated`, 'ok');
 }
+
 function saveSnippets() {
   localStorage.setItem('outline_snippets', JSON.stringify(state.snippets));
+}
+
+/** Fetch server snippets after login and merge with local. */
+async function loadServerSnippets() {
+  if (!state.auth) return;
+  try {
+    const res = await fetch('/api/snippets', { headers: authHeader() });
+    if (!res.ok) return;
+    const serverSnippets = await res.json();
+
+    // Normalise server snippet shape to match local shape
+    const normalised = serverSnippets.map(s => ({
+      name:     s.name,
+      code:     s.code,
+      ts:       s.updatedAt || s.createdAt,
+      serverId: s.id,
+    }));
+
+    // Migrate any local snippets not yet on server
+    const localOnly = state.snippets.filter(s => !s.serverId);
+    for (const s of localOnly) {
+      try {
+        const res2 = await fetch('/api/snippets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader() },
+          body: JSON.stringify({ name: s.name, code: s.code }),
+        });
+        if (res2.ok) {
+          const created = await res2.json();
+          normalised.unshift({ name: s.name, code: s.code, ts: created.updatedAt, serverId: created.id });
+        }
+      } catch {}
+    }
+
+    state.snippets = normalised;
+    saveSnippets();
+    renderSnippets();
+    if (normalised.length > 0)
+      showToast(`MySpace loaded · ${normalised.length} snippet${normalised.length > 1 ? 's' : ''}`);
+  } catch {}
 }
 function updateSaveBtn() {
   const btnSave   = el('btn-save');
@@ -801,6 +886,14 @@ function bindEvents() {
     closeContribModal();
     closeTypeModal();
   });
+
+  // Tutorial navigation
+  el('btn-lesson-prev').addEventListener('click', () => navigateLesson(-1));
+  el('btn-lesson-next').addEventListener('click', () => navigateLesson(+1));
+  el('btn-lesson-exit').addEventListener('click', hideLessonBar);
+
+  // Tutorial search
+  el('tut-search').addEventListener('input', e => tutorialSearchFilter(e.target.value));
 }
 
 function openSaveModal() {
@@ -811,14 +904,33 @@ function openSaveModal() {
 function closeSaveModal() {
   el('modal-overlay').style.display = 'none';
 }
-function confirmSave() {
+async function confirmSave() {
   const name = el('snippet-name').value.trim();
   if (!name) return;
-  state.snippets.unshift({ name, code: state.editor.getValue(), ts: Date.now() });
+  const code = state.editor.getValue();
+  const entry = { name, code, ts: Date.now() };
+
+  if (state.auth) {
+    // Save to server first, then add with serverId
+    try {
+      const res = await fetch('/api/snippets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ name, code }),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        entry.serverId = saved.id;
+        entry.ts = saved.updatedAt || Date.now();
+      }
+    } catch {}
+  }
+
+  state.snippets.unshift(entry);
   saveSnippets();
   renderSnippets();
   closeSaveModal();
-  showToast(`Saved "${name}" to MySpace`, 'ok');
+  showToast(`Saved "${name}" to MySpace` + (entry.serverId ? ' ☁' : ''), 'ok');
   // Switch sidebar to MySpace
   document.querySelector('[data-stab="myspace"]').click();
 }
@@ -967,6 +1079,197 @@ function formatSingleType(t) {
   return `<span class="ty-other">${esc(t)}</span>`;
 }
 
+// ── Tutorial ────────────────────────────────────────────────────
+async function loadTutorial() {
+  try {
+    const res  = await fetch('/tutorial.json');
+    const data = await res.json();
+    state.tutorial.data = data;
+    // Build flat lesson list for prev/next navigation
+    state.tutorial.flat = [];
+    data.chapters.forEach((ch, ci) => {
+      ch.lessons.forEach((ls, li) => {
+        state.tutorial.flat.push({ ci, li, chapter: ch, lesson: ls });
+      });
+    });
+    renderTutorialPanel(data);
+  } catch (_) {
+    el('tut-chapter-list').innerHTML =
+      '<div class="loading-msg" style="color:var(--red)">Failed to load tutorial</div>';
+  }
+}
+
+function renderTutorialPanel(data) {
+  const container = el('tut-chapter-list');
+  if (!data || !data.chapters.length) {
+    container.innerHTML = '<div class="loading-msg">No tutorial content</div>';
+    return;
+  }
+  container.innerHTML = data.chapters.map((ch, ci) => `
+    <div class="tut-chapter" id="tut-ch-${ci}">
+      <button class="tut-chapter-header" data-ci="${ci}">
+        <span class="tut-ch-icon">${esc(ch.icon || '#')}</span>
+        <span class="tut-ch-title">${esc(ch.title)}</span>
+        <span class="tut-ch-count">${ch.lessons.length}</span>
+        <span class="tut-ch-arrow">›</span>
+      </button>
+      <div class="tut-lesson-list" id="tut-ch-lessons-${ci}" style="display:none">
+        ${ch.lessons.map((ls, li) => `
+          <button class="tut-lesson-item" data-ci="${ci}" data-li="${li}" id="tut-ls-${ci}-${li}">
+            <span class="tut-ls-num">${li + 1}</span>
+            <span class="tut-ls-title">${esc(ls.title)}</span>
+          </button>`).join('')}
+      </div>
+    </div>`).join('');
+
+  // Chapter header click — toggle collapse
+  container.querySelectorAll('.tut-chapter-header').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ci       = btn.dataset.ci;
+      const lessons  = el(`tut-ch-lessons-${ci}`);
+      const chapter  = el(`tut-ch-${ci}`);
+      const open     = lessons.style.display !== 'none';
+      lessons.style.display = open ? 'none' : 'block';
+      chapter.classList.toggle('tut-ch-open', !open);
+    });
+  });
+
+  // Lesson item click
+  container.querySelectorAll('.tut-lesson-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      openTutorialLesson(+btn.dataset.ci, +btn.dataset.li);
+    });
+  });
+
+  // Open first chapter by default
+  if (data.chapters.length > 0) {
+    const firstLessons = el('tut-ch-lessons-0');
+    if (firstLessons) {
+      firstLessons.style.display = 'block';
+      el('tut-ch-0').classList.add('tut-ch-open');
+    }
+  }
+}
+
+function tutorialSearchFilter(query) {
+  const q = query.trim().toLowerCase();
+  const data = state.tutorial.data;
+  if (!data) return;
+  if (!q) { renderTutorialPanel(data); return; }
+
+  // Re-render with only matching lessons
+  const filtered = {
+    chapters: data.chapters
+      .map(ch => ({
+        ...ch,
+        lessons: ch.lessons.filter(ls =>
+          ls.title.toLowerCase().includes(q) ||
+          ls.desc.toLowerCase().includes(q))
+      }))
+      .filter(ch => ch.lessons.length > 0)
+  };
+
+  const container = el('tut-chapter-list');
+  if (!filtered.chapters.length) {
+    container.innerHTML = '<div class="loading-msg">No results</div>';
+    return;
+  }
+  // Render with all chapters expanded
+  container.innerHTML = filtered.chapters.map((ch, ci) => {
+    const origCi = data.chapters.indexOf(ch);
+    return `
+    <div class="tut-chapter tut-ch-open" id="tut-ch-f-${ci}">
+      <div class="tut-chapter-header tut-ch-static">
+        <span class="tut-ch-icon">${esc(ch.icon || '#')}</span>
+        <span class="tut-ch-title">${esc(ch.title)}</span>
+      </div>
+      <div class="tut-lesson-list">
+        ${ch.lessons.map(ls => {
+          const li = data.chapters[origCi >= 0 ? origCi : 0].lessons.indexOf(ls);
+          const realCi = origCi >= 0 ? origCi : 0;
+          return `<button class="tut-lesson-item" data-ci="${realCi}" data-li="${li}" id="tut-ls-f-${realCi}-${li}">
+            <span class="tut-ls-num">${li + 1}</span>
+            <span class="tut-ls-title">${esc(ls.title)}</span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Re-bind lesson click
+  container.querySelectorAll('.tut-lesson-item').forEach(btn => {
+    btn.addEventListener('click', () => openTutorialLesson(+btn.dataset.ci, +btn.dataset.li));
+  });
+}
+
+function openTutorialLesson(ci, li) {
+  const data = state.tutorial.data;
+  if (!data) return;
+  const chapter = data.chapters[ci];
+  if (!chapter) return;
+  const lesson = chapter.lessons[li];
+  if (!lesson) return;
+
+  state.tutorial.current = { ci, li };
+
+  // Load code into editor
+  state._progChange = true;
+  state.editor.setValue(lesson.code || '');
+  state._progChange = false;
+
+  // Show lesson bar
+  const flatIdx  = state.tutorial.flat.findIndex(f => f.ci === ci && f.li === li);
+  const total    = state.tutorial.flat.length;
+  showLessonBar(lesson, chapter, flatIdx, total);
+
+  // Highlight active lesson in sidebar
+  document.querySelectorAll('.tut-lesson-item').forEach(btn => {
+    btn.classList.toggle('tut-ls-active',
+      +btn.dataset.ci === ci && +btn.dataset.li === li);
+  });
+
+  // Ensure chapter is expanded
+  const lessonsEl = el(`tut-ch-lessons-${ci}`);
+  const chEl      = el(`tut-ch-${ci}`);
+  if (lessonsEl) lessonsEl.style.display = 'block';
+  if (chEl)      chEl.classList.add('tut-ch-open');
+
+  // Switch to tutorial tab if not already
+  const tutTab = document.querySelector('[data-stab="tutorial"]');
+  if (tutTab && !tutTab.classList.contains('active')) tutTab.click();
+
+  // Bind comments to this tutorial lesson
+  _currentSnippetId = `tutorial:${chapter.id || ci}:${lesson.id || li}`;
+  _refreshCommentsIfActive();
+
+  // Auto-run inference
+  setTimeout(() => runCode('infer'), 100);
+}
+
+function showLessonBar(lesson, chapter, flatIdx, total) {
+  el('lesson-chapter-badge').textContent = chapter.icon + ' ' + chapter.title;
+  el('lesson-title').textContent = lesson.title;
+  el('lesson-desc').textContent  = lesson.desc || '';
+  el('lesson-nav-info').textContent = `${flatIdx + 1} / ${total}`;
+  el('btn-lesson-prev').disabled = flatIdx <= 0;
+  el('btn-lesson-next').disabled = flatIdx >= total - 1;
+  el('lesson-bar').style.display = 'flex';
+}
+
+function hideLessonBar() {
+  el('lesson-bar').style.display = 'none';
+  state.tutorial.current = null;
+  document.querySelectorAll('.tut-lesson-item').forEach(b => b.classList.remove('tut-ls-active'));
+}
+
+function navigateLesson(delta) {
+  const { ci, li } = state.tutorial.current || {};
+  if (ci === undefined) return;
+  const flatIdx = state.tutorial.flat.findIndex(f => f.ci === ci && f.li === li);
+  const next = state.tutorial.flat[flatIdx + delta];
+  if (next) openTutorialLesson(next.ci, next.li);
+}
+
 // ── Welcome code ───────────────────────────────────────────────
 function loadInitialCode() {
   // Check for a share token first (handled by loadFromUrl after editor init)
@@ -1001,3 +1304,396 @@ let color_name = match c {
 // ── Run it! ────────────────────────────────────────────
 color_name;`.trim();
 }
+
+/* ══════════════════════════════════════════════════════════════
+   User Auth & Comments  (appended)
+   ══════════════════════════════════════════════════════════════ */
+
+// ── Auth state (persisted in localStorage) ─────────────────────
+const AUTH_KEY = 'outline_auth';
+
+function loadAuth() {
+  try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; }
+}
+function saveAuth(data) {
+  if (data) localStorage.setItem(AUTH_KEY, JSON.stringify(data));
+  else localStorage.removeItem(AUTH_KEY);
+}
+
+state.auth = loadAuth();   // { token, id, phone, username, displayName } | null
+
+// ── Snippet ID (djb2 hash of current code) ────────────────────
+function snippetId(code) {
+  let h = 5381;
+  for (let i = 0; i < code.length; i++)
+    h = (((h << 5) + h) + code.charCodeAt(i)) | 0;
+  return 's' + (h >>> 0).toString(16).padStart(8, '0');
+}
+
+// ── Auth header helper ─────────────────────────────────────────
+function authHeader() {
+  return state.auth ? { 'Authorization': 'Bearer ' + state.auth.token } : {};
+}
+
+// ── Render auth UI in header ───────────────────────────────────
+function renderAuthHeader() {
+  const btnLogin = document.getElementById('btn-login');
+  const chip     = document.getElementById('btn-user-chip');
+  const chipName = document.getElementById('user-chip-name');
+
+  if (state.auth) {
+    btnLogin.style.display = 'none';
+    chip.style.display     = 'flex';
+    chipName.textContent   = state.auth.displayName || state.auth.phone;
+  } else {
+    btnLogin.style.display = '';
+    chip.style.display     = 'none';
+  }
+}
+
+// ── Auth modal logic ───────────────────────────────────────────
+let _pendingPhone = '';
+
+function openAuthModal() {
+  _pendingPhone = '';
+  document.getElementById('auth-step-phone').style.display = '';
+  document.getElementById('auth-step-code').style.display  = 'none';
+  document.getElementById('auth-phone').value = '';
+  document.getElementById('auth-debug-box').style.display  = 'none';
+  document.getElementById('auth-modal-overlay').style.display = 'flex';
+  setTimeout(() => document.getElementById('auth-phone').focus(), 80);
+}
+function closeAuthModal() {
+  document.getElementById('auth-modal-overlay').style.display = 'none';
+}
+
+async function authSendCode() {
+  const phone = document.getElementById('auth-phone').value.trim();
+  if (!phone) { showToast('Please enter your phone number', 'warn'); return; }
+
+  const btn = document.getElementById('auth-send-btn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  try {
+    const res = await fetch('/api/auth/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Failed to send code', 'error'); return; }
+
+    _pendingPhone = phone;
+    // Show debug code (dev mode only — no real SMS gateway)
+    if (data.debug_code) {
+      document.getElementById('auth-debug-code').textContent = data.debug_code;
+      document.getElementById('auth-debug-box').style.display = 'flex';
+    }
+    document.getElementById('auth-phone-mask').textContent = phone;
+    document.getElementById('auth-step-phone').style.display = 'none';
+    document.getElementById('auth-step-code').style.display  = '';
+    document.getElementById('auth-code').value = '';
+    setTimeout(() => document.getElementById('auth-code').focus(), 80);
+  } catch (e) {
+    showToast('Network error', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Get Code';
+  }
+}
+
+async function authVerify() {
+  const code = document.getElementById('auth-code').value.trim();
+  if (code.length !== 6) { showToast('Enter the 6-digit code', 'warn'); return; }
+
+  const btn = document.getElementById('auth-verify-btn');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+
+  try {
+    const res = await fetch('/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: _pendingPhone, code }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Verification failed', 'error'); return; }
+
+    state.auth = data;
+    saveAuth(data);
+    renderAuthHeader();
+    closeAuthModal();
+    showToast('Welcome, ' + (data.displayName || data.phone) + ' 🎉');
+    loadServerSnippets();
+    refreshCommentsTab();
+  } catch (e) {
+    showToast('Network error', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Verify →';
+  }
+}
+
+// ── Profile modal ──────────────────────────────────────────────
+function openProfileModal() {
+  if (!state.auth) { openAuthModal(); return; }
+  document.getElementById('profile-phone').textContent = state.auth.phone || '—';
+  document.getElementById('profile-username-input').value = state.auth.username || '';
+  document.getElementById('profile-modal-overlay').style.display = 'flex';
+}
+function closeProfileModal() {
+  document.getElementById('profile-modal-overlay').style.display = 'none';
+}
+
+async function profileSave() {
+  const username = document.getElementById('profile-username-input').value.trim();
+  try {
+    const res = await fetch('/api/auth/me', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ username }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast('Save failed', 'error'); return; }
+    state.auth = { ...state.auth, username, displayName: data.displayName };
+    saveAuth(state.auth);
+    renderAuthHeader();
+    closeProfileModal();
+    showToast('Profile saved ✓');
+  } catch { showToast('Network error', 'error'); }
+}
+
+async function authLogout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST', headers: authHeader() });
+  } catch {}
+  state.auth = null;
+  saveAuth(null);
+  // Clear server-synced snippets; keep only local (no serverId) ones
+  state.snippets = state.snippets.filter(s => !s.serverId);
+  saveSnippets();
+  renderAuthHeader();
+  renderSnippets();
+  closeProfileModal();
+  refreshCommentsTab();
+  showToast('Logged out');
+}
+
+// ── Comments ───────────────────────────────────────────────────
+// Defaults to a hash of the current editor code; overridden when
+// loading a named example ("example:<id>") or tutorial lesson
+// ("tutorial:<chapterId>:<lessonId>").
+let _currentSnippetId = '';
+
+/** Call whenever the active content changes (example/tutorial/custom code). */
+function _refreshCommentsIfActive() {
+  // Only refresh if the comments tab is currently visible
+  const tab = document.getElementById('tab-comments');
+  if (tab && tab.classList.contains('active')) refreshCommentsTab(false);
+}
+
+/**
+ * @param {boolean} [resetToCode=true] — when true, recalculate snippet ID from
+ *   the current editor code (used when the user manually clicks the tab on
+ *   arbitrary editor content). When false, keep the already-set _currentSnippetId.
+ */
+function refreshCommentsTab(resetToCode = true) {
+  if (resetToCode || !_currentSnippetId) {
+    const code = (state.editor ? state.editor.getValue() : '').trim();
+    _currentSnippetId = snippetId(code);
+  }
+
+  const loginPrompt   = document.getElementById('comments-login-prompt');
+  const commentsPanel = document.getElementById('comments-panel');
+
+  if (!state.auth) {
+    loginPrompt.style.display   = 'flex';
+    commentsPanel.style.display = 'none';
+    return;
+  }
+  loginPrompt.style.display   = 'none';
+  commentsPanel.style.display = '';
+  loadComments(_currentSnippetId);
+  updateCommentsTitle();
+}
+
+function updateCommentsTitle() {
+  const title = document.getElementById('comments-context-title');
+  if (!title) return;
+  if (_currentSnippetId.startsWith('example:')) {
+    const exId = _currentSnippetId.replace('example:', '');
+    const ex   = state.examples.find(e => e.id === exId);
+    title.textContent = ex ? `Comments · ${ex.title}` : 'Comments';
+  } else if (_currentSnippetId.startsWith('tutorial:')) {
+    const parts = _currentSnippetId.split(':');
+    title.textContent = parts.length >= 3 ? `Comments · ${parts[2]}` : 'Comments';
+  } else {
+    title.textContent = 'Comments · Custom Code';
+  }
+}
+
+async function loadComments(sid) {
+  try {
+    const res = await fetch('/api/comments?snippetId=' + encodeURIComponent(sid));
+    if (!res.ok) return;
+    renderComments(await res.json());
+  } catch {}
+}
+
+function renderComments(comments) {
+  const myId = state.auth ? state.auth.id : null;
+
+  // Count reactions
+  let likes = 0, dislikes = 0, myReaction = null;
+  comments.forEach(c => {
+    if (c.type === 'like')    { likes++;    if (c.userId === myId) myReaction = 'like';    }
+    if (c.type === 'dislike') { dislikes++; if (c.userId === myId) myReaction = 'dislike'; }
+  });
+
+  document.getElementById('like-count').textContent    = likes;
+  document.getElementById('dislike-count').textContent = dislikes;
+
+  const likeBtn    = document.getElementById('btn-like');
+  const dislikeBtn = document.getElementById('btn-dislike');
+  likeBtn.classList.toggle('active-like',       myReaction === 'like');
+  dislikeBtn.classList.toggle('active-dislike', myReaction === 'dislike');
+
+  // Update badge
+  const total = comments.length;
+  const badge = document.getElementById('badge-comments');
+  badge.textContent = total;
+  badge.style.display = total > 0 ? '' : 'none';
+
+  // Render text comments newest-first
+  const textComments = comments.filter(c => c.type === 'text').reverse();
+  const list = document.getElementById('comment-list');
+
+  if (textComments.length === 0) {
+    list.innerHTML = '<div class="comment-empty">No comments yet — be the first!</div>';
+    return;
+  }
+
+  list.innerHTML = textComments.map(c => {
+    const isOwn = c.userId === myId;
+    const time  = new Date(c.createdAt).toLocaleDateString('zh-CN',
+      { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return `<div class="comment-item" data-id="${c.id}">
+      <div class="comment-item-header">
+        <span class="comment-author">${esc(c.displayName)}</span>
+        <span style="display:flex;gap:6px;align-items:center">
+          <span class="comment-time">${time}</span>
+          ${isOwn ? `<button class="comment-delete-btn" onclick="deleteComment('${c.id}')">✕</button>` : ''}
+        </span>
+      </div>
+      <div class="comment-body">${esc(c.text)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function postReaction(type) {
+  if (!state.auth) { openAuthModal(); return; }
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ snippetId: _currentSnippetId, type }),
+    });
+    if (res.ok) renderComments(await res.json());
+    else showToast('Failed to save reaction', 'error');
+  } catch { showToast('Network error', 'error'); }
+}
+
+async function postTextComment() {
+  if (!state.auth) { openAuthModal(); return; }
+  const text = document.getElementById('comment-text').value.trim();
+  if (!text) { showToast('Comment cannot be empty', 'warn'); return; }
+
+  const btn = document.getElementById('btn-comment-submit');
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeader() },
+      body: JSON.stringify({ snippetId: _currentSnippetId, type: 'text', text }),
+    });
+    if (res.ok) {
+      document.getElementById('comment-text').value = '';
+      renderComments(await res.json());
+    } else {
+      showToast('Failed to post comment', 'error');
+    }
+  } catch { showToast('Network error', 'error'); }
+  finally { btn.disabled = false; }
+}
+
+async function deleteComment(commentId) {
+  if (!confirm('Delete this comment?')) return;
+  try {
+    const res = await fetch('/api/comments/' + commentId, {
+      method: 'DELETE', headers: authHeader(),
+    });
+    if (res.ok) loadComments(_currentSnippetId);
+    else showToast('Cannot delete', 'error');
+  } catch { showToast('Network error', 'error'); }
+}
+
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Wire up new events ─────────────────────────────────────────
+(function bindAuthAndComments() {
+  // Login / user chip
+  document.getElementById('btn-login')     ?.addEventListener('click', openAuthModal);
+  document.getElementById('btn-user-chip') ?.addEventListener('click', openProfileModal);
+
+  // Auth modal buttons
+  document.getElementById('auth-modal-close')  ?.addEventListener('click', closeAuthModal);
+  document.getElementById('auth-phone-cancel') ?.addEventListener('click', closeAuthModal);
+  document.getElementById('auth-send-btn')     ?.addEventListener('click', authSendCode);
+  document.getElementById('auth-back-btn')     ?.addEventListener('click', () => {
+    document.getElementById('auth-step-code').style.display  = 'none';
+    document.getElementById('auth-step-phone').style.display = '';
+  });
+  document.getElementById('auth-verify-btn')?.addEventListener('click', authVerify);
+  document.getElementById('auth-code')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') authVerify();
+  });
+  document.getElementById('auth-phone')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') authSendCode();
+  });
+  document.getElementById('auth-modal-overlay')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeAuthModal();
+  });
+
+  // Profile modal buttons
+  document.getElementById('profile-modal-close')?.addEventListener('click', closeProfileModal);
+  document.getElementById('profile-save-btn')   ?.addEventListener('click', profileSave);
+  document.getElementById('btn-logout')         ?.addEventListener('click', authLogout);
+  document.getElementById('profile-modal-overlay')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeProfileModal();
+  });
+
+  // Comments tab activation — keep context snippet ID when set by example/tutorial
+  document.querySelectorAll('.result-tab[data-tab="comments"]').forEach(btn =>
+    btn.addEventListener('click', () => {
+      const keepContext = _currentSnippetId.startsWith('example:')
+                       || _currentSnippetId.startsWith('tutorial:');
+      refreshCommentsTab(!keepContext);
+    }));
+
+  // Comments login prompt button
+  document.getElementById('btn-comments-login')?.addEventListener('click', openAuthModal);
+
+  // Reactions & post
+  document.getElementById('btn-like')           ?.addEventListener('click', () => postReaction('like'));
+  document.getElementById('btn-dislike')        ?.addEventListener('click', () => postReaction('dislike'));
+  document.getElementById('btn-comment-submit') ?.addEventListener('click', postTextComment);
+  document.getElementById('comment-text')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.ctrlKey) postTextComment();
+  });
+
+  // Init header
+  renderAuthHeader();
+
+  // If already logged in from a previous session, load server snippets
+  if (state.auth) loadServerSnippets();
+})();

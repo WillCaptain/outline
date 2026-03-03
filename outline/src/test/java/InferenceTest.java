@@ -1644,4 +1644,63 @@ public class InferenceTest {
         assertTrue(ast.asf().infer());
         assertFalse(ast.errors().isEmpty(), "f_str(value) should produce an inference error (String has no 'age')");
     }
+    @Test
+    void test_poly_assignment() {
+        AST ast = RunnerHelper.parse("""
+                var value = 10 & "Will" & {name="Bob"};
+                value = 100;
+                value
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("Integer&String&{name: String}",outline.toString());
+    }
+
+    @Test
+    void test_poly_partial_poly_assignment_no_error() {
+        AST ast = RunnerHelper.parse("""
+                var value = 10 & "Will" & {name="Bob"};
+                value = 200 & "Will1";
+                value
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("Integer&String&{name: String}", outline.toString());
+    }
+
+    @Test
+    void test_poly_full_poly_assignment_no_error() {
+        AST ast = RunnerHelper.parse("""
+                var value = 10 & "Will" & {name="Bob"};
+                value = 200 & "Will1" & {name="Bob2"};
+                value
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("Integer&String&{name: String}", outline.toString());
+    }
+
+    @Test
+    void test_poly_assignment_with_unmatched_type_has_error() {
+        AST ast = RunnerHelper.parse("""
+                var value = 10 & "Will" & {name="Bob"};
+                value = 200 & true;
+                value
+                """);
+        ast.asf().infer();
+        assertFalse(ast.errors().isEmpty());
+    }
+
+    @Test
+    void test_option_in_value_expression_is_invalid() {
+        AST ast = RunnerHelper.parse("""
+                let value_1 = 1|2;
+                """);
+        ast.asf().infer();
+        assertFalse(ast.errors().isEmpty());
+        assertEquals(GCPErrCode.INVALID_OPTION_EXPRESSION, ast.errors().getFirst().errorCode());
+    }
 }

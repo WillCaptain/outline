@@ -76,6 +76,7 @@ public class OutlineCompilerService {
             // ── 4. Execute (capture print / Console.log / .warn / .error) ───
             long t1 = System.currentTimeMillis();
             org.twelve.gcp.interpreter.stdlib.ConsoleCapture.start();
+            org.twelve.gcp.interpreter.stdlib.StdLibRuntime.resetFs();
             try {
                 Value result = asf.interpret();
                 output = formatValue(result);
@@ -119,6 +120,9 @@ public class OutlineCompilerService {
                 Node lhs = a.lhs();
                 if (lhs == null) continue;
                 Outline outline = lhs.outline();
+                // #region agent log — hypotheses A,B,D,E
+                debugLog(lhs.lexeme(), lhs.getClass().getSimpleName(), outline);
+                // #endregion
                 if (outline == null || outline instanceof UNKNOWN || outline instanceof ERROR) continue;
                 String typeStr = formatType(outline.toString());
                 out.add(new SymbolInfo(
@@ -198,6 +202,30 @@ public class OutlineCompilerService {
      * Strips the verbose MSLL token-dump noise from a raw parse-error message,
      * keeping only the human-readable portion that the developer actually needs.
      */
+    // #region agent log — debug instrumentation
+    private static final String DEBUG_LOG = "/Users/imac/Documents/code/github/gcp/.cursor/debug-d02ba8.log";
+    private void debugLog(String name, String nodeClass, Outline outline) {
+        try {
+            String cls   = outline == null ? "null" : outline.getClass().getSimpleName();
+            String raw   = outline == null ? "null" : outline.toString();
+            boolean skip = outline == null || outline instanceof UNKNOWN || outline instanceof ERROR;
+            String entry = String.format(
+                "{\"sessionId\":\"d02ba8\",\"hypothesisId\":\"A-B-D-E\",\"location\":\"OutlineCompilerService.java:walkForSymbols\",\"message\":\"symbol type\",\"data\":{\"name\":\"%s\",\"nodeClass\":\"%s\",\"cls\":\"%s\",\"raw\":\"%s\",\"skipped\":%b},\"timestamp\":%d}\n",
+                name.replace("\"","\\\""),
+                nodeClass,
+                cls,
+                raw.replace("\\","\\\\").replace("\"","\\\"").replace("\n"," "),
+                skip,
+                System.currentTimeMillis());
+            java.nio.file.Files.write(
+                java.nio.file.Paths.get(DEBUG_LOG),
+                entry.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.APPEND);
+        } catch (Exception ignored) {}
+    }
+    // #endregion
+
     private String trimParseError(String msg) {
         if (msg == null) return "Parse error";
         // Remove the "the possible productions should be matched would be: ..." tail

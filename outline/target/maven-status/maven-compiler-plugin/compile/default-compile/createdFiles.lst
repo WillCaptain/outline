@@ -84,4 +84,3 @@ org/twelve/outline/GCPConverter$2.class
 org/twelve/outline/converter/NumberLiteralConverter.class
 org/twelve/outline/converter/EntityConverter.class
 org/twelve/outline/converter/ExpresionStatementConverter.class
-org/twelve/outline/converter/PolyOptionExprConverter.class

@@ -1852,6 +1852,7 @@ public class InterpreterTest {
     void test_poly_type_annotation_extraction() {
         Value v = RunnerHelper.run("""
                 let db = 10&"Will"&{name="Will"};
+                db = 100;//db will be 100&"Will"&{name="Will"}
                 let ent:{name:String} = db;
                 let num:Int = db;
                 let str:String = db;
@@ -1861,7 +1862,7 @@ public class InterpreterTest {
         TupleValue tv = (TupleValue) v;
         assertThat(tv.get(0)).isInstanceOf(EntityValue.class);
         assertThat(RunnerHelper.strVal(((EntityValue) tv.get(0)).get("name"))).isEqualTo("Will");
-        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(10L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(100L);
         assertThat(RunnerHelper.strVal(tv.get(2))).isEqualTo("Will");
     }
 
@@ -2092,5 +2093,71 @@ public class InterpreterTest {
         assertThat(RunnerHelper.intVal(RunnerHelper.run("""
                 Date.parse("2025-06-15").day
                 """))).isEqualTo(15L);
+    }
+
+    /**
+     * Poly partial reassign — single value:
+     *   db = 100 updates only the Int variant; String and Entity are preserved.
+     */
+    @Test
+    void test_poly_reassign_single_value() {
+        Value v = RunnerHelper.run("""
+                let db = 10&"Will"&{name="Will"};
+                db = 100;
+                let num:Int = db;
+                let str:String = db;
+                let ent:{name:String} = db;
+                (num,str,ent)
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(100L);
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("Will");
+        assertThat(tv.get(2)).isInstanceOf(EntityValue.class);
+        assertThat(RunnerHelper.strVal(((EntityValue) tv.get(2)).get("name"))).isEqualTo("Will");
+    }
+
+    /**
+     * Poly partial reassign — partial poly rhs:
+     *   db = 200 & "Will1" updates Int and String variants; Entity is preserved.
+     */
+    @Test
+    void test_poly_reassign_partial_poly() {
+        Value v = RunnerHelper.run("""
+                let db = 10&"Will"&{name="Will"};
+                db = 200&"Will1";
+                let num:Int = db;
+                let str:String = db;
+                let ent:{name:String} = db;
+                (num,str,ent)
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(200L);
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("Will1");
+        assertThat(tv.get(2)).isInstanceOf(EntityValue.class);
+        assertThat(RunnerHelper.strVal(((EntityValue) tv.get(2)).get("name"))).isEqualTo("Will");
+    }
+
+    /**
+     * Poly full reassign — full poly rhs:
+     *   db = 200 & "Will1" & {name="Will2",age=30} replaces all three variants.
+     */
+    @Test
+    void test_poly_reassign_full_poly() {
+        Value v = RunnerHelper.run("""
+                let db = 10&"Will"&{name="Will"};
+                db = 200&"Will1"&{name="Will2"};
+                let num:Int = db;
+                let str:String = db;
+                let ent:{name:String} = db;
+                (num,str,ent)
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(200L);
+        assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("Will1");
+        assertThat(tv.get(2)).isInstanceOf(EntityValue.class);
+        assertThat(RunnerHelper.strVal(((EntityValue) tv.get(2)).get("name"))).isEqualTo("Will2");
     }
 }

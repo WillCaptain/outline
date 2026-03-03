@@ -19,4 +19,5 @@ public class ErrorDebugTest {
                 " | lexeme='" + e.node().lexeme().substring(0, Math.min(20, e.node().lexeme().length())) + "'");
         }
     }
+
 }
