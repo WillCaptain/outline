@@ -414,9 +414,9 @@ public class GCPInferenceTest {
     @Test
     void test_gcp_recursive_projection(){
         /*
-        let factorial = n -> n==0?1:n*factorial(n-1);
-        factorial(100);
-        factorial("100");
+        let fib  = n -> if (n <= 1) n else fib(n - 1) + fib(n - 2);
+        fib("100");
+        fib(100)
          */
         AST ast = ASTHelper.mockSelfRecursive();
         ast.asf().infer();
@@ -425,8 +425,10 @@ public class GCPInferenceTest {
         Genericable<?,?> argument = cast(f.argument());
         Returnable returns = f.returns();
         assertInstanceOf(NUMBER.class, argument.definedToBe());
-        assertInstanceOf(INTEGER.class, returns.supposedToBe());
-        assertEquals(1,ast.errors().size());
+        assertEquals("`Number`|(str|num)", returns.supposedToBe().toString());
+        assertEquals(1,ast.errors().size());//这个错误来源于fib("100")，输入必须是number
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("Integer",outline.toString());
     }
 
     @Test

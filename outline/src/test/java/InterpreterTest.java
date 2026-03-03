@@ -10,6 +10,7 @@ import java.util.List;
 import org.twelve.msll.exception.GrammarSyntaxException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -2159,5 +2160,91 @@ public class InterpreterTest {
         assertThat(RunnerHelper.strVal(tv.get(1))).isEqualTo("Will1");
         assertThat(tv.get(2)).isInstanceOf(EntityValue.class);
         assertThat(RunnerHelper.strVal(((EntityValue) tv.get(2)).get("name"))).isEqualTo("Will2");
+    }
+
+    @Test
+    void test_negate_lambda() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("let negate = x -> -x; negate(5)"))).isEqualTo(-5L);
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("let negate = x -> -x; negate(-3)"))).isEqualTo(3L);
+    }
+
+    @Test
+    void test_bang_lambda() {
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("let inv = x -> !x; inv(true)"))).isEqualTo(false);
+        assertThat(RunnerHelper.boolVal(RunnerHelper.run("let inv = x -> !x; inv(false)"))).isEqualTo(true);
+    }
+
+    // ── Built-in global functions ─────────────────────────────────────────────
+
+    @Test
+    void test_builtin_to_str_int() {
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("to_str(42)"))).isEqualTo("42");
+    }
+
+    @Test
+    void test_builtin_to_str_float() {
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("to_str(3.14)"))).isEqualTo("3.14");
+    }
+
+    @Test
+    void test_builtin_to_str_bool() {
+        assertThat(RunnerHelper.strVal(RunnerHelper.run("to_str(true)"))).isEqualTo("true");
+    }
+
+    @Test
+    void test_builtin_to_int_from_float() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("to_int(3.9)"))).isEqualTo(3L);
+    }
+
+    @Test
+    void test_builtin_to_int_from_int() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("to_int(7)"))).isEqualTo(7L);
+    }
+
+    @Test
+    void test_builtin_to_int_from_string() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("to_int(\"99\")"))).isEqualTo(99L);
+    }
+
+    @Test
+    void test_builtin_to_float_from_int() {
+        assertThat(RunnerHelper.floatVal(RunnerHelper.run("to_float(5)"))).isEqualTo(5.0);
+    }
+
+    @Test
+    void test_builtin_to_float_from_string() {
+        assertThat(RunnerHelper.floatVal(RunnerHelper.run("to_float(\"2.5\")"))).isEqualTo(2.5);
+    }
+
+    @Test
+    void test_builtin_to_number_from_string_int() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("to_number(\"10\")"))).isEqualTo(10L);
+    }
+
+    @Test
+    void test_builtin_len_string() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("len(\"hello\")"))).isEqualTo(5L);
+    }
+
+    @Test
+    void test_builtin_len_array() {
+        assertThat(RunnerHelper.intVal(RunnerHelper.run("len([1,2,3])"))).isEqualTo(3L);
+    }
+
+    @Test
+    void test_builtin_assert_passes() {
+        Value v = RunnerHelper.run("assert(1 == 1)");
+        assertThat(v).isInstanceOf(UnitValue.class);
+    }
+
+    @Test
+    void test_builtin_assert_fails() {
+        assertThrows(RuntimeException.class, () -> RunnerHelper.run("assert(1 == 2)"));
+    }
+
+    @Test
+    void test_builtin_print_returns_unit() {
+        Value v = RunnerHelper.run("print(\"hi\")");
+        assertThat(v).isInstanceOf(UnitValue.class);
     }
 }

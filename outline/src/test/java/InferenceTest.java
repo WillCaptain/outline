@@ -22,6 +22,7 @@ import org.twelve.gcp.outline.adt.*;
 import org.twelve.gcp.outline.builtin.ERROR;
 import org.twelve.gcp.outline.primitive.BOOL;
 import org.twelve.gcp.outline.primitive.DOUBLE;
+import org.twelve.gcp.outline.primitive.FLOAT;
 import org.twelve.gcp.outline.primitive.INTEGER;
 import org.twelve.gcp.outline.primitive.NUMBER;
 import org.twelve.gcp.outline.primitive.STRING;
@@ -879,6 +880,7 @@ public class InferenceTest {
          */
         AST ast = ASTHelper.mockArrayMethods();
         assertTrue(ast.asf().infer());
+        ast.errors().forEach(e -> System.out.println("[DBG-ARR] " + e.errorCode() + ": " + e.message() + " node=" + e.node()));
         assertTrue(ast.errors().isEmpty());
 
         assertInstanceOf(INTEGER.class, lhsOf(ast, 1));          // len
@@ -1702,5 +1704,88 @@ public class InferenceTest {
         ast.asf().infer();
         assertFalse(ast.errors().isEmpty());
         assertEquals(GCPErrCode.INVALID_OPTION_EXPRESSION, ast.errors().getFirst().errorCode());
+    }
+
+    // ── Built-in global function inference ────────────────────────────────────
+
+    @Test
+    void test_builtin_print_infers_unit() {
+        AST ast = RunnerHelper.parse("print(42)");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+    }
+
+    @Test
+    void test_builtin_to_str_infers_string() {
+        AST ast = RunnerHelper.parse("let s = to_str(123);");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ((VariableDeclarator)
+                ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
+        assertInstanceOf(STRING.class, outline);
+    }
+
+    @Test
+    void test_builtin_to_int_infers_int() {
+        AST ast = RunnerHelper.parse("let n = to_int(3.14);");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ((VariableDeclarator)
+                ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
+        assertInstanceOf(INTEGER.class, outline);
+    }
+
+    @Test
+    void test_builtin_to_float_infers_float() {
+        AST ast = RunnerHelper.parse("let f = to_float(10);");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ((VariableDeclarator)
+                ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
+        assertInstanceOf(FLOAT.class, outline);
+    }
+
+    @Test
+    void test_builtin_to_number_infers_number() {
+        AST ast = RunnerHelper.parse("let n = to_number(\"42\");");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ((VariableDeclarator)
+                ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
+        assertInstanceOf(NUMBER.class, outline);
+    }
+
+    @Test
+    void test_builtin_len_infers_int() {
+        AST ast = RunnerHelper.parse("let n = len(\"hello\");");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ((VariableDeclarator)
+                ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
+        assertInstanceOf(INTEGER.class, outline);
+    }
+
+    @Test
+    void test_builtin_assert_infers_unit() {
+        AST ast = RunnerHelper.parse("assert(true)");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+    }
+
+    @Test
+    void test_builtin_print_accepts_string() {
+        AST ast = RunnerHelper.parse("print(\"hello\")");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+    }
+
+    @Test
+    void test_builtin_to_str_accepts_bool() {
+        AST ast = RunnerHelper.parse("let s = to_str(true);");
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+        Outline outline = ((VariableDeclarator)
+                ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
+        assertInstanceOf(STRING.class, outline);
     }
 }

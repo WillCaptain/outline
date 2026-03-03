@@ -813,9 +813,10 @@ public class ASTHelper {
 
     public static AST mockSelfRecursive() {
         String code = """
-                let factorial = n->n==0? 1: factorial(n-1);
-                factorial(100);
-                factorial("100");""";
+                let fib  = n -> if (n <= 1) n else fib(n - 1) + fib(n - 2);
+                fib("100");
+                fib(100)
+                """;
         return parser.parse(new ASF(), code);
     }
 
