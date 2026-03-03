@@ -1,12 +1,13 @@
 ASTHelper.class
 RunnerHelper.class
-InferenceTest.class
 ParserStructureTest.class
 ComplexInterpretTest.class
-GCPInferenceTest.class
 ErrorDebugTest.class
 ExternalTest.class
-IfBranchTest.class
-LTTest.class
 InterpreterTest.class
+InferenceTest.class
+GCPInferenceTest.class
+IfBranchTest.class
+ChurchTest.class
+LTTest.class
 BuiltinTypeTest.class

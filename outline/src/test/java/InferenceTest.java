@@ -1145,21 +1145,21 @@ public class InferenceTest {
 
     @Test
     void test_built_in_entity() throws Exception {
-        // ── Math: constant fields and pure functions ─────────────────────────
+        // ── math: constant fields and pure functions ─────────────────────────
         AST astMath = RunnerHelper.parse("""
-                let pi     = Math.pi;
-                let e      = Math.e;
-                let r      = Math.sqrt(4.0);
-                let fl     = Math.floor(3.7);
-                let ce     = Math.ceil(3.1);
-                let ro     = Math.round(3.5);
-                let mx     = Math.max(3)(7);
-                let mn     = Math.min(3)(7);
-                let pw     = Math.pow(2.0)(10.0);
-                let rnd    = Math.random();
+                let pi     = math.pi;
+                let e      = math.e;
+                let r      = math.sqrt(4.0);
+                let fl     = math.floor(3.7);
+                let ce     = math.ceil(3.1);
+                let ro     = math.round(3.5);
+                let mx     = math.max(3)(7);
+                let mn     = math.min(3)(7);
+                let pw     = math.pow(2.0)(10.0);
+                let rnd    = math.random();
                 """);
-        assertTrue(astMath.asf().infer(), "Math inference failed");
-        assertTrue(astMath.errors().isEmpty(), "Math errors: " + astMath.errors());
+        assertTrue(astMath.asf().infer(), "math inference failed");
+        assertTrue(astMath.errors().isEmpty(), "math errors: " + astMath.errors());
 
         Outline pi  = lhsOf(astMath, 0);
         Outline e   = lhsOf(astMath, 1);
@@ -1172,67 +1172,67 @@ public class InferenceTest {
         Outline pw  = lhsOf(astMath, 8);
         Outline rnd = lhsOf(astMath, 9);
 
-        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, pi,  "Math.pi should be Double");
-        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, e,   "Math.e should be Double");
-        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, sqr, "Math.sqrt → Double");
-        assertInstanceOf(INTEGER.class,                                   fl,  "Math.floor → Int");
-        assertInstanceOf(INTEGER.class,                                   ce,  "Math.ceil → Int");
-        assertInstanceOf(INTEGER.class,                                   ro,  "Math.round → Int");
-        assertInstanceOf(NUMBER.class,                                    mx,  "Math.max → Number");
-        assertInstanceOf(NUMBER.class,                                    mn,  "Math.min → Number");
-        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, pw,  "Math.pow → Double");
-        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, rnd, "Math.random → Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, pi,  "math.pi should be Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, e,   "math.e should be Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, sqr, "math.sqrt → Double");
+        assertInstanceOf(INTEGER.class,                                   fl,  "math.floor → Int");
+        assertInstanceOf(INTEGER.class,                                   ce,  "math.ceil → Int");
+        assertInstanceOf(INTEGER.class,                                   ro,  "math.round → Int");
+        assertInstanceOf(NUMBER.class,                                    mx,  "math.max → Number");
+        assertInstanceOf(NUMBER.class,                                    mn,  "math.min → Number");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, pw,  "math.pow → Double");
+        assertInstanceOf(org.twelve.gcp.outline.primitive.DOUBLE.class, rnd, "math.random → Double");
 
-        // ── Console: access method types via the module entity ───────────────
-        // Console.log is a String→Unit function; Console.read is a Unit→String function.
+        // ── console: access method types via the module entity ───────────────
+        // console.log is a Any→Unit function; console.read is a Unit→String function.
         // We verify by binding the function itself (not calling it).
         AST astConsole = RunnerHelper.parse("""
-                let log_fn  = Console.log;
-                let warn_fn = Console.warn;
-                let err_fn  = Console.error;
-                let read_fn = Console.read;
+                let log_fn  = console.log;
+                let warn_fn = console.warn;
+                let err_fn  = console.error;
+                let read_fn = console.read;
                 """);
-        assertTrue(astConsole.asf().infer(), "Console inference failed");
-        assertTrue(astConsole.errors().isEmpty(), "Console errors: " + astConsole.errors());
+        assertTrue(astConsole.asf().infer(), "console inference failed");
+        assertTrue(astConsole.errors().isEmpty(), "console errors: " + astConsole.errors());
 
-        // log_fn : String → Unit  →  FirstOrderFunction
+        // log_fn : Any → Unit  →  FirstOrderFunction
         assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
-                lhsOf(astConsole, 0), "Console.log → FirstOrderFunction");
-        // warn_fn: String → Unit
+                lhsOf(astConsole, 0), "console.log → FirstOrderFunction");
+        // warn_fn: Any → Unit
         assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
-                lhsOf(astConsole, 1), "Console.warn → FirstOrderFunction");
-        // err_fn: String → Unit
+                lhsOf(astConsole, 1), "console.warn → FirstOrderFunction");
+        // err_fn: Any → Unit
         assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
-                lhsOf(astConsole, 2), "Console.error → FirstOrderFunction");
+                lhsOf(astConsole, 2), "console.error → FirstOrderFunction");
         // read_fn: Unit → String  →  FirstOrderFunction
         assertInstanceOf(org.twelve.gcp.outline.projectable.FirstOrderFunction.class,
-                lhsOf(astConsole, 3), "Console.read → FirstOrderFunction");
+                lhsOf(astConsole, 3), "console.read → FirstOrderFunction");
 
-        // ── Date: now() returns an entity with year:Int, format:String→String ─
+        // ── date: now() returns an entity with year:Int, format:String→String ─
         AST astDate = RunnerHelper.parse("""
-                let d      = Date.now();
-                let yr     = Date.now().year;
-                let mo     = Date.now().month;
-                let day    = Date.now().day;
-                let fmt    = Date.now().format("YYYY-MM-DD");
-                let ts     = Date.now().timestamp();
-                let dow    = Date.now().day_of_week();
-                let parsed = Date.parse("2025-06-15");
-                let pyr    = Date.parse("2025-06-15").year;
+                let d      = date.now();
+                let yr     = date.now().year;
+                let mo     = date.now().month;
+                let day    = date.now().day;
+                let fmt    = date.now().format("YYYY-MM-DD");
+                let ts     = date.now().timestamp();
+                let dow    = date.now().day_of_week();
+                let parsed = date.parse("2025-06-15");
+                let pyr    = date.parse("2025-06-15").year;
                 """);
-        assertTrue(astDate.asf().infer(), "Date inference failed");
-        assertTrue(astDate.errors().isEmpty(), "Date errors: " + astDate.errors());
+        assertTrue(astDate.asf().infer(), "date inference failed");
+        assertTrue(astDate.errors().isEmpty(), "date errors: " + astDate.errors());
 
-        assertInstanceOf(Entity.class,  lhsOf(astDate, 0), "Date.now() → Entity (DateRecord)");
-        assertInstanceOf(INTEGER.class, lhsOf(astDate, 1), "Date.now().year → Int");
-        assertInstanceOf(INTEGER.class, lhsOf(astDate, 2), "Date.now().month → Int");
-        assertInstanceOf(INTEGER.class, lhsOf(astDate, 3), "Date.now().day → Int");
-        assertInstanceOf(STRING.class,  lhsOf(astDate, 4), "Date.now().format() → String");
+        assertInstanceOf(Entity.class,  lhsOf(astDate, 0), "date.now() → Entity (DateRecord)");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 1), "date.now().year → Int");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 2), "date.now().month → Int");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 3), "date.now().day → Int");
+        assertInstanceOf(STRING.class,  lhsOf(astDate, 4), "date.now().format() → String");
         assertInstanceOf(org.twelve.gcp.outline.primitive.LONG.class,
-                                        lhsOf(astDate, 5), "Date.now().timestamp() → Long");
-        assertInstanceOf(INTEGER.class, lhsOf(astDate, 6), "Date.now().day_of_week() → Int");
-        assertInstanceOf(Entity.class,  lhsOf(astDate, 7), "Date.parse() → Entity (DateRecord)");
-        assertInstanceOf(INTEGER.class, lhsOf(astDate, 8), "Date.parse().year → Int");
+                                        lhsOf(astDate, 5), "date.now().timestamp() → Long");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 6), "date.now().day_of_week() → Int");
+        assertInstanceOf(Entity.class,  lhsOf(astDate, 7), "date.parse() → Entity (DateRecord)");
+        assertInstanceOf(INTEGER.class, lhsOf(astDate, 8), "date.parse().year → Int");
     }
 
     /**
