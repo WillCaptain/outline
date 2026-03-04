@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 
 /**
  * Creates all tables on startup if they do not yet exist.
@@ -22,12 +23,26 @@ public class DatabaseInitializer {
         jdbc.execute("PRAGMA journal_mode=WAL");
         jdbc.execute("PRAGMA foreign_keys=ON");
 
+        // Migration: if users has old phone schema, drop and recreate
+        var tables = jdbc.queryForList("SELECT name FROM sqlite_master WHERE type='table' AND name='users'", String.class);
+        if (!tables.isEmpty()) {
+            var cols = jdbc.query("PRAGMA table_info(users)", (rs, n) -> rs.getString("name"));
+            if (cols.contains("phone")) {
+                jdbc.execute("DROP TABLE IF EXISTS comments");
+                jdbc.execute("DROP TABLE IF EXISTS snippets");
+                jdbc.execute("DROP TABLE IF EXISTS sessions");
+                jdbc.execute("DROP TABLE IF EXISTS users");
+                jdbc.execute("DROP TABLE IF EXISTS otp_codes");
+            }
+        }
+
+        // Username + password (unique username, global users for sub-site shared login)
         jdbc.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id          TEXT PRIMARY KEY,
-                phone       TEXT NOT NULL UNIQUE,
-                username    TEXT,
-                created_at  INTEGER NOT NULL
+                id            TEXT PRIMARY KEY,
+                username      TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                created_at    INTEGER NOT NULL
             )""");
 
         jdbc.execute("""
@@ -38,12 +53,6 @@ public class DatabaseInitializer {
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )""");
 
-        jdbc.execute("""
-            CREATE TABLE IF NOT EXISTS otp_codes (
-                phone       TEXT PRIMARY KEY,
-                code        TEXT NOT NULL,
-                sent_at     INTEGER NOT NULL
-            )""");
 
         jdbc.execute("""
             CREATE TABLE IF NOT EXISTS snippets (

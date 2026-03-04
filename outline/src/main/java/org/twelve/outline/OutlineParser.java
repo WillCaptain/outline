@@ -126,7 +126,9 @@ public class OutlineParser {
     public AST parse(String code) {
         if (sharedConverter != null) {
             MyParser parser = sharedBuilder().createParser(code);
-            return sharedConverter.convert(parser.parse());
+            AST ast = sharedConverter.convert(parser.parse());
+            ast.setSourceCode(code);
+            return ast;
         }
         return parse(new ASF(), code);
     }
@@ -138,6 +140,8 @@ public class OutlineParser {
      */
     public AST parse(ASF asf, String code) {
         MyParser parser = sharedBuilder().createParser(code);
-        return new GCPConverter(asf).convert(parser.parse());
+        AST ast = new GCPConverter(asf).convert(parser.parse());
+        ast.setSourceCode(code);
+        return ast;
     }
 }

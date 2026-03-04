@@ -1,6 +1,7 @@
 ASTHelper.class
 RunnerHelper.class
 ParserStructureTest.class
+MetaTest.class
 ComplexInterpretTest.class
 ErrorDebugTest.class
 ExternalTest.class

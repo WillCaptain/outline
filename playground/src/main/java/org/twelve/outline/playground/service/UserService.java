@@ -1,54 +1,58 @@
 package org.twelve.outline.playground.service;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.twelve.outline.playground.db.UserRepository;
 import org.twelve.outline.playground.model.User;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 
 @Service
 public class UserService {
 
-    private static final long CODE_TTL_MS = 5 * 60 * 1000L;
+    private static final int BCRYPT_COST = 10;
 
     private final UserRepository userRepo;
-    private final SmsService     smsService;
 
-    public UserService(UserRepository userRepo, SmsService smsService) {
-        this.userRepo   = userRepo;
-        this.smsService = smsService;
+    public UserService(UserRepository userRepo) {
+        this.userRepo = userRepo;
     }
 
     /**
-     * Generates a 6-digit OTP and dispatches it.
-     * Returns the code so the controller can expose it in dev mode.
+     * Registers a new user. Username must be unique.
+     * @return [token, User] on success
      */
-    public String sendCode(String phone) {
-        String code = String.format("%06d", new Random().nextInt(1_000_000));
-        userRepo.saveOtp(phone, code);
-        smsService.send(phone, code);
-        return code;
+    public Optional<Map.Entry<String, User>> register(String username, String password) {
+        if (username == null || (username = username.trim()).isBlank() || username.length() > 32) return Optional.empty();
+        if (password == null || password.length() < 4 || password.length() > 64) return Optional.empty();
+        if (!username.matches("[a-zA-Z0-9_]+")) return Optional.empty();
+
+        if (userRepo.findByUsername(username).isPresent()) return Optional.empty();
+
+        String hash = BCrypt.withDefaults().hashToString(BCRYPT_COST, password.toCharArray());
+        User user = userRepo.create(username, hash);
+        String token = UUID.randomUUID().toString().replace("-", "");
+        userRepo.saveSession(token, user.getId());
+        return Optional.of(Map.entry(token, user));
     }
 
     /**
-     * Verifies the submitted OTP.
-     * @return [token, User] pair on success, empty on failure.
+     * Logs in with username and password.
+     * @return [token, User] on success
      */
-    public Optional<Map.Entry<String, User>> verify(String phone, String code) {
-        return userRepo.findOtp(phone).flatMap(otp -> {
-            if (System.currentTimeMillis() - otp.sentAt() > CODE_TTL_MS) return Optional.empty();
-            if (!code.equals(otp.code())) return Optional.empty();
+    public Optional<Map.Entry<String, User>> login(String username, String password) {
+        if (username == null || password == null) return Optional.empty();
 
-            userRepo.deleteOtp(phone);
-            User   user  = userRepo.upsert(phone);
-            String token = UUID.randomUUID().toString().replace("-", "");
-            userRepo.saveSession(token, user.getId());
-            return Optional.of(Map.entry(token, user));
-        });
+        return userRepo.findByUsername(username.trim())
+                .flatMap(user -> userRepo.findPasswordHashByUsername(user.getUsername())
+                        .filter(hash -> BCrypt.verifyer().verify(password.toCharArray(), hash).verified)
+                        .map(__ -> {
+                            String token = UUID.randomUUID().toString().replace("-", "");
+                            userRepo.saveSession(token, user.getId());
+                            return Map.entry(token, user);
+                        }));
     }
 
     public Optional<User> getByToken(String token) {
@@ -59,13 +63,5 @@ public class UserService {
 
     public void logout(String token) {
         if (token != null) userRepo.deleteSession(token);
-    }
-
-    public boolean updateUsername(String token, String username) {
-        return getByToken(token).map(u -> {
-            userRepo.updateUsername(u.getId(), username);
-            u.setUsername(username);
-            return true;
-        }).orElse(false);
     }
 }

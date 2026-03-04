@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: InferenceTest
+Test set: MetaTest
 -------------------------------------------------------------------------------
-Tests run: 96, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.108 s -- in InferenceTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.201 s -- in MetaTest

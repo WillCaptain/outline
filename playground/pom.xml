@@ -69,11 +69,11 @@
       <version>3.45.3.0</version>
     </dependency>
 
-    <!-- Alibaba Cloud SMS -->
+    <!-- BCrypt for password hashing -->
     <dependency>
-      <groupId>com.aliyun</groupId>
-      <artifactId>dysmsapi20170525</artifactId>
-      <version>3.1.0</version>
+      <groupId>at.favre.lib</groupId>
+      <artifactId>bcrypt</artifactId>
+      <version>0.10.2</version>
     </dependency>
   </dependencies>
 

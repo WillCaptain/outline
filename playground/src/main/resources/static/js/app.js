@@ -494,7 +494,7 @@ function renderMyspaceHeader() {
   const hint = el('myspace-hint');
   if (!hint) return;
   if (state.auth) {
-    hint.innerHTML = `<span class="ms-user-dot"></span>Private workspace · <strong>${esc(state.auth.displayName || state.auth.phone)}</strong>`;
+    hint.innerHTML = `<span class="ms-user-dot"></span>Private workspace · <strong>${esc(state.auth.displayName || state.auth.username)}</strong>`;
   } else {
     hint.innerHTML = `Local storage &nbsp;<button class="btn-ms-login" id="btn-ms-login">Login to sync ↑</button>`;
     el('btn-ms-login')?.addEventListener('click', openAuthModal);
@@ -1052,7 +1052,7 @@ function showToast(msg, type = 'ok') {
 
 function el(id) { return document.getElementById(id); }
 function esc(s) {
-  return String(s)
+  return String(s ?? '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -1310,7 +1310,8 @@ color_name;`.trim();
    ══════════════════════════════════════════════════════════════ */
 
 // ── Auth state (persisted in localStorage) ─────────────────────
-const AUTH_KEY = 'outline_auth';
+// Shared key: login once = both Outline & Entitir playgrounds
+const AUTH_KEY = 'playground_auth';
 
 function loadAuth() {
   try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch { return null; }
@@ -1320,7 +1321,7 @@ function saveAuth(data) {
   else localStorage.removeItem(AUTH_KEY);
 }
 
-state.auth = loadAuth();   // { token, id, phone, username, displayName } | null
+state.auth = loadAuth();   // { token, id, username, displayName } | null
 
 // ── Snippet ID (djb2 hash of current code) ────────────────────
 function snippetId(code) {
@@ -1344,120 +1345,82 @@ function renderAuthHeader() {
   if (state.auth) {
     btnLogin.style.display = 'none';
     chip.style.display     = 'flex';
-    chipName.textContent   = state.auth.displayName || state.auth.phone;
+    chipName.textContent   = state.auth.displayName || state.auth.username;
   } else {
     btnLogin.style.display = '';
     chip.style.display     = 'none';
   }
 }
 
-// ── Auth modal logic ───────────────────────────────────────────
-let _pendingPhone = '';
-
+// ── Auth modal logic (username + password) ──────────────────────
 function openAuthModal() {
-  _pendingPhone = '';
-  document.getElementById('auth-step-phone').style.display = '';
-  document.getElementById('auth-step-code').style.display  = 'none';
-  document.getElementById('auth-phone').value = '';
-  document.getElementById('auth-debug-box').style.display  = 'none';
+  document.getElementById('auth-username').value = '';
+  document.getElementById('auth-password').value = '';
   document.getElementById('auth-modal-overlay').style.display = 'flex';
-  setTimeout(() => document.getElementById('auth-phone').focus(), 80);
+  setTimeout(() => document.getElementById('auth-username').focus(), 80);
 }
 function closeAuthModal() {
   document.getElementById('auth-modal-overlay').style.display = 'none';
 }
 
-async function authSendCode() {
-  const phone = document.getElementById('auth-phone').value.trim();
-  if (!phone) { showToast('Please enter your phone number', 'warn'); return; }
-
-  const btn = document.getElementById('auth-send-btn');
-  btn.disabled = true; btn.textContent = 'Sending…';
-
+async function authRegister() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!username || !password) { showToast('Enter username and password', 'warn'); return; }
+  const btn = document.getElementById('auth-register-btn');
+  btn.disabled = true; btn.textContent = 'Registering…';
   try {
-    const res = await fetch('/api/auth/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone }),
+    const res = await fetch('/api/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
-    if (!res.ok) { showToast(data.error || 'Failed to send code', 'error'); return; }
-
-    _pendingPhone = phone;
-    // Show debug code (dev mode only — no real SMS gateway)
-    if (data.debug_code) {
-      document.getElementById('auth-debug-code').textContent = data.debug_code;
-      document.getElementById('auth-debug-box').style.display = 'flex';
-    }
-    document.getElementById('auth-phone-mask').textContent = phone;
-    document.getElementById('auth-step-phone').style.display = 'none';
-    document.getElementById('auth-step-code').style.display  = '';
-    document.getElementById('auth-code').value = '';
-    setTimeout(() => document.getElementById('auth-code').focus(), 80);
-  } catch (e) {
-    showToast('Network error', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Get Code';
-  }
-}
-
-async function authVerify() {
-  const code = document.getElementById('auth-code').value.trim();
-  if (code.length !== 6) { showToast('Enter the 6-digit code', 'warn'); return; }
-
-  const btn = document.getElementById('auth-verify-btn');
-  btn.disabled = true; btn.textContent = 'Verifying…';
-
-  try {
-    const res = await fetch('/api/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: _pendingPhone, code }),
-    });
-    const data = await res.json();
-    if (!res.ok) { showToast(data.error || 'Verification failed', 'error'); return; }
-
+    if (!res.ok) { showToast(data.error || 'Registration failed', 'error'); return; }
     state.auth = data;
     saveAuth(data);
     renderAuthHeader();
+    renderMyspaceHeader();
     closeAuthModal();
-    showToast('Welcome, ' + (data.displayName || data.phone) + ' 🎉');
+    showToast('Welcome, ' + (data.displayName || data.username) + ' 🎉');
     loadServerSnippets();
     refreshCommentsTab();
-  } catch (e) {
-    showToast('Network error', 'error');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Verify →';
-  }
+  } catch (e) { showToast('Network error', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Register'; }
+}
+
+async function authLogin() {
+  const username = document.getElementById('auth-username').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!username || !password) { showToast('Enter username and password', 'warn'); return; }
+  const btn = document.getElementById('auth-login-btn');
+  btn.disabled = true; btn.textContent = 'Logging in…';
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Login failed', 'error'); return; }
+    state.auth = data;
+    saveAuth(data);
+    renderAuthHeader();
+    renderMyspaceHeader();
+    closeAuthModal();
+    showToast('Welcome back, ' + (data.displayName || data.username));
+    loadServerSnippets();
+    refreshCommentsTab();
+  } catch (e) { showToast('Network error', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Login'; }
 }
 
 // ── Profile modal ──────────────────────────────────────────────
 function openProfileModal() {
   if (!state.auth) { openAuthModal(); return; }
-  document.getElementById('profile-phone').textContent = state.auth.phone || '—';
-  document.getElementById('profile-username-input').value = state.auth.username || '';
+  document.getElementById('profile-username').textContent = state.auth.username || '—';
   document.getElementById('profile-modal-overlay').style.display = 'flex';
 }
 function closeProfileModal() {
   document.getElementById('profile-modal-overlay').style.display = 'none';
-}
-
-async function profileSave() {
-  const username = document.getElementById('profile-username-input').value.trim();
-  try {
-    const res = await fetch('/api/auth/me', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', ...authHeader() },
-      body: JSON.stringify({ username }),
-    });
-    const data = await res.json();
-    if (!res.ok) { showToast('Save failed', 'error'); return; }
-    state.auth = { ...state.auth, username, displayName: data.displayName };
-    saveAuth(state.auth);
-    renderAuthHeader();
-    closeProfileModal();
-    showToast('Profile saved ✓');
-  } catch { showToast('Network error', 'error'); }
 }
 
 async function authLogout() {
@@ -1634,11 +1597,6 @@ async function deleteComment(commentId) {
   } catch { showToast('Network error', 'error'); }
 }
 
-function esc(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 // ── Wire up new events ─────────────────────────────────────────
 (function bindAuthAndComments() {
   // Login / user chip
@@ -1646,19 +1604,15 @@ function esc(s) {
   document.getElementById('btn-user-chip') ?.addEventListener('click', openProfileModal);
 
   // Auth modal buttons
-  document.getElementById('auth-modal-close')  ?.addEventListener('click', closeAuthModal);
-  document.getElementById('auth-phone-cancel') ?.addEventListener('click', closeAuthModal);
-  document.getElementById('auth-send-btn')     ?.addEventListener('click', authSendCode);
-  document.getElementById('auth-back-btn')     ?.addEventListener('click', () => {
-    document.getElementById('auth-step-code').style.display  = 'none';
-    document.getElementById('auth-step-phone').style.display = '';
+  document.getElementById('auth-modal-close')   ?.addEventListener('click', closeAuthModal);
+  document.getElementById('auth-cancel')       ?.addEventListener('click', closeAuthModal);
+  document.getElementById('auth-register-btn') ?.addEventListener('click', authRegister);
+  document.getElementById('auth-login-btn')     ?.addEventListener('click', authLogin);
+  document.getElementById('auth-username')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') authLogin();
   });
-  document.getElementById('auth-verify-btn')?.addEventListener('click', authVerify);
-  document.getElementById('auth-code')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') authVerify();
-  });
-  document.getElementById('auth-phone')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') authSendCode();
+  document.getElementById('auth-password')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') authLogin();
   });
   document.getElementById('auth-modal-overlay')?.addEventListener('click', e => {
     if (e.target === e.currentTarget) closeAuthModal();
@@ -1666,7 +1620,6 @@ function esc(s) {
 
   // Profile modal buttons
   document.getElementById('profile-modal-close')?.addEventListener('click', closeProfileModal);
-  document.getElementById('profile-save-btn')   ?.addEventListener('click', profileSave);
   document.getElementById('btn-logout')         ?.addEventListener('click', authLogout);
   document.getElementById('profile-modal-overlay')?.addEventListener('click', e => {
     if (e.target === e.currentTarget) closeProfileModal();
