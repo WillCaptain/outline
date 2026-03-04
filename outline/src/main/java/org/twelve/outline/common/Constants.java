@@ -114,4 +114,8 @@ public final class Constants {
 
     // Long literal suffix (1L / 1l)
     public static final String LONG_LIT        = "LONG_LIT";
+
+    // Async / Await
+    public static final String ASYNC_EXPRESSION = "async_expression";
+    public static final String AWAIT_EXPRESSION = "await_expression";
 }

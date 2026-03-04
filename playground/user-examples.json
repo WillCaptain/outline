@@ -1,7 +1,0 @@
-[ {
-  "id" : "test-contrib",
-  "title" : "Test Contribution",
-  "description" : "A test",
-  "category" : "basics",
-  "code" : "let x = 1; x"
-} ]

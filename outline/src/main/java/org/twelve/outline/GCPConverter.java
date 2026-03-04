@@ -188,7 +188,9 @@ public class GCPConverter {
         //extend outline
         this.converters.put(Constants.EXTEND_OUTLINE, new ExtendOutlineConverter(converters));
 
-
+        // async / await
+        this.converters.put(Constants.ASYNC_EXPRESSION, new AsyncConverter(converters));
+        this.converters.put(Constants.AWAIT_EXPRESSION, new AwaitConverter(converters));
     }
 
     public GCPConverter() {

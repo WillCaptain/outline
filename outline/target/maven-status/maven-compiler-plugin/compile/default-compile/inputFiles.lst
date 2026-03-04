@@ -13,6 +13,8 @@
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/ArrayRangeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/ArrayTypeConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/AssignmentConverter.java
+/Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/AsyncConverter.java
+/Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/AwaitConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/BaseConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/BinaryExpressionConverter.java
 /Users/imac/Documents/code/github/outline/outline/src/main/java/org/twelve/outline/converter/BlockConverter.java

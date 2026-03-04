@@ -10,5 +10,6 @@ InferenceTest.class
 GCPInferenceTest.class
 IfBranchTest.class
 ChurchTest.class
+AsyncTest.class
 LTTest.class
 BuiltinTypeTest.class

@@ -33,6 +33,7 @@ org/twelve/outline/converter/FactorExprConverter.class
 org/twelve/outline/converter/BinaryExpressionConverter.class
 org/twelve/outline/converter/ThisTypeConverter.class
 org/twelve/outline/GCPConverter$1.class
+org/twelve/outline/converter/AwaitConverter.class
 org/twelve/outline/converter/MemberAccessorConverter.class
 org/twelve/outline/converter/EntityUnpackNodeConverter.class
 org/twelve/outline/converter/StringTypeConverter.class
@@ -54,6 +55,7 @@ org/twelve/outline/converter/Converter.class
 org/twelve/outline/converter/IntTypeConverter.class
 org/twelve/outline/common/Tool.class
 org/twelve/outline/converter/DoubleTypeConverter.class
+org/twelve/outline/converter/AsyncConverter.class
 org/twelve/outline/converter/ReferenceCallTypeConverter.class
 org/twelve/outline/converter/LongLiteralConverter.class
 org/twelve/outline/converter/ThisConverter.class

@@ -49,6 +49,8 @@ True                       : 'true';
 False                      : 'false';
 With                       : 'with';
 Match                      : 'match';
+Async                      : 'async';
+Await                      : 'await';
 Outline                    : 'outline';
 Macro                      : 'macro';
 Sharp                      : '#';

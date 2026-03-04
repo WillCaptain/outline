@@ -1591,4 +1591,110 @@ public class ASTHelper {
                 """;
         return parser.parse(new ASF(), code);
     }
+
+    public static AST mockChainedFilterThis() {
+        String code = """
+                outline Aggregator = <a>{
+                      count: Unit -> ~this,
+                      sum: (a -> Number) -> ~this,
+                      avg: (a -> Number) -> ~this,
+                      min: (a -> Number) -> ~this,
+                      max: (a -> Number) -> ~this,
+                      compute: Unit -> [String:Number]
+                  };
+
+                  outline GroupBy = <k, a>{
+                      filter: (a -> Bool) -> ~this,
+                      count: Unit -> [k:Int],
+                      aggregate: <b>(Aggregator<a> -> b) -> [k:b],
+                      to_map: Unit -> [k:VirtualSet<a>]
+                  };
+
+                outline VirtualSet = <a>{
+                    filter: (a->Bool) -> ~this,
+                    order_by: (a -> ?) -> ~this,
+                    take: Int -> Int -> ~this,
+                    map: fx<b> (a->b) -> VirtualSet<b>,
+                    type:#"me",
+                     first: Unit -> a,
+                     last: Unit -> a,
+                     count: Unit -> Int,
+                     exists: Unit -> Bool,
+                     sum: (a->Number) -> Number,
+                     avg: (a->Number) -> Number,
+                     min: fx<b>(a -> b) -> b,
+                     max: fx<b>(a -> b) -> b,
+                     reduce: fx<b>b->(a->b)->b,
+                     each: (a -> Unit) -> Unit,
+                     aggregate: <b>(Aggregator<a> -> b) -> b,
+                     group_by: <b>(a->b)->GroupBy<b,a>
+                };
+
+                outline Country = {
+                  id: 0,
+                  name: String,
+                  code: String,
+                  provinces: Unit -> Provinces
+                };
+                outline Province = {
+                  id: 0,
+                  name: String,
+                  cities: Unit -> Cities
+                };
+                outline City = {
+                  id: 0,
+                  name: String,
+                  schools: Unit -> Schools
+                };
+                outline School = {
+                  id: 0,
+                  name: String,
+                  school_type: String,
+                  students: Unit -> Students
+                };
+                outline Student = {
+                  id: 0,
+                  name: String,
+                  age: Int
+                };
+
+                outline Countries = VirtualSet<Country>{
+                  provinces: Unit -> Provinces
+                };
+                outline Provinces = VirtualSet<Province>{
+                  cities: Unit -> Cities
+                };
+                outline Cities = VirtualSet<City>{
+                  schools: Unit -> Schools
+                };
+                outline Schools = VirtualSet<School>{
+                  students: Unit -> Students
+                };
+                outline Students = VirtualSet<Student>;
+
+                let countries = __ontology_repo__<Countries>;
+
+                let result1 = countries
+                    .filter(c->c.code=="CN")
+                    .provinces()
+                    .cities()
+                    .schools()
+                    .filter(s->s.school_type=="university")
+                    .students()
+                    .count();
+
+                let result2 = countries
+                    .filter(c->c.code=="CN")
+                    .provinces()
+                    .cities()
+                    .filter(c->c.name=="Beijing")
+                    .schools()
+                    .students()
+                    .filter(s->s.age>18)
+                    .count();
+
+                (result1, result2)
+                """;
+        return parser.parse(new ASF(), code);
+    }
 }

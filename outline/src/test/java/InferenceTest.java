@@ -1788,4 +1788,14 @@ public class InferenceTest {
                 ast.program().body().statements().getFirst()).assignments().getFirst().lhs().outline();
         assertInstanceOf(STRING.class, outline);
     }
+
+    @Test
+    void test_chained_filter_this_preserved() {
+        AST ast = ASTHelper.mockChainedFilterThis();
+        ast.asf().infer();
+        assertTrue(ast.inferred());
+        assertTrue(ast.errors().isEmpty(), "Expected no errors but got: " + ast.errors());
+        Outline outline = ast.program().body().statements().getLast().outline();
+        assertEquals("(Integer,Integer)", outline.toString());
+    }
 }
