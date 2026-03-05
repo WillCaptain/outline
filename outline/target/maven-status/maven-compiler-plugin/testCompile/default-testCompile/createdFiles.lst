@@ -4,6 +4,7 @@ ParserStructureTest.class
 MetaTest.class
 ComplexInterpretTest.class
 ErrorDebugTest.class
+TailCommaTest.class
 ExternalTest.class
 InterpreterTest.class
 InferenceTest.class
