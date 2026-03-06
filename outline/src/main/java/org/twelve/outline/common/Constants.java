@@ -78,6 +78,8 @@ public final class Constants {
     public static final String UNARY_EXPRESSION = "unary_expression";
     public static final String IF_EXPRESSION = "if_expression";
     public static final String EQUALITY_EXPRESSION = "equality_expression";
+    public static final String AND_EXPRESSION = "and_expression";
+    public static final String OR_EXPRESSION = "or_expression";
     public static final String TERNARY_EXPRESSION = "ternary_expression";
     public static final String TERM_EXPRESSION = "term_expression";
     public static final String EXPRESSION = "expression";

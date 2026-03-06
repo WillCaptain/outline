@@ -2,6 +2,8 @@ package org.twelve.outline;
 
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.ast.Token;
+import org.twelve.gcp.inference.operator.BinaryOperator;
+import org.twelve.gcp.node.expression.BinaryExpression;
 import org.twelve.gcp.node.expression.LiteralNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
@@ -163,6 +165,31 @@ public class GCPConverter {
         this.converters.put(Constants.IF_EXPRESSION, new IfConverter(converters));
         this.converters.put(Constants.CONSEQUENCE, new ConsequenceConverter(converters));
         this.converters.put(Constants.EQUALITY_EXPRESSION, new EqualityExprConverter(converters));
+        // and_expression: equality_expression ('&&' equality_expression)*
+        // or_expression:  and_expression ('||' and_expression)*
+        // Build left-associative binary tree for chained &&/|| operators.
+        Converter logicalExprConverter = new Converter(converters) {
+            @Override
+            public Node convert(AST ast, ParseNode source, Node related) {
+                NonTerminalNode origin = (NonTerminalNode) source;
+                // Start with the leftmost operand
+                Node result = converters.get(origin.node(0).name()).convert(ast, origin.node(0));
+                // Fold remaining pairs (op, expr) left-to-right: ((a && b) && c)
+                int i = 1;
+                while (i + 1 < origin.nodes().size()) {
+                    BinaryOperator op = BinaryOperator.parse(origin.node(i).lexeme());
+                    Node right = converters.get(origin.node(i + 1).name()).convert(ast, origin.node(i + 1));
+                    result = new BinaryExpression(
+                            (org.twelve.gcp.node.expression.Expression) result,
+                            (org.twelve.gcp.node.expression.Expression) right,
+                            new org.twelve.gcp.node.operator.OperatorNode<>(ast, op));
+                    i += 2;
+                }
+                return result;
+            }
+        };
+        this.converters.put(Constants.AND_EXPRESSION, logicalExprConverter);
+        this.converters.put(Constants.OR_EXPRESSION,  logicalExprConverter);
         this.converters.put(Constants.TERNARY_EXPRESSION, new TernaryExprConverter(converters));
         //array
         this.converters.put(Constants.ARRAY, new ArrayNodeConverter(converters));
