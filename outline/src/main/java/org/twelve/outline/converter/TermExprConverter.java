@@ -21,9 +21,17 @@ public class TermExprConverter extends Converter{
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode term = cast(source);
-        Expression left = cast(converters.get(term.node(0).name()).convert(ast,term.node(0)));
-        Expression right = cast(converters.get(term.node(2).name()).convert(ast,term.node(2)));
-        OperatorNode<BinaryOperator> operator = new OperatorNode<>(ast,BinaryOperator.parse(term.node(1).lexeme()));
-        return new BinaryExpression(left,right,operator);
+        // Build a left-associative binary tree for chained */÷/% operators.
+        // Grammar: term_expression : unary_expression (('*' | '/' | '%' | '^') unary_expression)*
+        Expression result = cast(converters.get(term.node(0).name()).convert(ast, term.node(0)));
+        int i = 1;
+        while (i + 1 < term.nodes().size()) {
+            OperatorNode<BinaryOperator> op =
+                    new OperatorNode<>(ast, BinaryOperator.parse(term.node(i).lexeme()));
+            Expression right = cast(converters.get(term.node(i + 1).name()).convert(ast, term.node(i + 1)));
+            result = new BinaryExpression(result, right, op);
+            i += 2;
+        }
+        return result;
     }
 }

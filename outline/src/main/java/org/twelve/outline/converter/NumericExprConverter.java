@@ -21,8 +21,18 @@ public class NumericExprConverter extends Converter{
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode num = cast(source);
-        Expression x = cast(converters.get(num.node(0).name()).convert(ast,num.node(0)));
-        Expression y = cast(converters.get(num.node(2).name()).convert(ast,num.node(2)));
-        return new BinaryExpression(x, y, new OperatorNode<>(ast,BinaryOperator.parse(num.node(1).lexeme())));
+        // Build a left-associative binary tree for chained +/- operators.
+        // Grammar: numeric_expression : term_expression (('+' | '-') term_expression)*
+        // Parse-tree nodes interleave operands and operators: e0 op0 e1 op1 e2 ...
+        Expression result = cast(converters.get(num.node(0).name()).convert(ast, num.node(0)));
+        int i = 1;
+        while (i + 1 < num.nodes().size()) {
+            OperatorNode<BinaryOperator> op =
+                    new OperatorNode<>(ast, BinaryOperator.parse(num.node(i).lexeme()));
+            Expression right = cast(converters.get(num.node(i + 1).name()).convert(ast, num.node(i + 1)));
+            result = new BinaryExpression(result, right, op);
+            i += 2;
+        }
+        return result;
     }
 }

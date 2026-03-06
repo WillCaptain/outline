@@ -1,10 +1,11 @@
+DiagMeta.class
 ASTHelper.class
 RunnerHelper.class
 ParserStructureTest.class
 MetaTest.class
 ComplexInterpretTest.class
+MatchExhaustTest.class
 ErrorDebugTest.class
-TailCommaTest.class
 ExternalTest.class
 InterpreterTest.class
 InferenceTest.class

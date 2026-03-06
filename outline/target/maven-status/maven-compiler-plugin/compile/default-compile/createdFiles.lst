@@ -13,6 +13,7 @@ org/twelve/outline/converter/ConsequenceConverter.class
 org/twelve/outline/ExtendOutlineConverter.class
 org/twelve/outline/converter/NumberTypeConverter.class
 org/twelve/outline/converter/FactorConverter.class
+org/twelve/outline/GCPConverter$3.class
 org/twelve/outline/wrappernode/ArgumentWrapper.class
 org/twelve/outline/TupleTypeConverter.class
 org/twelve/outline/converter/ArrayExpressionConverter.class

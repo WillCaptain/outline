@@ -3,6 +3,7 @@
 /Users/imac/Documents/code/github/outline/outline/src/test/java/BuiltinTypeTest.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/ChurchTest.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/ComplexInterpretTest.java
+/Users/imac/Documents/code/github/outline/outline/src/test/java/DiagMeta.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/ErrorDebugTest.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/ExternalTest.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/GCPInferenceTest.java
@@ -14,4 +15,3 @@
 /Users/imac/Documents/code/github/outline/outline/src/test/java/MetaTest.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/ParserStructureTest.java
 /Users/imac/Documents/code/github/outline/outline/src/test/java/RunnerHelper.java
-/Users/imac/Documents/code/github/outline/outline/src/test/java/TailCommaTest.java
