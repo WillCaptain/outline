@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="GCPInferenceTest" time="0.147" tests="31" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="AsyncTest" time="0.299" tests="20" errors="0" skipped="0" failures="0">
   <properties>
     <property name="socksProxyHost" value="127.0.0.1"/>
     <property name="http.proxyHost" value="127.0.0.1"/>
@@ -64,48 +64,24 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="test_gcp_has_to_be" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_add_expression" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_multi_defined_projection" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_defined_to_be" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_declare_to_be" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_generic_refer_each_other" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_declared_hof_projection" classname="GCPInferenceTest" time="0.003"/>
-  <testcase name="test_gcp_extend_hof_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_dict_projection" classname="GCPInferenceTest" time="0.006"/>
-  <testcase name="test_extend_entity_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_argument_reference_for_simple_function" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_tuple_projection" classname="GCPInferenceTest" time="0.01"/>
-  <testcase name="test_complex_gcp_back_propagation" classname="GCPInferenceTest" time="0.005">
-    <system-err><![CDATA[--- inferred=true errors=1 ---
-  SYM [lift] : (any->null)->(null->null)->any->null
-  SYM [get_score] : {test: any}->null
-  SYM [is_passing] : {points: Integer}->Bool
-  SYM [is_ace] : {score: Integer}->Bool
-  SYM [check_pass] : {test: {points: Integer}}->Bool
-  SYM [check_ace] : {test: {score: Integer}}->Bool
-  SYM [alice] : {test: {score: Integer,gpa: Double},name: String,rank: Integer}
-  SYM [pass] : Bool
-  SYM [ace] : Bool
-  ERR[PROJECT_FAIL]: {test: {score: Integer,gpa: Double},name: String,rank: Integer} mismatch with {test: `{points: Integ
-]]></system-err>
-  </testcase>
-  <testcase name="test_extend_hasTo_defined_projection" classname="GCPInferenceTest" time="0.004"/>
-  <testcase name="test_gcp_only_reference_for_entity_return_function" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_entity_hof_projection_1" classname="GCPInferenceTest" time="0.008"/>
-  <testcase name="test_entity_hof_projection_2" classname="GCPInferenceTest" time="0.007"/>
-  <testcase name="test_entity_hof_projection_3" classname="GCPInferenceTest" time="0.006"/>
-  <testcase name="test_entity_hof_projection_4" classname="GCPInferenceTest" time="0.007"/>
-  <testcase name="test_entity_hof_projection_5" classname="GCPInferenceTest" time="0.023"/>
-  <testcase name="test_gcp_hof_projection_1" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_hof_projection_2" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_hof_projection_3" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_hof_projection_4" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_complicated_hof_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_extend_to_be" classname="GCPInferenceTest" time="0.0"/>
-  <testcase name="test_multi_extend_projection" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_only_reference_for_simple_function" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_array_projection" classname="GCPInferenceTest" time="0.005"/>
-  <testcase name="test_gcp_recursive_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_self_return_gcp" classname="GCPInferenceTest" time="0.032"/>
+  <testcase name="interpret_await_named_promise" classname="AsyncTest" time="0.225"/>
+  <testcase name="infer_await_unwraps_promise_to_inner_type" classname="AsyncTest" time="0.002"/>
+  <testcase name="interpret_catch_not_triggered_on_success" classname="AsyncTest" time="0.027"/>
+  <testcase name="infer_await_on_non_promise_reports_error" classname="AsyncTest" time="0.002"/>
+  <testcase name="interpret_await_async_expression_with_arithmetic" classname="AsyncTest" time="0.002"/>
+  <testcase name="interpret_catch_callback_receives_message_on_failure" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_async_integer_literal_is_promise_integer" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_then_not_triggered_on_failure" classname="AsyncTest" time="0.026"/>
+  <testcase name="interpret_async_produces_promise_value" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_await_async_string" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_then_callback_receives_resolved_value" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_promise_then_member_is_function" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_async_lambda_is_promise_function" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_multiple_await_calls" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_async_string_literal_is_promise_string" classname="AsyncTest" time="0.0"/>
+  <testcase name="infer_promise_toString_includes_type_name" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_promise_catch_member_is_function" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_await_async_function_call" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_await_async_integer" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_promise_display_resolves_after_await" classname="AsyncTest" time="0.001"/>
 </testsuite>

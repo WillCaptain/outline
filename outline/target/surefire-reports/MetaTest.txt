@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: GCPInferenceTest
+Test set: MetaTest
 -------------------------------------------------------------------------------
-Tests run: 31, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.147 s -- in GCPInferenceTest
+Tests run: 36, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.842 s -- in MetaTest

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="GCPInferenceTest" time="0.147" tests="31" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="MetaTest" time="0.842" tests="36" errors="0" skipped="0" failures="0">
   <properties>
     <property name="socksProxyHost" value="127.0.0.1"/>
     <property name="http.proxyHost" value="127.0.0.1"/>
@@ -64,48 +64,40 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="test_gcp_has_to_be" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_add_expression" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_multi_defined_projection" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_defined_to_be" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_declare_to_be" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_generic_refer_each_other" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_declared_hof_projection" classname="GCPInferenceTest" time="0.003"/>
-  <testcase name="test_gcp_extend_hof_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_dict_projection" classname="GCPInferenceTest" time="0.006"/>
-  <testcase name="test_extend_entity_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_argument_reference_for_simple_function" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_tuple_projection" classname="GCPInferenceTest" time="0.01"/>
-  <testcase name="test_complex_gcp_back_propagation" classname="GCPInferenceTest" time="0.005">
-    <system-err><![CDATA[--- inferred=true errors=1 ---
-  SYM [lift] : (any->null)->(null->null)->any->null
-  SYM [get_score] : {test: any}->null
-  SYM [is_passing] : {points: Integer}->Bool
-  SYM [is_ace] : {score: Integer}->Bool
-  SYM [check_pass] : {test: {points: Integer}}->Bool
-  SYM [check_ace] : {test: {score: Integer}}->Bool
-  SYM [alice] : {test: {score: Integer,gpa: Double},name: String,rank: Integer}
-  SYM [pass] : Bool
-  SYM [ace] : Bool
-  ERR[PROJECT_FAIL]: {test: {score: Integer,gpa: Double},name: String,rank: Integer} mismatch with {test: `{points: Integ
-]]></system-err>
-  </testcase>
-  <testcase name="test_extend_hasTo_defined_projection" classname="GCPInferenceTest" time="0.004"/>
-  <testcase name="test_gcp_only_reference_for_entity_return_function" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_entity_hof_projection_1" classname="GCPInferenceTest" time="0.008"/>
-  <testcase name="test_entity_hof_projection_2" classname="GCPInferenceTest" time="0.007"/>
-  <testcase name="test_entity_hof_projection_3" classname="GCPInferenceTest" time="0.006"/>
-  <testcase name="test_entity_hof_projection_4" classname="GCPInferenceTest" time="0.007"/>
-  <testcase name="test_entity_hof_projection_5" classname="GCPInferenceTest" time="0.023"/>
-  <testcase name="test_gcp_hof_projection_1" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_hof_projection_2" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_hof_projection_3" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_hof_projection_4" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_complicated_hof_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_gcp_extend_to_be" classname="GCPInferenceTest" time="0.0"/>
-  <testcase name="test_multi_extend_projection" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_gcp_only_reference_for_simple_function" classname="GCPInferenceTest" time="0.001"/>
-  <testcase name="test_array_projection" classname="GCPInferenceTest" time="0.005"/>
-  <testcase name="test_gcp_recursive_projection" classname="GCPInferenceTest" time="0.002"/>
-  <testcase name="test_self_return_gcp" classname="GCPInferenceTest" time="0.032"/>
+  <testcase name="test_MetaExtractor_resolveOutline_unwraps_returnable" classname="MetaTest" time="0.076"/>
+  <testcase name="test_meta_block_comment_on_function" classname="MetaTest" time="0.012"/>
+  <testcase name="test_fieldsOf_lambda_param_outline_returns_entity_fields" classname="MetaTest" time="0.039"/>
+  <testcase name="test_meta_imports_and_exports" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_member_description_in_toMap" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_ast_without_source_still_works" classname="MetaTest" time="0.001"/>
+  <testcase name="test_meta_member_origin_in_toMap" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_single_line_comment_description" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_membersOf_result_of_first" classname="MetaTest" time="0.02"/>
+  <testcase name="test_asf_meta_multiple_modules" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_membersOf_lambda_param_returns_accessed_fields" classname="MetaTest" time="0.03"/>
+  <testcase name="test_meta_collection_variable_type_uses_declared_name" classname="MetaTest" time="0.023"/>
+  <testcase name="test_meta_lambda_param_type_is_structural_access_type" classname="MetaTest" time="0.03"/>
+  <testcase name="test_meta_member_origin_base_and_own" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_resolve_symbol_at_position" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_variable_type_from_first_resolves_to_entity_name" classname="MetaTest" time="0.021"/>
+  <testcase name="test_meta_find_by_name" classname="MetaTest" time="0.003"/>
+  <testcase name="test_meta_member_comments_extracted" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_ontology_outline_fields_and_methods" classname="MetaTest" time="0.007"/>
+  <testcase name="test_meta_module_name_and_namespace" classname="MetaTest" time="0.001"/>
+  <testcase name="test_meta_member_block_comment_extracted" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_membersOf_for_dot_completion" classname="MetaTest" time="0.005"/>
+  <testcase name="test_membersOf_undefined_symbol_returns_empty" classname="MetaTest" time="0.018"/>
+  <testcase name="test_MetaExtractor_fieldsOf_for_returnable_outline" classname="MetaTest" time="0.01"/>
+  <testcase name="test_meta_variables_with_type_and_mutable" classname="MetaTest" time="0.001"/>
+  <testcase name="test_meta_scope_toMap" classname="MetaTest" time="0.001"/>
+  <testcase name="test_meta_scopeAt_finds_innermost" classname="MetaTest" time="0.002"/>
+  <testcase name="test_MetaExtractor_fieldsOf_for_genericable_outline" classname="MetaTest" time="0.01"/>
+  <testcase name="test_meta_toMap_json_serializable" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_member_without_comment_has_null_description" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_outline_with_methods_and_comments" classname="MetaTest" time="0.003"/>
+  <testcase name="test_meta_member_origin_own" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_visibleSymbols_at_position" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_module_description_from_comment" classname="MetaTest" time="0.001"/>
+  <testcase name="test_meta_resolve_parameter_in_function_scope" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_scopes_exist" classname="MetaTest" time="0.001"/>
 </testsuite>
