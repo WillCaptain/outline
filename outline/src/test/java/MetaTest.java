@@ -1790,6 +1790,86 @@ public class MetaTest {
                         + aggregateCall.outline());
     }
 
+    /**
+     * Tuple of two VirtualSet pipelines that both use deep nested lambdas AND
+     * {@code map()} (which changes the element type via generic {@code <b>}).
+     *
+     * <pre>{@code
+     * (
+     *   schools.filter(s->s.city().filter(c->c.population_count>500000).exists())
+     *          .order_desc_by(s->s.students().count())
+     *          .take(3)
+     *          .map(s->s.name)
+     *          .to_list(),          // expects [String]
+     *   schools.filter(s->s.city().filter(c->c.population_count>500000).exists())
+     *          .order_desc_by(s->s.students().count())
+     *          .take(3)
+     *          .map(s->s.students().count())
+     *          .to_list()           // expects [Int]
+     * )
+     * }</pre>
+     *
+     * Regression: TupleNode must not be considered "fully inferred" until all descendant
+     * expressions (including map's generic {@code <b>} parameter) are resolved.
+     */
+    @Test
+    void test_virtualset_tuple_map_to_list_resolves() {
+        String code = "module org.test.vs.tuplemaplist\n" + FULL_SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> (
+                    schools.filter(s -> s.city().filter(c -> c.population_count > 500000).exists())
+                           .order_desc_by(s -> s.students().count())
+                           .take(3)
+                           .map(s -> s.name)
+                           .to_list(),
+                    schools.filter(s -> s.city().filter(c -> c.population_count > 500000).exists())
+                           .order_desc_by(s -> s.students().count())
+                           .take(3)
+                           .map(s -> s.students().count())
+                           .to_list()
+                );
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for tuple of map/to_list pipelines; got: " + ast.errors());
+
+        // Both to_list() calls must return typed arrays — no UNKNOWN, no unresolved <b>
+        List<org.twelve.gcp.ast.Node> toListCalls = findAllMemberCallNodes(ast.program(), "to_list");
+        assertEquals(2, toListCalls.size(),
+                "Expected exactly 2 to_list() calls in the tuple; found: " + toListCalls.size());
+        for (org.twelve.gcp.ast.Node toListCall : toListCalls) {
+            org.twelve.gcp.outline.Outline ol = toListCall.outline();
+            assertNotNull(ol, "to_list() must have non-null outline");
+            assertFalse(ol.containsUnknown(),
+                    "to_list() must not contain UNKNOWN; got: " + ol);
+            assertInstanceOf(org.twelve.gcp.outline.adt.Array.class, ol,
+                    "to_list() must return an Array; got: " + ol.getClass().getSimpleName());
+        }
+
+        // First to_list(): map(s->s.name) → VirtualSet<String> → [String]
+        org.twelve.gcp.outline.Outline first = toListCalls.get(0).outline();
+        org.twelve.gcp.outline.Outline firstElem =
+                ((org.twelve.gcp.outline.adt.Array) first).itemOutline();
+        assertFalse(firstElem.containsUnknown(),
+                "First to_list() element (s.name) must be String, not UNKNOWN; got: " + firstElem);
+        assertEquals(ast.String.toString(), firstElem.toString(),
+                "First to_list() element type must be String (from s.name); got: " + firstElem);
+
+        // Second to_list(): map(s->s.students().count()) → VirtualSet<Int> → [Int]
+        org.twelve.gcp.outline.Outline second = toListCalls.get(1).outline();
+        org.twelve.gcp.outline.Outline secondElem =
+                ((org.twelve.gcp.outline.adt.Array) second).itemOutline();
+        assertFalse(secondElem.containsUnknown(),
+                "Second to_list() element (students().count()) must be Int, not UNKNOWN; got: "
+                        + secondElem);
+        // count() → Int (a subtype of Number); verify it matches ast.Integer
+        assertEquals(ast.Integer.toString(), secondElem.toString(),
+                "Second to_list() element type must be Int (from students().count()); got: "
+                        + secondElem);
+    }
+
     /** Utility: find the first identifier node with the given lexeme in an AST subtree. */
     private static org.twelve.gcp.ast.Node findIdentifier(org.twelve.gcp.ast.Node node, String name) {
         if (node == null) return null;
