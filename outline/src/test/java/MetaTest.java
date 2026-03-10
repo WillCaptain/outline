@@ -743,36 +743,36 @@ public class MetaTest {
     //   After fix:  first_country.type = "Country"         → membersOf = Country fields
 
     /**
-     * Minimal VirtualSet definition prepended AFTER the module declaration.
-     * Usage: "module org.test.xxx\n" + VS_PREAMBLE + "outline Country = ...".
+     * Full system outlines (VirtualSet, Aggregator, GroupBy) from
+     * {@link OntologyFixtures#SYSTEM_OUTLINES}.
+     * Prepended after the module declaration for tests that need the real type system.
      */
-    private static final String VS_PREAMBLE = """
-            outline VirtualSet = <a>{
-                filter: (a -> Bool) -> ~this,
-                first:  Unit -> a,
-                count:  Unit -> Int
-            };
-            """;
+    private static final String VS_PREAMBLE = OntologyFixtures.SYSTEM_OUTLINES;
 
     /**
-     * Lambda parameter type in GCP's structural inference system:
+     * Lambda parameter type resolution:
      *
-     * GCP uses structural (use-site) type inference for lambda parameters.  When you write
-     * {@code countries.filter(c -> c.code == "CN")}, the inferred type of {@code c} is based
-     * on the structural usage pattern: {@code c} is accessed as {@code {code: String}}, so
-     * the Generic's {@code definedToBe} (lower-bound structural constraint) = {@code {code: String}}.
+     * {@code MetaExtractor.resolveOutline} applies a five-dimension priority when resolving
+     * a {@link org.twelve.gcp.outline.projectable.Genericable}:
+     * <pre>
+     *   1. extendToBe    — upper bound from actual assigned / projected value
+     *   2. projectedType — concrete entity recorded after a successful projectEntity pass;
+     *                      set in Genericable.projectEntity when outline.is(this) passes.
+     *                      For lambda param c in filter(c->c.) this IS Country.
+     *   3. declaredToBe  — explicit programmer annotation (e.g. {@code (c: Country) -> ...})
+     *   4. hasToBe       — usage constraint from surrounding context
+     *   5. definedToBe   — structural access pattern (fields actually accessed in the body)
+     * </pre>
      *
-     * The full Country declaration type is available via the surrounding context, but GCP does
-     * NOT propagate it back into the lambda param's {@code extendToBe} during projection.
-     * This is a known characteristic of the structural inference engine.
+     * For an unannotated lambda param {@code c} in
+     * {@code countries.filter(c -> c.code == "CN")}:
+     * - extendToBe   = NOTHING
+     * - projectedType= Country  ← dimension 2 wins (set by Genericable.projectEntity)
+     * - declaredToBe = ANY
+     * - hasToBe      = ANY
+     * - definedToBe  = {code: String}
      *
-     * Therefore:
-     * - {@code c.type} = the structural access type "{code: String}" (Genericable resolved to
-     *   its definedToBe constraint) — this is the CORRECT current behavior.
-     * - {@code membersOf("c")} returns at least the accessed fields.
-     *
-     * If GCP's inference is later enhanced to propagate the declared parameter type (Country)
-     * into the lambda param's extendToBe, these assertions should be updated to expect "Country".
+     * Therefore {@code c.type} resolves to "Country" and membersOf returns all Country fields.
      */
     @Test
     void test_meta_lambda_param_type_is_structural_access_type() {
@@ -793,12 +793,10 @@ public class MetaTest {
         SymbolMeta cSym = meta.resolve("c", lambdaBodyPos);
         assertNotNull(cSym, "Should find lambda parameter 'c' inside the lambda body");
         assertEquals("parameter", cSym.kind());
-        // c's type is the Genericable's structural type: the minimal access pattern used in the body.
-        // The backtick-quoted form "`{code: String}`" or the plain form "{code: String}" are both acceptable.
         assertNotNull(cSym.type(), "Lambda param 'c' must have a non-null type");
-        assertTrue(cSym.type().contains("code"),
-                "Lambda param 'c' type should at least reflect the accessed 'code' field. Got: "
-                        + cSym.type());
+        // After projectEntity sets projectedType = Country, resolveOutline returns Country.
+        assertEquals("Country", cSym.type(),
+                "Lambda param 'c' type should be 'Country' (via projectedType). Got: " + cSym.type());
     }
 
     @Test
@@ -816,14 +814,15 @@ public class MetaTest {
 
         int lambdaBodyPos = code.indexOf("c.code") + 1;
 
-        // membersOf("c") returns the fields that GCP inferred from usage patterns.
-        // With structural inference, this is at minimum the accessed fields.
-        // Collection-level methods (filter, count) must NOT appear.
+        // After projectEntity sets projectedType = Country, membersOf returns ALL Country fields.
         List<FieldMeta> members = meta.membersOf("c", lambdaBodyPos);
         assertFalse(members.isEmpty(),
-                "membersOf 'c' should return at least the accessed fields; got empty list");
+                "membersOf 'c' should return Country fields; got empty list");
         assertTrue(members.stream().anyMatch(f -> "code".equals(f.name())),
-                "Expected 'code' (the accessed field) in 'c' members: "
+                "Expected 'code' field in 'c' members: "
+                        + members.stream().map(FieldMeta::name).toList());
+        assertTrue(members.stream().anyMatch(f -> "name".equals(f.name())),
+                "Expected 'name' field (full Country, not just accessed fields): "
                         + members.stream().map(FieldMeta::name).toList());
         assertFalse(members.stream().anyMatch(f -> "filter".equals(f.name())),
                 "Collection method 'filter' must NOT appear for lambda param 'c'");
@@ -948,11 +947,15 @@ public class MetaTest {
 
     @Test
     void test_MetaExtractor_fieldsOf_for_genericable_outline() {
-        // When given a Genericable (lambda param outline), fieldsOf resolves via guess()
-        // which returns the structural access type (definedToBe = {code: String}).
-        // Full Country type is NOT available from the Generic's own constraints because GCP's
-        // structural inference does not propagate the declared formal parameter type back into
-        // the lambda param's extendToBe.  fieldsOf returns the inferred structural fields.
+        // When given a Genericable (lambda param outline), resolveOutline applies
+        // the five-dimension priority: extendToBe → projectedType → declaredToBe → hasToBe → definedToBe.
+        // For a lambda param c in filter(c -> c.code == "CN"):
+        //   extendToBe   = NOTHING  (no direct assignment)
+        //   projectedType= Country  ← dimension 2 wins (set by Genericable.projectEntity)
+        //   declaredToBe = ANY
+        //   hasToBe      = ANY
+        //   definedToBe  = {code: String}
+        // So fieldsOf returns ALL Country fields (code AND name).
         String code = "module org.test.genericablefields\n" + VS_PREAMBLE + """
                 outline Country = { code: String, name: String };
                 outline Countries = VirtualSet<Country>{};
@@ -972,12 +975,12 @@ public class MetaTest {
 
         List<FieldMeta> fields = MetaExtractor.fieldsOf(cSym.outline());
         assertFalse(fields.isEmpty(),
-                "fieldsOf(Genericable) should return at least the accessed structural fields; got []");
+                "fieldsOf(Genericable) should return Country fields; got []");
         assertTrue(fields.stream().anyMatch(f -> "code".equals(f.name())),
-                "Expected 'code' (accessed field): " + fields.stream().map(FieldMeta::name).toList());
-        // 'name' is NOT expected here: GCP's structural inference for the lambda param only
-        // captures the fields actually accessed in the body (c.code), not all of Country's fields.
-        // This is a known current limitation.
+                "Expected 'code' field: " + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "Expected 'name' field (full Country via projectedType): "
+                        + fields.stream().map(FieldMeta::name).toList());
     }
 
     @Test
@@ -1047,7 +1050,12 @@ public class MetaTest {
 
         List<FieldMeta> fields = org.twelve.gcp.meta.MetaExtractor.fieldsOf(outline);
         assertFalse(fields.isEmpty(),
-                "fieldsOf(c.outline()) must return members; got empty. outline=" + outline);
+                "fieldsOf(c.outline()) must return Country fields; got empty. outline=" + outline);
+        assertTrue(fields.stream().anyMatch(f -> "code".equals(f.name())),
+                "Expected 'code' field: " + fields.stream().map(org.twelve.gcp.meta.FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "Expected 'name' field (full Country via projectedType): "
+                        + fields.stream().map(org.twelve.gcp.meta.FieldMeta::name).toList());
         assertFalse(fields.stream().anyMatch(f -> "filter".equals(f.name())),
                 "Collection method 'filter' must NOT appear for lambda param 'c'");
         assertFalse(fields.stream().anyMatch(f -> "count".equals(f.name())),
@@ -1081,12 +1089,331 @@ public class MetaTest {
                         + members.stream().map(FieldMeta::name).toList());
     }
 
+    /**
+     * resolveOutline priority — dimension 2: declaredToBe.
+     *
+     * When extendToBe is NOTHING (unconstrained from above) but the programmer has
+     * explicitly annotated the parameter type, resolveOutline must fall through to
+     * declaredToBe and return the declared entity's members.
+     *
+     * Outline code:  let f = (c: Country) -> c.code;
+     *   c.extendToBe  = NOTHING  (parameter, not assigned a value)
+     *   c.declaredToBe= Country  ← second priority wins
+     *   c.hasToBe     = ANY
+     *   c.definedToBe = {code:String} (structural usage)
+     *
+     * Expected: fieldsOf(c) includes BOTH 'code' and 'name' (full Country entity).
+     */
+    @Test
+    void test_resolveOutline_priority_declaredToBe_when_extendToBe_is_nothing() {
+        String code = "module org.test.declaredprio\n" + VS_PREAMBLE + """
+                outline Country = { code: String, name: String };
+                outline Countries = VirtualSet<Country>{};
+                let countries = __ontology_repo__<Countries>;
+                let f = (c: Country) -> c.code;
+                export f, countries;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+
+        var cSym = ast.symbolEnv().allScopes().stream()
+                .flatMap(s -> s.symbols().values().stream())
+                .filter(s -> "c".equals(s.name()))
+                .findFirst().orElse(null);
+        assertNotNull(cSym, "Should find parameter 'c' in symbol scopes");
+
+        Outline resolved = MetaExtractor.resolveOutline(cSym.outline());
+        assertNotNull(resolved, "resolveOutline should not be null");
+        assertInstanceOf(Entity.class, resolved,
+                "declaredToBe=Country should be picked as second priority. Got: " + resolved);
+
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(cSym.outline());
+        assertTrue(fields.stream().anyMatch(f -> "code".equals(f.name())),
+                "Expected 'code' field from Country: " + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "Expected 'name' field from Country (full entity, not just accessed fields): "
+                        + fields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * resolveOutline priority — dimension 2: projectedType (set by Genericable.projectEntity).
+     *
+     * After a successful projection against a concrete entity, projectEntity stores the
+     * entity in {@code projectedType}.  resolveOutline checks this field at priority 2,
+     * before declaredToBe / hasToBe / definedToBe.
+     *
+     * Outline code:  countries.filter(c -> c.code == "CN")
+     *   c.extendToBe   = NOTHING
+     *   c.projectedType= Country  ← dimension 2 wins
+     *   c.declaredToBe = ANY
+     *   c.hasToBe      = ANY
+     *   c.definedToBe  = {code:String}
+     *
+     * Expected: fieldsOf(c) returns BOTH 'code' AND 'name' (full Country entity).
+     */
+    @Test
+    void test_resolveOutline_priority_definedToBe_as_fallback() {
+        String code = "module org.test.definedprio\n" + VS_PREAMBLE + """
+                outline Country = { code: String, name: String };
+                outline Countries = VirtualSet<Country>{};
+                let countries = __ontology_repo__<Countries>;
+                let result = countries.filter(c -> c.code == "CN");
+                export result, countries;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+
+        var cSym = ast.symbolEnv().allScopes().stream()
+                .flatMap(s -> s.symbols().values().stream())
+                .filter(s -> "c".equals(s.name()))
+                .findFirst().orElse(null);
+        assertNotNull(cSym, "Should find lambda parameter 'c'");
+
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(cSym.outline());
+        assertFalse(fields.isEmpty(),
+                "fieldsOf(c) should return Country fields via projectedType; got empty");
+        assertTrue(fields.stream().anyMatch(f -> "code".equals(f.name())),
+                "Expected 'code' field: " + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "Expected 'name' field (full Country via projectedType): "
+                        + fields.stream().map(FieldMeta::name).toList());
+    }
+
+    // ── Navigation method chain tests ────────────────────────────────────────
+    // Scenario: schools.order_desc_by(s->s.students().count())
+    //   s        — lambda parameter of type School (explicitly annotated or inferred)
+    //   s.students() — navigation call returning Students (VirtualSet<Student>)
+    //   students(). — must popup Students members (count, filter, order_by, …)
+    //
+    // Root cause (regression guard): MemberAccessorInference.addMember checked only
+    // the structural definedToBe entity (empty) and created an AccessorGeneric even
+    // when the declared type (School) already had the member (students: Unit->Students).
+    // Fix: check entity.getMember(name) on the concrete min() entity before creating
+    // an AccessorGeneric.
+
+    /**
+     * School/Student ontology using the real VirtualSet from {@link OntologyFixtures#SYSTEM_OUTLINES}.
+     * Used by the navigation-chain tests below.
+     */
+    private static final String SCHOOL_PREAMBLE = OntologyFixtures.SYSTEM_OUTLINES + """
+            outline Student = { id: 0, name: String, age: Int };
+            outline Students = VirtualSet<Student>{};
+            outline School = { id: 0, name: String, students: Unit -> Students };
+            outline Schools = VirtualSet<School>{};
+            """;
+
+    /**
+     * Sanity: {@code (s: School) -> s.students().count()} must infer without errors,
+     * and the result of {@code s.students()} must be recognised as a callable entity.
+     */
+    @Test
+    void test_meta_nav_chain_inference_no_errors() {
+        String code = "module org.test.navchain\n" + SCHOOL_PREAMBLE + """
+                let f = (s: School) -> s.students().count();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no inference errors for s.students().count(), got: " + ast.errors());
+    }
+
+    /**
+     * Core regression: {@code MetaExtractor.fieldsOf(callNode.outline())} must return
+     * {@code Students} members when {@code callNode} is the {@code s.students()} call.
+     *
+     * <p>Failure mode: if the call node's outline is an {@link org.twelve.gcp.outline.projectable.AccessorGeneric}
+     * whose {@code hasToBe = Unit->Students} (a Function), resolveOutline stops at
+     * the Function and fieldsOf returns []. The fix ensures the return type is unwrapped.
+     */
+    @Test
+    void test_meta_fieldsOf_chained_navigation_method_call_result() {
+        String code = "module org.test.navcallfields\n" + SCHOOL_PREAMBLE + """
+                let f = (s: School) -> s.students().count();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Precondition: no errors; got: " + ast.errors());
+
+        // Find the s.students() call node
+        org.twelve.gcp.ast.Node studentsCall = findMemberCallNode(ast.program(), "students");
+        assertNotNull(studentsCall, "Should find s.students() call node in AST");
+
+        org.twelve.gcp.outline.Outline callOutline = studentsCall.outline();
+        assertNotNull(callOutline, "s.students() call should have a non-null outline");
+
+        // MetaExtractor.fieldsOf must return Students members (count, filter, first)
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(callOutline);
+        assertFalse(fields.isEmpty(),
+                "MetaExtractor.fieldsOf(s.students().outline()) should return Students members; "
+                        + "got empty. callOutline=" + callOutline
+                        + " (class=" + callOutline.getClass().getSimpleName() + ")");
+        assertTrue(fields.stream().anyMatch(f -> "count".equals(f.name())),
+                "Expected 'count' in Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "filter".equals(f.name())),
+                "Expected 'filter' in Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "first".equals(f.name())),
+                "Expected 'first' in Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        // School-specific members must NOT appear in Students
+        assertFalse(fields.stream().anyMatch(f -> "students".equals(f.name())),
+                "'students' is a School member and must NOT appear in Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * Verifies that after the fix in {@link org.twelve.gcp.inference.MemberAccessorInference},
+     * the {@code s.students} member-accessor no longer returns an {@code AccessorGeneric}
+     * placeholder but resolves directly to the concrete {@code Unit->Students} function type
+     * declared in {@code School}.
+     *
+     * <p>Previously, {@code addMember} checked the structural {@code definedToBe} entity
+     * (which didn't know about {@code students}) and created a fresh {@code AccessorGeneric}.
+     * The fix adds a check on the concrete entity ({@code generic.min() = School}) so that
+     * the already-declared member type is returned directly.
+     */
+    @Test
+    void test_meta_nav_accessor_outline_is_concrete_function_not_accessor_generic() {
+        String code = "module org.test.navmembacc\n" + SCHOOL_PREAMBLE + """
+                let f = (s: School) -> s.students().count();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Precondition: no errors; got: " + ast.errors());
+
+        // Find the s.students accessor node (the MemberAccessor inside the call)
+        org.twelve.gcp.ast.Node studentsAccessor = findMemberAccessorNode(ast.program(), "students");
+        assertNotNull(studentsAccessor, "Should find s.students accessor node in AST");
+
+        org.twelve.gcp.outline.Outline accessorOutline = studentsAccessor.outline();
+        assertNotNull(accessorOutline, "s.students accessor should have a non-null outline");
+
+        // After the fix: accessor outline must be a concrete Function (Unit->Students),
+        // NOT an AccessorGeneric placeholder.
+        assertFalse(accessorOutline instanceof org.twelve.gcp.outline.projectable.AccessorGeneric,
+                "s.students accessor outline should NOT be an AccessorGeneric after the fix. "
+                        + "Got: " + accessorOutline
+                        + " (class=" + accessorOutline.getClass().getSimpleName() + ")");
+        assertInstanceOf(org.twelve.gcp.outline.projectable.Function.class, accessorOutline,
+                "s.students accessor outline should be a Function (Unit->Students). "
+                        + "Got: " + accessorOutline
+                        + " (class=" + accessorOutline.getClass().getSimpleName() + ")");
+
+        // The return type of the function (Unit->Students) must be Students
+        org.twelve.gcp.outline.projectable.Function<?,?> func =
+                (org.twelve.gcp.outline.projectable.Function<?,?>) accessorOutline;
+        org.twelve.gcp.outline.Outline returnType = func.returns().supposedToBe();
+        assertNotNull(returnType, "Function return type must not be null");
+        // The return type resolves to Students (a ProductADT with count, filter, first members)
+        List<FieldMeta> returnMembers = MetaExtractor.fieldsOf(returnType);
+        assertTrue(returnMembers.stream().anyMatch(f -> "count".equals(f.name())),
+                "Return type of Unit->Students should have 'count': "
+                        + returnMembers.stream().map(FieldMeta::name).toList());
+    }
+
     /** Utility: find the first identifier node with the given lexeme in an AST subtree. */
     private static org.twelve.gcp.ast.Node findIdentifier(org.twelve.gcp.ast.Node node, String name) {
         if (node == null) return null;
         if (name.equals(node.lexeme())) return node;
         for (org.twelve.gcp.ast.Node child : node.nodes()) {
             org.twelve.gcp.ast.Node found = findIdentifier(child, name);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /**
+     * Finds the first {@link org.twelve.gcp.node.function.FunctionCallNode} in the subtree
+     * whose callee is a {@link org.twelve.gcp.node.expression.accessor.MemberAccessor}
+     * with the specified member name.
+     */
+    private static org.twelve.gcp.ast.Node findMemberCallNode(org.twelve.gcp.ast.Node node, String memberName) {
+        if (node == null) return null;
+        if (node instanceof org.twelve.gcp.node.function.FunctionCallNode callNode) {
+            if (callNode.function() instanceof org.twelve.gcp.node.expression.accessor.MemberAccessor ma) {
+                if (memberName.equals(ma.member().name())) return callNode;
+            }
+        }
+        for (org.twelve.gcp.ast.Node child : node.nodes()) {
+            org.twelve.gcp.ast.Node found = findMemberCallNode(child, memberName);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /**
+     * End-to-end smoke test using the real {@link OntologyFixtures#SYSTEM_OUTLINES}
+     * (full VirtualSet / Aggregator / GroupBy) together with the school ontology.
+     *
+     * <p>Verifies that chaining VirtualSet operations on a typed collection yields
+     * correct member visibility for dot-completion.  The scenario here is:
+     * {@code (students: Students) -> students.filter(s -> s.age > 18).count()} — uses
+     * {@code filter} (returns {@code ~this = Students}) then {@code count} (returns Int).
+     *
+     * <p>Also checks that {@code MetaExtractor.fieldsOf} on the result of
+     * {@code students.filter(...)} returns the full VirtualSet member set (including
+     * methods like {@code order_by}, {@code group_by} inherited from SYSTEM_OUTLINES),
+     * confirming that {@link OntologyFixtures#SYSTEM_OUTLINES} integrates correctly with
+     * the meta-extraction layer.
+     */
+    @Test
+    void test_meta_system_outlines_virtualset_chaining_e2e() {
+        String code = "module org.test.vschain\n" + SCHOOL_PREAMBLE + """
+                let f = (students: Students) -> students.filter(s -> s.age > 18).count();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for VirtualSet chaining; got: " + ast.errors());
+
+        // find the students.filter(...) call node
+        org.twelve.gcp.ast.Node filterCall = findMemberCallNode(ast.program(), "filter");
+        assertNotNull(filterCall, "Should find students.filter() call node");
+
+        org.twelve.gcp.outline.Outline filterOutline = filterCall.outline();
+        assertNotNull(filterOutline, "students.filter() outline must not be null");
+
+        // filter returns ~this = Students; fieldsOf must return VirtualSet members
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(filterOutline);
+        assertFalse(fields.isEmpty(),
+                "fieldsOf(students.filter(...)) must return Students (VirtualSet) members; "
+                        + "got empty. outline=" + filterOutline
+                        + " (" + filterOutline.getClass().getSimpleName() + ")");
+        assertTrue(fields.stream().anyMatch(f -> "count".equals(f.name())),
+                "Expected 'count' (from VirtualSet) in filtered Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "order_by".equals(f.name())),
+                "Expected 'order_by' (from SYSTEM_OUTLINES VirtualSet) in filtered Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "group_by".equals(f.name())),
+                "Expected 'group_by' (from SYSTEM_OUTLINES GroupBy) in filtered Students members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertFalse(fields.stream().anyMatch(f -> "students".equals(f.name())),
+                "'students' is a School member; must NOT appear in Students/VirtualSet members");
+    }
+
+    /**
+     * Finds the first {@link org.twelve.gcp.node.expression.accessor.MemberAccessor} node
+     * in the subtree whose member name matches {@code memberName}.
+     */
+    private static org.twelve.gcp.ast.Node findMemberAccessorNode(org.twelve.gcp.ast.Node node, String memberName) {
+        if (node == null) return null;
+        if (node instanceof org.twelve.gcp.node.expression.accessor.MemberAccessor ma) {
+            if (memberName.equals(ma.member().name())) return ma;
+        }
+        for (org.twelve.gcp.ast.Node child : node.nodes()) {
+            org.twelve.gcp.ast.Node found = findMemberAccessorNode(child, memberName);
             if (found != null) return found;
         }
         return null;

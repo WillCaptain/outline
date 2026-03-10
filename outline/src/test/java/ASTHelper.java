@@ -1042,9 +1042,11 @@ public class ASTHelper {
                     //non-terminal operators
                     filter: (a->Bool) -> ~this,
                     order_by: (a -> ?) -> ~this,
+                    // Sort descending by projection field (? matches any orderable type); returns sorted new collection (~this)
+                    order_desc_by: (a -> ?) -> ~this,
                     take: Int -> Int -> ~this,
                     map: fx<b> (a->b) -> VirtualSet<b>,
-                    type:#"me",
+                    type:#"Virtual Set",
                 
                      //terminal operators
                      first: Unit -> a,
@@ -1613,9 +1615,10 @@ public class ASTHelper {
                 outline VirtualSet = <a>{
                     filter: (a->Bool) -> ~this,
                     order_by: (a -> ?) -> ~this,
+                    order_desc_by: (a -> ?) -> ~this,
                     take: Int -> Int -> ~this,
                     map: fx<b> (a->b) -> VirtualSet<b>,
-                    type:#"me",
+                    type:#"Virtual Set",
                      first: Unit -> a,
                      last: Unit -> a,
                      count: Unit -> Int,

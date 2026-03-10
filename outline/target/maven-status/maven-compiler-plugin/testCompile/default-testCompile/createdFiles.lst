@@ -3,6 +3,7 @@ ASTHelper.class
 RunnerHelper.class
 ParserStructureTest.class
 MetaTest.class
+OntologyFixtures.class
 ComplexInterpretTest.class
 MatchExhaustTest.class
 ErrorDebugTest.class
