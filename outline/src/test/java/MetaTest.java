@@ -1518,6 +1518,85 @@ public class MetaTest {
             """;
 
     /**
+     * Full school preamble with City (via Cities collection), Student (via Students collection),
+     * and School referencing both. Used for 2-level nested lambda inference tests.
+     *
+     * <pre>{@code
+     * schools.filter(s -> s.city().filter(c -> c.population_count > 500000).exists())
+     *        .order_desc_by(s -> s.students().count())
+     * }</pre>
+     */
+    private static final String FULL_SCHOOL_PREAMBLE = OntologyFixtures.SYSTEM_OUTLINES + """
+            outline City    = { id: 0, name: String, population_count: Int };
+            outline Cities  = VirtualSet<City>{};
+            outline Student = { id: 0, name: String, age: Int };
+            outline Students = VirtualSet<Student>{};
+            outline School   = { id: 0, name: String, city: Unit -> Cities, students: Unit -> Students };
+            outline Schools  = VirtualSet<School>{};
+            """;
+
+    /**
+     * 2-level nested lambda inference:
+     * <pre>{@code
+     * schools.filter(s -> s.city().filter(c -> c.population_count > 500000).exists())
+     *        .order_desc_by(s -> s.students().count())
+     * }</pre>
+     *
+     * <p>Inference must propagate across two independent lambda scopes:
+     * <ol>
+     *   <li>Outer {@code filter}: formal {@code (a -> Bool) = (School -> Bool)} → {@code s : School}</li>
+     *   <li>{@code s.city()} → {@code Cities = VirtualSet<City>}</li>
+     *   <li>Inner {@code filter}: formal {@code (a -> Bool) = (City -> Bool)} → {@code c : City}</li>
+     *   <li>{@code c.population_count > 500000 → Bool}; {@code exists() → Bool}</li>
+     *   <li>{@code order_desc_by}: formal {@code (a -> ?) = (School -> ?)} → {@code s : School}</li>
+     *   <li>{@code s.students().count() → Int}</li>
+     * </ol>
+     *
+     * <p>This requires at least 3 inference passes and must produce zero errors.
+     */
+    @Test
+    void test_virtualset_nested_city_filter_exists_order_desc_by_count() {
+        String code = "module org.test.vs.nested2\n" + FULL_SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) ->
+                    schools.filter(s -> s.city().filter(c -> c.population_count > 500000).exists())
+                           .order_desc_by(s -> s.students().count());
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for 2-level nested lambda; got: " + ast.errors());
+
+        // outer filter(s -> ...) → Schools (~this), no UNKNOWN
+        org.twelve.gcp.ast.Node outerFilter = findMemberCallNode(ast.program(), "filter");
+        assertNotNull(outerFilter, "Should find outer schools.filter() call");
+        assertFalse(outerFilter.outline().containsUnknown(),
+                "outer filter must resolve to Schools (~this), not UNKNOWN; got: "
+                        + outerFilter.outline());
+
+        // exists() resolves to Bool (validates the entire inner-filter chain resolved)
+        org.twelve.gcp.ast.Node existsCall = findMemberCallNode(ast.program(), "exists");
+        assertNotNull(existsCall, "Should find .exists() call node");
+        assertFalse(existsCall.outline().containsUnknown(),
+                "exists() must resolve to Bool, not UNKNOWN; got: " + existsCall.outline());
+
+        // order_desc_by(s -> s.students().count()) → Schools (~this), no UNKNOWN
+        org.twelve.gcp.ast.Node orderCall = findMemberCallNode(ast.program(), "order_desc_by");
+        assertNotNull(orderCall, "Should find .order_desc_by() call node");
+        assertFalse(orderCall.outline().containsUnknown(),
+                "order_desc_by must resolve to Schools (~this), not UNKNOWN; got: "
+                        + orderCall.outline());
+
+        // count() in order_desc_by predicate → Int, no UNKNOWN
+        org.twelve.gcp.ast.Node countCall = findMemberCallNode(ast.program(), "count");
+        assertNotNull(countCall, "Should find .count() call node");
+        assertFalse(countCall.outline().containsUnknown(),
+                "count() inside order_desc_by predicate must resolve to Int; got: "
+                        + countCall.outline());
+    }
+
+    /**
      * Integration test for a fully chained {@code Aggregator} pipeline:
      * <pre>{@code
      * schools.aggregate(agg -> {
