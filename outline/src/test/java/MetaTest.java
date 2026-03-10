@@ -1501,6 +1501,83 @@ public class MetaTest {
                         + elementFields.stream().map(FieldMeta::name).toList());
     }
 
+    /**
+     * Integration: the combined expression tuple
+     * <pre>{@code
+     * (
+     *   schools.filter(s->s.students().sum(t->t.age)>80).count(),
+     *   schools.filter(s->s.students().avg(t->t.age)>19).to_list(),
+     *   schools.filter(s->s.students().count()>1).order_desc_by(s->s.students().count()).to_list()
+     * )
+     * }</pre>
+     * must infer without errors, and each element must resolve to the expected type:
+     * <ol>
+     *   <li>element 0: {@code Int} — {@code .count()} on filtered Schools</li>
+     *   <li>element 1: {@code [School]} — {@code .to_list()} after avg-filtered Schools</li>
+     *   <li>element 2: {@code [School]} — {@code .to_list()} after filter+order_desc_by on Schools</li>
+     * </ol>
+     *
+     * <p>This is the canonical regression guard that combines all three previously
+     * failing scenarios into a single expression tuple shared by the same lambda scope.
+     */
+    @Test
+    void test_virtualset_expression_tuple_combined_operations() {
+        String code = "module org.test.vs.exprtuple\n" + SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> (
+                    schools.filter(s->s.students().sum(t->t.age)>80).count(),
+                    schools.filter(s->s.students().avg(t->t.age)>19).to_list(),
+                    schools.filter(s->s.students().count()>1).order_desc_by(s->s.students().count()).to_list()
+                );
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for expression tuple; got: " + ast.errors());
+
+        // sum(t->t.age) — unique in AST — must resolve to Number
+        org.twelve.gcp.ast.Node sumCall = findMemberCallNode(ast.program(), "sum");
+        assertNotNull(sumCall, "Should find .sum() call node");
+        assertFalse(sumCall.outline().containsUnknown(),
+                "sum(t->t.age) must resolve to Number, not UNKNOWN; got: " + sumCall.outline());
+        assertEquals(ast.Number.toString(), sumCall.outline().toString(),
+                "sum(t->t.age) must return Number");
+
+        // avg(t->t.age) — unique in AST — must resolve to Number
+        org.twelve.gcp.ast.Node avgCall = findMemberCallNode(ast.program(), "avg");
+        assertNotNull(avgCall, "Should find .avg() call node");
+        assertFalse(avgCall.outline().containsUnknown(),
+                "avg(t->t.age) must resolve to Number, not UNKNOWN; got: " + avgCall.outline());
+        assertEquals(ast.Number.toString(), avgCall.outline().toString(),
+                "avg(t->t.age) must return Number");
+
+        // order_desc_by — must resolve without UNKNOWN
+        org.twelve.gcp.ast.Node orderCall = findMemberCallNode(ast.program(), "order_desc_by");
+        assertNotNull(orderCall, "Should find .order_desc_by() call node");
+        assertFalse(orderCall.outline().containsUnknown(),
+                "order_desc_by() must resolve to Schools (~this), not UNKNOWN; got: " + orderCall.outline());
+
+        // Both to_list() calls must return [School] (no <a> placeholder)
+        List<org.twelve.gcp.ast.Node> toListCalls = findAllMemberCallNodes(ast.program(), "to_list");
+        assertEquals(2, toListCalls.size(),
+                "Expected exactly 2 to_list() call nodes in the tuple; found: " + toListCalls.size());
+        for (org.twelve.gcp.ast.Node toListCall : toListCalls) {
+            org.twelve.gcp.outline.Outline toListOutline = toListCall.outline();
+            assertNotNull(toListOutline, "to_list() must have non-null outline");
+            assertFalse(toListOutline.toString().contains("<a>"),
+                    "to_list() must return [School], not unresolved [<a>]; got: " + toListOutline);
+            assertInstanceOf(org.twelve.gcp.outline.adt.Array.class, toListOutline,
+                    "to_list() must return an Array; got: " + toListOutline.getClass().getSimpleName());
+            org.twelve.gcp.outline.Outline elementType =
+                    ((org.twelve.gcp.outline.adt.Array) toListOutline).itemOutline();
+            List<FieldMeta> elementFields = MetaExtractor.fieldsOf(elementType);
+            assertTrue(elementFields.stream().anyMatch(f -> "students".equals(f.name())),
+                    "to_list() element type must be School (has 'students' field); got: "
+                            + elementFields.stream().map(FieldMeta::name).toList());
+        }
+    }
+
     // ─────────────── Aggregator chain tests ──────────────────────────────────
 
     /**
@@ -1741,6 +1818,30 @@ public class MetaTest {
             if (found != null) return found;
         }
         return null;
+    }
+
+    /** Collects all {@link org.twelve.gcp.node.function.FunctionCallNode}s in the subtree
+     *  whose callee is a {@link org.twelve.gcp.node.expression.accessor.MemberAccessor}
+     *  with the specified member name. */
+    private static List<org.twelve.gcp.ast.Node> findAllMemberCallNodes(
+            org.twelve.gcp.ast.Node node, String memberName) {
+        List<org.twelve.gcp.ast.Node> result = new java.util.ArrayList<>();
+        findAllMemberCallNodes(node, memberName, result);
+        return result;
+    }
+
+    private static void findAllMemberCallNodes(
+            org.twelve.gcp.ast.Node node, String memberName,
+            List<org.twelve.gcp.ast.Node> result) {
+        if (node == null) return;
+        if (node instanceof org.twelve.gcp.node.function.FunctionCallNode callNode) {
+            if (callNode.function() instanceof org.twelve.gcp.node.expression.accessor.MemberAccessor ma) {
+                if (memberName.equals(ma.member().name())) result.add(callNode);
+            }
+        }
+        for (org.twelve.gcp.ast.Node child : node.nodes()) {
+            findAllMemberCallNodes(child, memberName, result);
+        }
     }
 
     /**
