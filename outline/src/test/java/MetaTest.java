@@ -1501,6 +1501,139 @@ public class MetaTest {
                         + elementFields.stream().map(FieldMeta::name).toList());
     }
 
+    // ─────────────── Aggregator chain tests ──────────────────────────────────
+
+    /**
+     * Preamble for Aggregator-chain tests: City + School (with city method) + Schools.
+     *
+     * <p>Different from {@link #SCHOOL_PREAMBLE} which uses a Student/School with students().
+     * Here School has a {@code city: Unit -> City} navigation method, and City has
+     * a {@code population_count: Int} field, giving a representative 2-hop member access
+     * inside the aggregate lambda projections.
+     */
+    private static final String CITY_SCHOOL_PREAMBLE = OntologyFixtures.SYSTEM_OUTLINES + """
+            outline City = { id: 0, name: String, population_count: Int };
+            outline School = { id: 0, name: String, city: Unit -> City };
+            outline Schools = VirtualSet<School>{};
+            """;
+
+    /**
+     * Integration test for a fully chained {@code Aggregator} pipeline:
+     * <pre>{@code
+     * schools.aggregate(agg -> {
+     *     agg.count()
+     *        .sum(s  -> s.city().population_count)
+     *        .avg(s  -> s.city().population_count)
+     *        .min(s  -> s.city().population_count)
+     *        .max(s  -> s.city().population_count)
+     *        .compute()
+     * })
+     * }</pre>
+     *
+     * <p>Type inference must:
+     * <ol>
+     *   <li>Propagate {@code agg : Aggregator<School>} from the formal parameter of
+     *       {@code aggregate: <b>(Aggregator<a>->b)->b}.</li>
+     *   <li>For each projection lambda {@code s -> s.city().population_count}, propagate
+     *       {@code s : School} from the formal {@code (a -> Number)} in the Aggregator member.</li>
+     *   <li>Resolve the chain return types:
+     *       count/sum/avg/min/max → {@code ~this = Aggregator<School>},
+     *       compute → {@code [String:Number]}.</li>
+     *   <li>Return the overall {@code aggregate(...)} result as {@code [String:Number]}.</li>
+     * </ol>
+     *
+     * <p>This is a valid expression and must produce zero inference errors.
+     */
+    @Test
+    void test_virtualset_aggregate_chained_pipeline_resolves_map() {
+        // Block-body form: agg -> { agg.count()....compute() }
+        String code = "module org.test.vs.aggchain\n" + CITY_SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> schools.aggregate(agg -> {
+                    agg.count()
+                       .sum(s -> s.city().population_count)
+                       .avg(s -> s.city().population_count)
+                       .min(s -> s.city().population_count)
+                       .max(s -> s.city().population_count)
+                       .compute()
+                });
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for aggregate chain; got: " + ast.errors());
+
+        // compute() must resolve to [String:Number] – no UNKNOWN
+        org.twelve.gcp.ast.Node computeCall = findMemberCallNode(ast.program(), "compute");
+        assertNotNull(computeCall, "Should find .compute() call node");
+        assertFalse(computeCall.outline().containsUnknown(),
+                "compute() must resolve to [String:Number], not UNKNOWN; got: "
+                        + computeCall.outline());
+
+        // The outer aggregate(...) call must match the compute() return type
+        org.twelve.gcp.ast.Node aggregateCall = findMemberCallNode(ast.program(), "aggregate");
+        assertNotNull(aggregateCall, "Should find .aggregate() call node");
+        assertFalse(aggregateCall.outline().containsUnknown(),
+                "aggregate(...) result must not contain UNKNOWN; got: "
+                        + aggregateCall.outline());
+        assertEquals(computeCall.outline().toString(), aggregateCall.outline().toString(),
+                "aggregate(...) must return the same type as compute()");
+
+        // count/sum/avg/min/max all return ~this = Aggregator<School> – no UNKNOWN in any
+        for (String method : List.of("count", "sum", "avg", "min", "max")) {
+            org.twelve.gcp.ast.Node callNode = findMemberCallNode(ast.program(), method);
+            assertNotNull(callNode, "Should find ." + method + "() call node");
+            assertFalse(callNode.outline().containsUnknown(),
+                    method + "() inside aggregate pipeline must not contain UNKNOWN; got: "
+                            + callNode.outline());
+        }
+
+        // s.city().population_count projections: verify that sum's inner lambda argument
+        // resolved s : School (has 'city' field accessible)
+        org.twelve.gcp.ast.Node sumCall = findMemberCallNode(ast.program(), "sum");
+        assertNotNull(sumCall, "Should find .sum() call inside aggregate");
+        assertFalse(sumCall.outline().containsUnknown(),
+                "sum() must resolve to Aggregator<School>, not UNKNOWN; got: "
+                        + sumCall.outline());
+    }
+
+    /**
+     * Same pipeline as {@link #test_virtualset_aggregate_chained_pipeline_resolves_map}
+     * but written with a single-expression lambda (no block body) to verify that the
+     * two syntactic forms produce identical type-inference results.
+     */
+    @Test
+    void test_virtualset_aggregate_chained_single_expr_lambda_resolves_map() {
+        String code = "module org.test.vs.aggchainexpr\n" + CITY_SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> schools.aggregate(agg ->
+                    agg.count()
+                       .sum(s -> s.city().population_count)
+                       .avg(s -> s.city().population_count)
+                       .min(s -> s.city().population_count)
+                       .max(s -> s.city().population_count)
+                       .compute()
+                );
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for aggregate chain (single-expr); got: " + ast.errors());
+
+        org.twelve.gcp.ast.Node computeCall = findMemberCallNode(ast.program(), "compute");
+        assertNotNull(computeCall, "Should find .compute() call node");
+        assertFalse(computeCall.outline().containsUnknown(),
+                "compute() must resolve without UNKNOWN; got: " + computeCall.outline());
+
+        org.twelve.gcp.ast.Node aggregateCall = findMemberCallNode(ast.program(), "aggregate");
+        assertNotNull(aggregateCall, "Should find .aggregate() call node");
+        assertFalse(aggregateCall.outline().containsUnknown(),
+                "aggregate(...) must resolve without UNKNOWN; got: "
+                        + aggregateCall.outline());
+    }
+
     /** Utility: find the first identifier node with the given lexeme in an AST subtree. */
     private static org.twelve.gcp.ast.Node findIdentifier(org.twelve.gcp.ast.Node node, String name) {
         if (node == null) return null;
