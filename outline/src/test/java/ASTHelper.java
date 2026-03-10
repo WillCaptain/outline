@@ -1049,6 +1049,7 @@ public class ASTHelper {
                     type:#"Virtual Set",
                 
                      //terminal operators
+                     to_list: Unit -> [a],
                      first: Unit -> a,
                      last: Unit -> a,
                      count: Unit -> Int,
@@ -1619,6 +1620,7 @@ public class ASTHelper {
                     take: Int -> Int -> ~this,
                     map: fx<b> (a->b) -> VirtualSet<b>,
                     type:#"Virtual Set",
+                    to_list: Unit -> [a],
                      first: Unit -> a,
                      last: Unit -> a,
                      count: Unit -> Int,

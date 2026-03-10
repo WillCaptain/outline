@@ -1320,6 +1320,187 @@ public class MetaTest {
                         + returnMembers.stream().map(FieldMeta::name).toList());
     }
 
+    /**
+     * Regression: {@code students.filter(t->t.age>18).to_list()} must return {@code [Student]},
+     * not the unresolved placeholder {@code [<a>]}.
+     *
+     * <p>{@code filter} returns {@code ~this} (covariant self-type), so the element type
+     * parameter {@code a} must remain bound to {@code Student} afterwards.
+     * {@code to_list: Unit -> [a]} must therefore materialise as {@code [Student]}.
+     */
+    @Test
+    void test_virtualset_filter_then_to_list_returns_concrete_element_type() {
+        String code = "module org.test.vs.filtertolist\n" + SCHOOL_PREAMBLE + """
+                let f = (students: Students) -> students.filter(t->t.age>18).to_list();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for students.filter(...).to_list(); got: " + ast.errors());
+
+        org.twelve.gcp.ast.Node toListCall = findMemberCallNode(ast.program(), "to_list");
+        assertNotNull(toListCall, "Should find .to_list() call node");
+        org.twelve.gcp.outline.Outline toListOutline = toListCall.outline();
+        assertNotNull(toListOutline, "to_list() must have non-null outline");
+
+        // The Array element type must be concrete (Student), not the unresolved placeholder <a>
+        assertFalse(toListOutline.toString().contains("<a>"),
+                "to_list() after filter() must return [Student], not unresolved [<a>]; "
+                        + "got: " + toListOutline);
+        assertInstanceOf(org.twelve.gcp.outline.adt.Array.class, toListOutline,
+                "to_list() must return an Array; got: " + toListOutline.getClass().getSimpleName());
+        org.twelve.gcp.outline.Outline elementType =
+                ((org.twelve.gcp.outline.adt.Array) toListOutline).itemOutline();
+        assertNotNull(elementType, "Array element type must not be null");
+        // Element type must have Student fields (id, name, age)
+        List<FieldMeta> elementFields = MetaExtractor.fieldsOf(elementType);
+        assertFalse(elementFields.isEmpty(),
+                "to_list() after filter() element type must be Student with known fields; "
+                        + "got element=" + elementType);
+        assertTrue(elementFields.stream().anyMatch(f -> "age".equals(f.name())),
+                "Expected 'age' field in to_list() element type (Student); got: "
+                        + elementFields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * Regression: inside a {@code schools.filter(s -> s.students().sum(t->t.age) > 80)}
+     * predicate, {@code s.students().sum(t->t.age)} must resolve to {@code Number},
+     * not {@code ?} ({@link org.twelve.gcp.outline.builtin.UNKNOWN}).
+     *
+     * <p>When {@code s} is the lambda parameter projected from {@code Schools = VirtualSet<School>}
+     * (rather than a directly typed param), {@code s.students()} returns a {@code Students}
+     * value through a nested {@code Lazy} chain. The projection {@code a = Student} must still
+     * be visible when the inner {@code sum: (a->Number) -> Number} is called.
+     */
+    @Test
+    void test_virtualset_nested_sum_in_filter_predicate_resolves_to_number() {
+        String code = "module org.test.vs.nestedsumfilter\n" + SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> schools.filter(s->s.students().sum(t->t.age)>80).count();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors; got: " + ast.errors());
+
+        // Inner sum(t->t.age) must resolve to Number, not UNKNOWN
+        org.twelve.gcp.ast.Node sumCall = findMemberCallNode(ast.program(), "sum");
+        assertNotNull(sumCall, "Should find .sum() call node inside filter predicate");
+        org.twelve.gcp.outline.Outline sumOutline = sumCall.outline();
+        assertNotNull(sumOutline, "sum() must have non-null outline");
+        assertFalse(sumOutline.containsUnknown(),
+                "sum(t->t.age) inside filter predicate must resolve to Number, not UNKNOWN; "
+                        + "got: " + sumOutline + " (" + sumOutline.getClass().getSimpleName() + ")");
+        assertEquals(ast.Number.toString(), sumOutline.toString(),
+                "sum(t->t.age) must return Number");
+
+        // Outer count() must return Int
+        org.twelve.gcp.ast.Node countCall = findMemberCallNode(ast.program(), "count");
+        assertNotNull(countCall, "Should find outer .count() call node");
+        assertEquals(ast.Integer.toString(), countCall.outline().toString(),
+                "count() must return Int");
+    }
+
+    /**
+     * Integration: {@code schools.filter(s->s.students().avg(t->t.age)>19).to_list()}
+     * must return {@code [School]} — i.e., the element type of the list must carry
+     * School fields ({@code id}, {@code name}, {@code students}).
+     *
+     * <p>Combines the two regression scenarios: (1) nested {@code avg} inside a filter predicate
+     * must resolve to {@code Number}, and (2) {@code to_list()} after a {@code filter} must
+     * materialise the concrete element type rather than the raw {@code [<a>]} placeholder.
+     */
+    @Test
+    void test_virtualset_nested_avg_filter_to_list_resolves_school_element() {
+        String code = "module org.test.vs.nestedavgtolist\n" + SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> schools.filter(s->s.students().avg(t->t.age)>19).to_list();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors; got: " + ast.errors());
+
+        // Inner avg(t->t.age) must resolve to Number
+        org.twelve.gcp.ast.Node avgCall = findMemberCallNode(ast.program(), "avg");
+        assertNotNull(avgCall, "Should find .avg() call node inside filter predicate");
+        assertFalse(avgCall.outline().containsUnknown(),
+                "avg(t->t.age) inside filter predicate must resolve to Number, not UNKNOWN; "
+                        + "got: " + avgCall.outline());
+        assertEquals(ast.Number.toString(), avgCall.outline().toString(),
+                "avg(t->t.age) must return Number");
+
+        // to_list() must return [School] — element type must carry School fields (students, name, id)
+        org.twelve.gcp.ast.Node toListCall = findMemberCallNode(ast.program(), "to_list");
+        assertNotNull(toListCall, "Should find .to_list() call node");
+        org.twelve.gcp.outline.Outline toListOutline = toListCall.outline();
+        assertNotNull(toListOutline, "to_list() must have non-null outline");
+        assertFalse(toListOutline.toString().contains("<a>"),
+                "to_list() after schools.filter() must return [School], not unresolved [<a>]; "
+                        + "got: " + toListOutline);
+        assertInstanceOf(org.twelve.gcp.outline.adt.Array.class, toListOutline,
+                "to_list() must return an Array");
+        org.twelve.gcp.outline.Outline elementType =
+                ((org.twelve.gcp.outline.adt.Array) toListOutline).itemOutline();
+        assertNotNull(elementType, "Array element type must not be null");
+        List<FieldMeta> elementFields = MetaExtractor.fieldsOf(elementType);
+        assertFalse(elementFields.isEmpty(),
+                "to_list() after schools.filter() element type must be School with known fields; "
+                        + "got element=" + elementType);
+        assertTrue(elementFields.stream().anyMatch(f -> "students".equals(f.name())),
+                "Expected 'students' field (from School) in to_list() element type: "
+                        + elementFields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * Integration: {@code schools.filter(s->s.students().count()>1)
+     *     .order_desc_by(s->s.students().count()).to_list()}
+     * must return {@code [School]} — i.e., the element type of the final list must carry
+     * School fields even after two chained {@code ~this}-returning VirtualSet operations
+     * ({@code filter} then {@code order_desc_by}).
+     *
+     * <p>This tests the deepest nesting in the original failing expression tuple.
+     */
+    @Test
+    void test_virtualset_nested_count_filter_order_desc_to_list_resolves_school_element() {
+        String code = "module org.test.vs.nestedcountorderdesc\n" + SCHOOL_PREAMBLE + """
+                let f = (schools: Schools) -> schools.filter(s->s.students().count()>1)
+                                                      .order_desc_by(s->s.students().count())
+                                                      .to_list();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors for nested filter+order_desc_by+to_list; got: " + ast.errors());
+
+        // to_list() must materialise [School] — element type must carry School fields
+        org.twelve.gcp.ast.Node toListCall = findMemberCallNode(ast.program(), "to_list");
+        assertNotNull(toListCall, "Should find .to_list() call node");
+        org.twelve.gcp.outline.Outline toListOutline = toListCall.outline();
+        assertNotNull(toListOutline, "to_list() must have non-null outline");
+        assertFalse(toListOutline.toString().contains("<a>"),
+                "to_list() after filter+order_desc_by on Schools must return [School], not [<a>]; "
+                        + "got: " + toListOutline);
+        assertInstanceOf(org.twelve.gcp.outline.adt.Array.class, toListOutline,
+                "to_list() must return an Array");
+        org.twelve.gcp.outline.Outline elementType =
+                ((org.twelve.gcp.outline.adt.Array) toListOutline).itemOutline();
+        assertNotNull(elementType, "Array element type must not be null");
+        List<FieldMeta> elementFields = MetaExtractor.fieldsOf(elementType);
+        assertFalse(elementFields.isEmpty(),
+                "to_list() after filter+order_desc_by element type must be School with known fields; "
+                        + "got element=" + elementType);
+        assertTrue(elementFields.stream().anyMatch(f -> "students".equals(f.name())),
+                "Expected 'students' field (from School) in to_list() element after order_desc_by: "
+                        + elementFields.stream().map(FieldMeta::name).toList());
+    }
+
     /** Utility: find the first identifier node with the given lexeme in an AST subtree. */
     private static org.twelve.gcp.ast.Node findIdentifier(org.twelve.gcp.ast.Node node, String name) {
         if (node == null) return null;
