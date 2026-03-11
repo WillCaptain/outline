@@ -2356,4 +2356,456 @@ public class MetaTest {
         assertFalse(sumCall.outline().containsUnknown(),
                 "sum() in block-lambda aggregate must not contain UNKNOWN; got: " + sumCall.outline());
     }
+
+    // ── filter().aggregate() 组合链推导 — 两个 count 场景 ────────────────────
+
+    /**
+     * 核心回归：filter 谓词用了 {@code students().count()>10}（VirtualSet.count→Int），
+     * 紧接着 aggregate lambda 内部又用了 {@code agg.count()}（Aggregator.count→~this）。
+     *
+     * <p>必须满足：
+     * <ol>
+     *   <li>零推导错误。</li>
+     *   <li>两个 {@code count()} 调用节点类型互不干扰：
+     *       filter 谓词里的 count 返回 Int；aggregate lambda 里的 count 返回 Aggregator。</li>
+     *   <li>{@link MetaExtractor#fieldsOf} 对 aggregate 内 {@code agg.count()} 节点的 outline
+     *       返回 Aggregator 成员（含 compute），而不是 VirtualSet 成员（filter）或空列表。</li>
+     * </ol>
+     *
+     * <p>这是 meta 层和代码推导层一致性的关键验证：两者共用同一份 AST outline 数据，
+     * 不能出现代码推导正确而 meta 返回错误类型的情况。
+     */
+    @Test
+    void test_filter_then_aggregate_two_count_calls_are_distinct() {
+        // filter 谓词: s.students().count() > 10  → VirtualSet<Student>.count → Int
+        // aggregate lambda: agg.count().sum(...).compute()  → Aggregator<School>.count → ~this
+        String code = "module org.test.agg.twocounts\n" + FULL_WORLD_PREAMBLE
+                + "let result = schools.filter(s -> s.students().count() > 10)\n"
+                + "                    .aggregate(agg -> {\n"
+                + "                        agg.count()\n"
+                + "                           .sum(s -> s.city().population_count)\n"
+                + "                           .avg(s -> s.city().population_count)\n"
+                + "                           .min(s -> s.city().population_count)\n"
+                + "                           .max(s -> s.city().population_count)\n"
+                + "                           .compute()\n"
+                + "                    });\n"
+                + "let x = 0;\nexport result, x;";
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "filter+aggregate with two count() calls must have zero errors; got: " + ast.errors());
+
+        // 找到所有 count() 调用节点（DFS 顺序：filter 谓词里的先、aggregate lambda 里的后）
+        List<org.twelve.gcp.ast.Node> countCalls = findAllMemberCallNodes(ast.program(), "count");
+        assertTrue(countCalls.size() >= 2,
+                "Expected at least 2 count() calls (filter predicate + aggregate body), found: "
+                        + countCalls.size());
+
+        // 找出 aggregate lambda 内的 count：outline 里有 Aggregator 成员（compute），没有 VirtualSet 成员（filter）
+        org.twelve.gcp.ast.Node aggCount = null;
+        for (org.twelve.gcp.ast.Node node : countCalls) {
+            List<FieldMeta> fields = MetaExtractor.fieldsOf(node.outline());
+            boolean hasCompute = fields.stream().anyMatch(f -> "compute".equals(f.name()));
+            if (hasCompute) {
+                aggCount = node;
+                break;
+            }
+        }
+        assertNotNull(aggCount,
+                "Must find a count() node whose fieldsOf returns Aggregator members (with compute); "
+                        + "countCalls outlines: " + countCalls.stream()
+                                .map(n -> MetaExtractor.fieldsOf(n.outline()).stream()
+                                        .map(FieldMeta::name).toList().toString())
+                                .toList());
+
+        // agg.count() 的 outline 不含 UNKNOWN
+        assertFalse(aggCount.outline().containsUnknown(),
+                "agg.count() in aggregate lambda must not contain UNKNOWN; got: " + aggCount.outline());
+
+        // MetaExtractor.fieldsOf 对 agg.count() 返回 Aggregator 成员，不是 VirtualSet 成员
+        List<FieldMeta> aggCountFields = MetaExtractor.fieldsOf(aggCount.outline());
+        List<String> aggCountFieldNames = aggCountFields.stream().map(FieldMeta::name).toList();
+
+        for (String expected : List.of("count", "sum", "avg", "min", "max", "compute")) {
+            assertTrue(aggCountFieldNames.contains(expected),
+                    "fieldsOf(agg.count()) must contain Aggregator member '" + expected
+                            + "'; got: " + aggCountFieldNames);
+        }
+        assertFalse(aggCountFieldNames.contains("filter"),
+                "fieldsOf(agg.count()) must NOT contain VirtualSet member 'filter'; "
+                        + "got: " + aggCountFieldNames);
+        assertFalse(aggCountFieldNames.contains("order_by"),
+                "fieldsOf(agg.count()) must NOT contain VirtualSet member 'order_by'; "
+                        + "got: " + aggCountFieldNames);
+
+        // 额外验证：filter 谓词里的 count 返回 Int（不应该有 Aggregator 成员 compute）
+        org.twelve.gcp.ast.Node filterCount = countCalls.get(0);
+        List<FieldMeta> filterCountFields = MetaExtractor.fieldsOf(filterCount.outline());
+        assertFalse(filterCountFields.stream().anyMatch(f -> "compute".equals(f.name())),
+                "filter-predicate count() must NOT return Aggregator (should be Int); "
+                        + "got: " + filterCountFields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * 泛化验证：无论 filter 谓词嵌套多深，aggregate lambda 里的 {@code agg.count()} 都必须
+     * 正确解析为 Aggregator 成员。
+     *
+     * <p>测试三个递进场景：
+     * <ol>
+     *   <li>1 级：{@code filter(s->s.students().count()>10)}</li>
+     *   <li>2 级：{@code filter(s->s.students().filter(t->t.age>10).count()>5)}</li>
+     *   <li>3 级（全世界图谱）：{@code filter(s->s.city().schools().filter(sc->sc.students().count()>3).count()>1)}</li>
+     * </ol>
+     *
+     * <p>每一级嵌套都有额外的 VirtualSet {@code count()} 调用，确保不会污染 Aggregator 里的
+     * {@code ~this} 推导。
+     */
+    @Test
+    void test_filter_nested_count_does_not_pollute_aggregate_count_generalized() {
+        // 场景1：1 级嵌套 — students().count() 在 filter 谓词里
+        String level1 = "module org.test.agg.gen1\n" + FULL_WORLD_PREAMBLE
+                + "let r = schools.filter(s -> s.students().count() > 5)\n"
+                + "               .aggregate(agg -> agg.count().sum(s -> s.city().population_count).compute());\n"
+                + "let x = 0;\nexport r, x;";
+
+        // 场景2：2 级嵌套 — students().filter(t->t.age>10).count() 在 filter 谓词里
+        String level2 = "module org.test.agg.gen2\n" + FULL_WORLD_PREAMBLE
+                + "let r = schools.filter(s -> s.students().filter(t -> t.age > 10).count() > 3)\n"
+                + "               .aggregate(agg -> agg.count().sum(s -> s.city().population_count).compute());\n"
+                + "let x = 0;\nexport r, x;";
+
+        // 场景3：3 级嵌套 — city().schools().filter(sc->sc.students().count()>2).count()
+        String level3 = "module org.test.agg.gen3\n" + FULL_WORLD_PREAMBLE
+                + "let r = cities.filter(c -> c.schools().filter(sc -> sc.students().count() > 2).count() > 1)\n"
+                + "              .aggregate(agg -> agg.count().sum(c -> c.population_count).compute());\n"
+                + "let x = 0;\nexport r, x;";
+
+        for (String code : List.of(level1, level2, level3)) {
+            AST ast = parser.parse(code);
+            ast.asf().infer();
+            assertTrue(ast.errors().isEmpty(),
+                    "Generalized filter+aggregate must have zero errors; got: " + ast.errors()
+                            + "\nCode: " + code.lines().findFirst().orElse(""));
+
+            // 找到 aggregate lambda 里的 count（outline 含 compute 成员）
+            List<org.twelve.gcp.ast.Node> countCalls = findAllMemberCallNodes(ast.program(), "count");
+            assertTrue(countCalls.size() >= 2,
+                    "Expected ≥2 count() calls; found " + countCalls.size()
+                            + " in: " + code.lines().findFirst().orElse(""));
+
+            org.twelve.gcp.ast.Node aggCount = countCalls.stream()
+                    .filter(n -> MetaExtractor.fieldsOf(n.outline()).stream()
+                            .anyMatch(f -> "compute".equals(f.name())))
+                    .findFirst()
+                    .orElse(null);
+            assertNotNull(aggCount,
+                    "Must find agg.count() with Aggregator members in: "
+                            + code.lines().findFirst().orElse(""));
+
+            // 整条 Aggregator 链：agg.count().sum(...).compute() 都不含 UNKNOWN
+            for (String method : List.of("count", "sum", "compute")) {
+                org.twelve.gcp.ast.Node callInAgg = findMemberCallNodeAfter(ast.program(), "aggregate", method);
+                if (callInAgg == null) continue;
+                assertFalse(callInAgg.outline().containsUnknown(),
+                        "." + method + "() inside aggregate lambda must not contain UNKNOWN; got: "
+                                + callInAgg.outline()
+                                + " in: " + code.lines().findFirst().orElse(""));
+            }
+
+            // meta 层：fieldsOf(agg.count()) 必须有 Aggregator 成员，无 VirtualSet 成员
+            List<FieldMeta> fields = MetaExtractor.fieldsOf(aggCount.outline());
+            List<String> names = fields.stream().map(FieldMeta::name).toList();
+            assertTrue(names.contains("compute"),
+                    "fieldsOf(agg.count()) must have 'compute'; got: " + names
+                            + " in: " + code.lines().findFirst().orElse(""));
+            assertFalse(names.contains("filter"),
+                    "fieldsOf(agg.count()) must NOT have 'filter' (VirtualSet member); got: " + names
+                            + " in: " + code.lines().findFirst().orElse(""));
+        }
+    }
+
+    /**
+     * meta 层专项验证：{@code membersOf("agg", offset)} 与 {@link MetaExtractor#fieldsOf} 在
+     * {@code filter().aggregate()} 链中完全一致，且两者都不返回 VirtualSet 成员。
+     *
+     * <p>这验证了"meta 信息与代码推导使用同一份 AST outline 数据"的不变量：
+     * scope 里的符号类型字符串 → {@code membersOfType} → 与 {@code fieldsOf(node.outline())} 结果一致。
+     */
+    @Test
+    void test_meta_membersOf_agg_consistent_with_fieldsOf_after_filter_chain() {
+        String code = "module org.test.agg.metaconsist\n" + FULL_WORLD_PREAMBLE
+                + "let result = schools.filter(s -> s.students().count() > 5)\n"
+                + "                    .aggregate(agg -> agg.count()\n"
+                + "                                        .sum(s -> s.city().population_count)\n"
+                + "                                        .compute());\n"
+                + "let x = 0;\nexport result, x;";
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected zero errors; got: " + ast.errors());
+
+        ModuleMeta meta = ast.meta();
+
+        // 找到 aggregate 调用节点，取其 lambda 参数所在 scope 里的 agg 符号
+        int aggLambdaOffset = code.indexOf("agg -> agg") + "agg -> ".length();
+
+        List<FieldMeta> membersOfAgg = meta.membersOf("agg", aggLambdaOffset);
+        List<String> memberNames = membersOfAgg.stream().map(FieldMeta::name).toList();
+
+        for (String expected : List.of("count", "sum", "avg", "min", "max", "compute")) {
+            assertTrue(memberNames.contains(expected),
+                    "meta.membersOf('agg') must include '" + expected + "'; got: " + memberNames);
+        }
+        assertFalse(memberNames.contains("filter"),
+                "meta.membersOf('agg') must NOT contain VirtualSet member 'filter'; got: " + memberNames);
+        assertFalse(memberNames.contains("order_by"),
+                "meta.membersOf('agg') must NOT contain VirtualSet member 'order_by'; got: " + memberNames);
+
+        // fieldsOf(agg.count().outline()) 必须与 membersOf("agg") 里的 count 成员类型一致
+        // 即：agg.count() 返回值的 fieldsOf 也必须是 Aggregator 成员（可无限链式调用）
+        List<org.twelve.gcp.ast.Node> countCalls = findAllMemberCallNodes(ast.program(), "count");
+        org.twelve.gcp.ast.Node aggCountNode = countCalls.stream()
+                .filter(n -> MetaExtractor.fieldsOf(n.outline()).stream()
+                        .anyMatch(f -> "compute".equals(f.name())))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(aggCountNode,
+                "Must find agg.count() node whose fieldsOf has 'compute'");
+
+        List<FieldMeta> countFields = MetaExtractor.fieldsOf(aggCountNode.outline());
+        List<String> countFieldNames = countFields.stream().map(FieldMeta::name).toList();
+        assertTrue(countFieldNames.contains("compute"),
+                "fieldsOf(agg.count()) must have 'compute' for chaining; got: " + countFieldNames);
+        assertFalse(countFieldNames.contains("filter"),
+                "fieldsOf(agg.count()) must NOT have VirtualSet 'filter'; got: " + countFieldNames);
+
+        // 同理，agg.count().sum(...) 的 outline 也应有 Aggregator 成员（链式无限可继续）
+        org.twelve.gcp.ast.Node sumNode = findMemberCallNodeAfter(ast.program(), "aggregate", "sum");
+        if (sumNode != null) {
+            List<FieldMeta> sumFields = MetaExtractor.fieldsOf(sumNode.outline());
+            List<String> sumFieldNames = sumFields.stream().map(FieldMeta::name).toList();
+            assertTrue(sumFieldNames.contains("compute"),
+                    "fieldsOf(agg.count().sum()) must have 'compute' for further chaining; got: " + sumFieldNames);
+        }
+    }
+
+    // ─────────── Meta 与推导一致性：无限链式 fieldsOf 验证 ──────────────────
+
+    /**
+     * 核心不变量验证：对于推导成功的 aggregate 链中每一个中间节点（count/sum/avg/min/max），
+     * {@link MetaExtractor#fieldsOf(org.twelve.gcp.outline.Outline)} 都必须返回完整的
+     * Aggregator 成员集合（含 compute）——即支持"无限链式调用"。
+     *
+     * <p>如果推导成功（node.outline() 不含 UNKNOWN），那么 meta 提取也必须成功，
+     * 不能仅返回 {@code [to_str]}。这是 LLM 获取 VirtualSet expression 合法性的唯一来源。
+     *
+     * <p>测试完整的 5 步 Aggregator 链：
+     * <pre>{@code
+     *   agg.count()                               → Aggregator<School>
+     *      .sum(s -> s.city().population_count)   → Aggregator<School>
+     *      .avg(s -> s.city().population_count)   → Aggregator<School>
+     *      .min(s -> s.city().population_count)   → Aggregator<School>
+     *      .max(s -> s.city().population_count)   → Aggregator<School>
+     *      .compute()                             → [String:Number]
+     * }</pre>
+     *
+     * <p>每一步的 {@code fieldsOf} 都必须返回所有 6 个 Aggregator 操作方法，
+     * 不能仅返回内置的 {@code to_str}。
+     */
+    @Test
+    void test_fieldsOf_consistent_with_inference_for_every_aggregate_chain_step() {
+        String code = "module org.test.agg.chainsteps\n" + CITY_SCHOOL_PREAMBLE
+                + "let r = (schools: Schools) -> schools.aggregate(agg -> {\n"
+                + "    agg.count()\n"
+                + "       .sum(s -> s.city().population_count)\n"
+                + "       .avg(s -> s.city().population_count)\n"
+                + "       .min(s -> s.city().population_count)\n"
+                + "       .max(s -> s.city().population_count)\n"
+                + "       .compute()\n"
+                + "});\n"
+                + "let dummy = 0;\nexport r, dummy;";
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected zero errors; got: " + ast.errors());
+
+        // 每一个 ~this 返回的方法调用节点：fieldsOf 必须包含所有 6 个 Aggregator 方法
+        List<String> aggregatorSteps = List.of("count", "sum", "avg", "min", "max");
+        List<String> expectedAggMembers = List.of("count", "sum", "avg", "min", "max", "compute");
+
+        List<org.twelve.gcp.ast.Node> allCalls = new java.util.ArrayList<>();
+        for (String step : aggregatorSteps) {
+            allCalls.addAll(findAllMemberCallNodes(ast.program(), step));
+        }
+
+        // 从所有调用里找属于 aggregate lambda 内的（outline 的 fieldsOf 含 compute）
+        for (String step : aggregatorSteps) {
+            org.twelve.gcp.ast.Node node = findMemberCallNodeAfter(ast.program(), "aggregate", step);
+            if (node == null) continue; // sum/avg 可能同名，取 aggregate 子树内的
+
+            // 推导必须成功——不含 UNKNOWN
+            assertFalse(node.outline().containsUnknown(),
+                    "." + step + "() inside aggregate must not contain UNKNOWN; got: " + node.outline());
+
+            // Meta 与推导一致：fieldsOf 必须返回完整的 Aggregator 成员
+            List<FieldMeta> fields = MetaExtractor.fieldsOf(node.outline());
+            List<String> names = fields.stream().map(FieldMeta::name).toList();
+
+            // 关键：不能只有 to_str
+            assertFalse(names.size() == 1 && "to_str".equals(names.get(0)),
+                    "fieldsOf(." + step + "()) must NOT return only [to_str]; "
+                            + "inference and meta must be consistent. Got: " + names);
+
+            for (String expected : expectedAggMembers) {
+                assertTrue(names.contains(expected),
+                        "fieldsOf(." + step + "()) must contain '" + expected
+                                + "' (Aggregator member); got: " + names);
+            }
+            // 不能包含 VirtualSet 专属方法
+            assertFalse(names.contains("filter"),
+                    "fieldsOf(." + step + "()) must NOT contain VirtualSet 'filter'; got: " + names);
+        }
+
+        // compute() 返回 [String:Number]，fieldsOf 不应含 Aggregator 方法
+        org.twelve.gcp.ast.Node computeNode = findMemberCallNodeAfter(ast.program(), "aggregate", "compute");
+        assertNotNull(computeNode, "Should find .compute() in aggregate lambda");
+        assertFalse(computeNode.outline().containsUnknown(),
+                "compute() must not contain UNKNOWN; got: " + computeNode.outline());
+        List<FieldMeta> computeFields = MetaExtractor.fieldsOf(computeNode.outline());
+        assertFalse(computeFields.stream().anyMatch(f -> "count".equals(f.name())),
+                "fieldsOf(compute()) must NOT contain Aggregator 'count'; got: "
+                        + computeFields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * 不变量验证：VirtualSet 链中每一个中间节点（filter/order_desc_by/take）的
+     * {@code fieldsOf} 都必须返回 VirtualSet 成员集合（含 filter/count/map 等），
+     * 而不是元素类型（School）的字段。
+     *
+     * <p>完整链：
+     * <pre>{@code
+     *   schools.filter(s -> s.students().count() > 5)   → Schools (~this)
+     *          .order_desc_by(s -> s.name)               → Schools (~this)
+     *          .take(3)                                  → Schools (~this)
+     *          .to_list()                                → [School]
+     * }</pre>
+     */
+    @Test
+    void test_fieldsOf_consistent_with_inference_for_every_virtualset_chain_step() {
+        String code = "module org.test.vs.chainsteps\n" + FULL_WORLD_PREAMBLE
+                + "let r = schools.filter(s -> s.students().count() > 5)\n"
+                + "               .order_desc_by(s -> s.name)\n"
+                + "               .take(3)\n"
+                + "               .to_list();\n"
+                + "let dummy = 0;\nexport r, dummy;";
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected zero errors; got: " + ast.errors());
+
+        // filter / order_desc_by / take 均返回 ~this = Schools (VirtualSet<School>)
+        for (String step : List.of("filter", "order_desc_by", "take")) {
+            org.twelve.gcp.ast.Node node = findMemberCallNode(ast.program(), step);
+            if (node == null) continue;
+            assertFalse(node.outline().containsUnknown(),
+                    "." + step + "() must not contain UNKNOWN; got: " + node.outline());
+
+            List<FieldMeta> fields = MetaExtractor.fieldsOf(node.outline());
+            List<String> names = fields.stream().map(FieldMeta::name).toList();
+
+            // 不能只返回 to_str
+            assertFalse(names.size() == 1 && "to_str".equals(names.get(0)),
+                    "fieldsOf(." + step + "()) must NOT return only [to_str]; "
+                            + "inference and meta must be consistent. Got: " + names);
+
+            // 必须包含 VirtualSet 成员
+            assertTrue(names.contains("count"),
+                    "fieldsOf(." + step + "()) must contain 'count' (VirtualSet method); got: " + names);
+            assertTrue(names.contains("filter"),
+                    "fieldsOf(." + step + "()) must contain 'filter' (VirtualSet method); got: " + names);
+
+            // 不能包含 School 实体特有字段（如 id, name）——这些是元素类型字段，不是 VirtualSet 方法
+            // 注意：schools preamble 中 Schools = VirtualSet<School>{ students: Unit->Students }
+            // 因此 students 是 Schools 的导航方法，可合法出现，不应在此检查
+            assertFalse(names.contains("id"),
+                    "fieldsOf(." + step + "()) must NOT contain School entity field 'id'; got: " + names);
+        }
+    }
+
+    /**
+     * 综合不变量：filter().aggregate() 链中，meta 提取必须与推导完全一致。
+     * 对整条链的每一个重要节点验证：推导不含 UNKNOWN ↔ fieldsOf 返回正确成员集。
+     *
+     * <p>这是"推导成功则 meta 提取也成功"原则的最终验证。
+     */
+    @Test
+    void test_meta_inference_consistency_invariant_full_chain() {
+        String code = "module org.test.agg.invariant\n" + FULL_WORLD_PREAMBLE
+                + "let r = schools.filter(s -> s.students().count() > 10)\n"
+                + "               .aggregate(agg -> {\n"
+                + "                   agg.count()\n"
+                + "                      .sum(s -> s.city().population_count)\n"
+                + "                      .avg(s -> s.city().population_count)\n"
+                + "                      .min(s -> s.city().population_count)\n"
+                + "                      .max(s -> s.city().population_count)\n"
+                + "                      .compute()\n"
+                + "               });\n"
+                + "let dummy = 0;\nexport r, dummy;";
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Expected zero errors; got: " + ast.errors());
+
+        // 外层 VirtualSet 链：filter 返回 Schools
+        org.twelve.gcp.ast.Node filterNode = findMemberCallNode(ast.program(), "filter");
+        assertNotNull(filterNode);
+        assertFalse(filterNode.outline().containsUnknown());
+        List<FieldMeta> filterFields = MetaExtractor.fieldsOf(filterNode.outline());
+        assertTrue(filterFields.stream().anyMatch(f -> "aggregate".equals(f.name())),
+                "fieldsOf(filter()) must contain 'aggregate' (Schools method); got: "
+                        + filterFields.stream().map(FieldMeta::name).toList());
+
+        // Aggregator 链：count/sum/avg/min/max 每一步 fieldsOf 返回 Aggregator 成员
+        List<String> aggSteps = List.of("count", "sum", "avg", "min", "max");
+        for (String step : aggSteps) {
+            org.twelve.gcp.ast.Node node = findMemberCallNodeAfter(ast.program(), "aggregate", step);
+            if (node == null) continue;
+
+            assertFalse(node.outline().containsUnknown(),
+                    step + "() must not be UNKNOWN");
+
+            List<FieldMeta> fields = MetaExtractor.fieldsOf(node.outline());
+            List<String> names = fields.stream().map(FieldMeta::name).toList();
+
+            // 核心不变量：推导成功 → meta 不能只有 to_str
+            assertFalse(names.isEmpty() || (names.size() == 1 && "to_str".equals(names.get(0))),
+                    "INVARIANT VIOLATED: inference succeeded for ." + step
+                            + "() but fieldsOf returned only [to_str] or empty. "
+                            + "Meta and inference must use the same AST outline data.");
+
+            assertTrue(names.contains("compute"),
+                    "fieldsOf(." + step + "()) must contain 'compute'; got: " + names);
+            assertFalse(names.contains("filter"),
+                    "fieldsOf(." + step + "()) must NOT contain VirtualSet 'filter'; got: " + names);
+        }
+    }
+
+    /**
+     * 在给定的 {@code aggregateCallName} 调用节点的 lambda 参数子树中，查找第一个名为
+     * {@code methodName} 的成员调用节点。用于精确区分 filter 谓词里的 count 与
+     * aggregate lambda 里的 count。
+     */
+    private static org.twelve.gcp.ast.Node findMemberCallNodeAfter(
+            org.twelve.gcp.ast.Node root, String aggregateCallName, String methodName) {
+        org.twelve.gcp.ast.Node aggregateCall = findMemberCallNode(root, aggregateCallName);
+        if (aggregateCall == null) return null;
+        // aggregate call 的子节点里，跳过 function（MemberAccessor），只看 arguments
+        for (org.twelve.gcp.ast.Node child : aggregateCall.nodes()) {
+            // MemberAccessor 是 function 部分，不是 lambda 参数
+            if (child instanceof org.twelve.gcp.node.expression.accessor.MemberAccessor) continue;
+            org.twelve.gcp.ast.Node found = findMemberCallNode(child, methodName);
+            if (found != null) return found;
+        }
+        return null;
+    }
 }
