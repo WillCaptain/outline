@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="MetaTest" time="7.887" tests="42" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="MetaTest" time="24.102" tests="61" errors="0" skipped="0" failures="0">
   <properties>
     <property name="socksProxyHost" value="127.0.0.1"/>
     <property name="http.proxyHost" value="127.0.0.1"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260310105005695_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-03-10T10-50-05_617-jvmRun1 surefire-20260310105005695_1tmp surefire_0-20260310105005695_2tmp"/>
+    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260311111421333_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-03-11T11-14-21_186-jvmRun1 surefire-20260311111421333_1tmp surefire_0-20260311111421333_2tmp"/>
     <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/apache/commons/commons-configuration2/2.12.0/commons-configuration2-2.12.0.jar:/Users/imac/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/imac/.m2/repository/org/apache/commons/commons-text/1.13.1/commons-text-1.13.1.jar:/Users/imac/.m2/repository/commons-logging/commons-logging/1.3.4/commons-logging-1.3.4.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:/Users/imac/.m2/repository/org/twelve/ext-builder-test/1.0-SNAPSHOT/ext-builder-test-1.0-SNAPSHOT.jar:"/>
@@ -33,7 +33,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260310105005695_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260311111421333_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="java.runtime.version" value="21.0.6"/>
@@ -64,46 +64,65 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="test_MetaExtractor_resolveOutline_unwraps_returnable" classname="MetaTest" time="1.076"/>
-  <testcase name="test_meta_block_comment_on_function" classname="MetaTest" time="0.022"/>
-  <testcase name="test_fieldsOf_lambda_param_outline_returns_entity_fields" classname="MetaTest" time="0.434"/>
-  <testcase name="test_meta_system_outlines_virtualset_chaining_e2e" classname="MetaTest" time="0.341"/>
-  <testcase name="test_meta_imports_and_exports" classname="MetaTest" time="0.011"/>
-  <testcase name="test_meta_member_description_in_toMap" classname="MetaTest" time="0.016"/>
-  <testcase name="test_meta_ast_without_source_still_works" classname="MetaTest" time="0.002"/>
-  <testcase name="test_meta_member_origin_in_toMap" classname="MetaTest" time="0.011"/>
-  <testcase name="test_meta_single_line_comment_description" classname="MetaTest" time="0.003"/>
-  <testcase name="test_meta_membersOf_result_of_first" classname="MetaTest" time="0.373"/>
-  <testcase name="test_asf_meta_multiple_modules" classname="MetaTest" time="0.009"/>
-  <testcase name="test_meta_membersOf_lambda_param_returns_accessed_fields" classname="MetaTest" time="0.334"/>
-  <testcase name="test_meta_collection_variable_type_uses_declared_name" classname="MetaTest" time="0.329"/>
-  <testcase name="test_meta_nav_accessor_outline_is_concrete_function_not_accessor_generic" classname="MetaTest" time="0.295"/>
-  <testcase name="test_meta_lambda_param_type_is_structural_access_type" classname="MetaTest" time="0.314"/>
-  <testcase name="test_resolveOutline_priority_definedToBe_as_fallback" classname="MetaTest" time="0.276"/>
-  <testcase name="test_meta_member_origin_base_and_own" classname="MetaTest" time="0.004"/>
+  <testcase name="test_membersOf_non_this_hides_private_members" classname="MetaTest" time="0.198"/>
+  <testcase name="test_chained_virtualset_ops_no_errors_with_full_world_preamble" classname="MetaTest" time="1.895"/>
+  <testcase name="test_MetaExtractor_resolveOutline_unwraps_returnable" classname="MetaTest" time="0.494"/>
+  <testcase name="test_meta_block_comment_on_function" classname="MetaTest" time="0.012"/>
+  <testcase name="test_fieldsOf_lambda_param_outline_returns_entity_fields" classname="MetaTest" time="0.257"/>
+  <testcase name="test_virtualset_tuple_map_to_list_resolves" classname="MetaTest" time="0.487"/>
+  <testcase name="test_meta_system_outlines_virtualset_chaining_e2e" classname="MetaTest" time="0.333"/>
+  <testcase name="test_meta_imports_and_exports" classname="MetaTest" time="0.004"/>
+  <testcase name="test_membersOf_after_filter_then_navigation_returns_entity_members" classname="MetaTest" time="0.282"/>
+  <testcase name="test_meta_member_description_in_toMap" classname="MetaTest" time="0.005"/>
+  <testcase name="test_meta_ast_without_source_still_works" classname="MetaTest" time="0.001"/>
+  <testcase name="test_meta_member_origin_in_toMap" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_single_line_comment_description" classname="MetaTest" time="0.002"/>
+  <testcase name="test_meta_membersOf_result_of_first" classname="MetaTest" time="0.225"/>
+  <testcase name="test_asf_meta_multiple_modules" classname="MetaTest" time="0.004"/>
+  <testcase name="test_aggregate_chain_no_errors_with_full_world_preamble" classname="MetaTest" time="0.171"/>
+  <testcase name="test_filter_then_aggregate_no_errors_with_full_world_preamble" classname="MetaTest" time="0.174"/>
+  <testcase name="test_meta_membersOf_lambda_param_returns_accessed_fields" classname="MetaTest" time="0.186"/>
+  <testcase name="test_meta_collection_variable_type_uses_declared_name" classname="MetaTest" time="0.218"/>
+  <testcase name="test_meta_nav_accessor_outline_is_concrete_function_not_accessor_generic" classname="MetaTest" time="0.472"/>
+  <testcase name="test_meta_lambda_param_type_is_structural_access_type" classname="MetaTest" time="0.478"/>
+  <testcase name="test_resolveOutline_priority_definedToBe_as_fallback" classname="MetaTest" time="0.4"/>
+  <testcase name="test_virtualset_nested_city_filter_exists_order_desc_by_count" classname="MetaTest" time="0.515"/>
+  <testcase name="test_meta_member_origin_base_and_own" classname="MetaTest" time="0.005"/>
+  <testcase name="test_virtualset_filter_then_to_list_returns_concrete_element_type" classname="MetaTest" time="0.382"/>
   <testcase name="test_meta_resolve_symbol_at_position" classname="MetaTest" time="0.006"/>
-  <testcase name="test_meta_variable_type_from_first_resolves_to_entity_name" classname="MetaTest" time="0.407"/>
-  <testcase name="test_meta_find_by_name" classname="MetaTest" time="0.011"/>
-  <testcase name="test_meta_member_comments_extracted" classname="MetaTest" time="0.007"/>
-  <testcase name="test_meta_ontology_outline_fields_and_methods" classname="MetaTest" time="0.016"/>
-  <testcase name="test_meta_nav_chain_inference_no_errors" classname="MetaTest" time="0.335"/>
-  <testcase name="test_meta_module_name_and_namespace" classname="MetaTest" time="0.005"/>
-  <testcase name="test_meta_member_block_comment_extracted" classname="MetaTest" time="0.006"/>
-  <testcase name="test_meta_membersOf_for_dot_completion" classname="MetaTest" time="0.011"/>
-  <testcase name="test_membersOf_undefined_symbol_returns_empty" classname="MetaTest" time="0.259"/>
-  <testcase name="test_MetaExtractor_fieldsOf_for_returnable_outline" classname="MetaTest" time="0.379"/>
-  <testcase name="test_meta_variables_with_type_and_mutable" classname="MetaTest" time="0.013"/>
-  <testcase name="test_meta_scope_toMap" classname="MetaTest" time="0.008"/>
-  <testcase name="test_meta_scopeAt_finds_innermost" classname="MetaTest" time="0.006"/>
-  <testcase name="test_meta_fieldsOf_chained_navigation_method_call_result" classname="MetaTest" time="0.337"/>
-  <testcase name="test_MetaExtractor_fieldsOf_for_genericable_outline" classname="MetaTest" time="0.37"/>
-  <testcase name="test_meta_toMap_json_serializable" classname="MetaTest" time="0.008"/>
-  <testcase name="test_meta_member_without_comment_has_null_description" classname="MetaTest" time="0.007"/>
-  <testcase name="test_meta_outline_with_methods_and_comments" classname="MetaTest" time="0.009"/>
-  <testcase name="test_meta_member_origin_own" classname="MetaTest" time="0.008"/>
-  <testcase name="test_meta_visibleSymbols_at_position" classname="MetaTest" time="0.005"/>
+  <testcase name="test_meta_variable_type_from_first_resolves_to_entity_name" classname="MetaTest" time="0.526"/>
+  <testcase name="test_meta_find_by_name" classname="MetaTest" time="0.015"/>
+  <testcase name="test_meta_member_comments_extracted" classname="MetaTest" time="0.035"/>
+  <testcase name="test_meta_ontology_outline_fields_and_methods" classname="MetaTest" time="0.018"/>
+  <testcase name="test_virtualset_nested_avg_filter_to_list_resolves_school_element" classname="MetaTest" time="0.852"/>
+  <testcase name="test_meta_nav_chain_inference_no_errors" classname="MetaTest" time="0.92"/>
+  <testcase name="test_meta_module_name_and_namespace" classname="MetaTest" time="0.007"/>
+  <testcase name="test_meta_member_block_comment_extracted" classname="MetaTest" time="0.01"/>
+  <testcase name="test_meta_membersOf_for_dot_completion" classname="MetaTest" time="0.035"/>
+  <testcase name="test_virtualset_nested_count_filter_order_desc_to_list_resolves_school_element" classname="MetaTest" time="0.719"/>
+  <testcase name="test_membersOf_undefined_symbol_returns_empty" classname="MetaTest" time="0.534"/>
+  <testcase name="test_filter_then_provinces_then_member_access_no_errors" classname="MetaTest" time="1.132"/>
+  <testcase name="test_filter_then_navigation_chain_resolves_type_correctly" classname="MetaTest" time="6.479"/>
+  <testcase name="test_MetaExtractor_fieldsOf_for_returnable_outline" classname="MetaTest" time="1.075"/>
+  <testcase name="test_membersOf_outline_stores_private_members_for_this_access" classname="MetaTest" time="0.009"/>
+  <testcase name="test_meta_variables_with_type_and_mutable" classname="MetaTest" time="0.009"/>
+  <testcase name="test_meta_scope_toMap" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_scopeAt_finds_innermost" classname="MetaTest" time="0.009"/>
+  <testcase name="test_virtualset_nested_sum_in_filter_predicate_resolves_to_number" classname="MetaTest" time="0.651"/>
+  <testcase name="test_meta_fieldsOf_chained_navigation_method_call_result" classname="MetaTest" time="0.406"/>
+  <testcase name="test_MetaExtractor_fieldsOf_for_genericable_outline" classname="MetaTest" time="0.253"/>
+  <testcase name="test_virtualset_aggregate_chained_single_expr_lambda_resolves_map" classname="MetaTest" time="0.354"/>
+  <testcase name="test_virtualset_expression_tuple_combined_operations" classname="MetaTest" time="0.269"/>
+  <testcase name="test_meta_toMap_json_serializable" classname="MetaTest" time="0.004"/>
+  <testcase name="test_meta_member_without_comment_has_null_description" classname="MetaTest" time="0.006"/>
+  <testcase name="test_meta_outline_with_methods_and_comments" classname="MetaTest" time="0.006"/>
+  <testcase name="test_meta_member_origin_own" classname="MetaTest" time="0.003"/>
+  <testcase name="test_virtualset_aggregate_chained_pipeline_resolves_map" classname="MetaTest" time="0.514"/>
+  <testcase name="test_meta_visibleSymbols_at_position" classname="MetaTest" time="0.007"/>
   <testcase name="test_meta_module_description_from_comment" classname="MetaTest" time="0.008"/>
-  <testcase name="test_meta_resolve_parameter_in_function_scope" classname="MetaTest" time="0.003"/>
-  <testcase name="test_meta_scopes_exist" classname="MetaTest" time="0.003"/>
-  <testcase name="test_resolveOutline_priority_declaredToBe_when_extendToBe_is_nothing" classname="MetaTest" time="0.379"/>
+  <testcase name="test_meta_resolve_parameter_in_function_scope" classname="MetaTest" time="0.012"/>
+  <testcase name="test_aggregate_block_lambda_agg_count_sum_resolve_without_unknown" classname="MetaTest" time="0.258"/>
+  <testcase name="test_aggregate_lambda_param_meta_members_consistent_with_inference" classname="MetaTest" time="0.316"/>
+  <testcase name="test_meta_scopes_exist" classname="MetaTest" time="0.002"/>
+  <testcase name="test_resolveOutline_priority_declaredToBe_when_extendToBe_is_nothing" classname="MetaTest" time="0.145"/>
 </testsuite>

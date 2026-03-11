@@ -10,6 +10,7 @@ ErrorDebugTest.class
 ExternalTest.class
 InterpreterTest.class
 InferenceTest.class
+NestedVSTest.class
 GCPInferenceTest.class
 IfBranchTest.class
 ChurchTest.class
