@@ -2790,6 +2790,102 @@ public class MetaTest {
         }
     }
 
+    // ── entity-body ~this action inference ────────────────────────────────────
+
+    /**
+     * An entity with a {@code lock: Unit -> ~this} action method must type-infer
+     * without errors, and the {@code person.lock()} call node must resolve to the
+     * entity type (Person), not UNKNOWN or the raw {@code ~this} decorator.
+     *
+     * <p>This is the canonical regression guard for the "entity action returns ~this"
+     * feature: the schema declares the action, type inference propagates the concrete
+     * entity type via {@code This.eventual()}, and no type mismatch is reported.
+     */
+    @Test
+    void test_entity_action_this_return_type_infers_to_entity() {
+        String code = "module org.test.entityaction\n"
+                + OntologyFixtures.SYSTEM_OUTLINES
+                + """
+                outline Person = {
+                    id:0,
+                    name:String,
+                    locked:Bool,
+                    lock:Unit -> ~this,
+                    unlock:Unit -> ~this
+                };
+                let f = (p: Person) -> p.lock();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no inference errors for entity ~this action; got: " + ast.errors());
+
+        // The lock() call node must resolve to Person (not UNKNOWN)
+        org.twelve.gcp.ast.Node lockCall = findMemberCallNode(ast.program(), "lock");
+        assertNotNull(lockCall, "Should find p.lock() call node in AST");
+
+        Outline callOutline = lockCall.outline();
+        assertNotNull(callOutline, "p.lock() call should have a non-null outline");
+        assertFalse(callOutline.containsUnknown(),
+                "p.lock() return type must NOT be UNKNOWN; got: " + callOutline
+                        + " (" + callOutline.getClass().getSimpleName() + ")");
+
+        // The return type must expose Person's own members (name, locked, lock, unlock)
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(callOutline);
+        assertTrue(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "p.lock() return type must have 'name' (Person member); got fields: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "lock".equals(f.name())),
+                "p.lock() return type must have 'lock' (chaining); got fields: "
+                        + fields.stream().map(FieldMeta::name).toList());
+    }
+
+    /**
+     * Chained entity actions must infer correctly:
+     * {@code p.lock().unlock()} must not produce inference errors,
+     * and the final call must also resolve to Person (enabling further chaining).
+     */
+    @Test
+    void test_entity_action_this_chaining_infers_without_errors() {
+        String code = "module org.test.entityactionchain\n"
+                + OntologyFixtures.SYSTEM_OUTLINES
+                + """
+                outline Person = {
+                    id:0,
+                    name:String,
+                    locked:Bool,
+                    lock:Unit -> ~this,
+                    unlock:Unit -> ~this
+                };
+                let f = (p: Person) -> p.lock().unlock();
+                let x = 0;
+                export f, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no inference errors for p.lock().unlock() chain; got: " + ast.errors());
+
+        // The unlock() call node (second in chain) must also resolve to a non-UNKNOWN type
+        org.twelve.gcp.ast.Node unlockCall = findMemberCallNode(ast.program(), "unlock");
+        assertNotNull(unlockCall, "Should find p.lock().unlock() call node in AST");
+
+        Outline unlockOutline = unlockCall.outline();
+        assertNotNull(unlockOutline, "p.lock().unlock() call should have a non-null outline");
+        assertFalse(unlockOutline.containsUnknown(),
+                "p.lock().unlock() return type must NOT be UNKNOWN; got: " + unlockOutline);
+
+        // Must still have Person's members after double chain
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(unlockOutline);
+        assertTrue(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "p.lock().unlock() must still expose 'name' (Person member); got: "
+                        + fields.stream().map(FieldMeta::name).toList());
+    }
+
     /**
      * 在给定的 {@code aggregateCallName} 调用节点的 lambda 参数子树中，查找第一个名为
      * {@code methodName} 的成员调用节点。用于精确区分 filter 谓词里的 count 与

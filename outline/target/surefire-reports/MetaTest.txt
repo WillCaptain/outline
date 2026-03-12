@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: MetaTest
 -------------------------------------------------------------------------------
-Tests run: 61, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 24.10 s -- in MetaTest
+Tests run: 69, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.32 s -- in MetaTest
