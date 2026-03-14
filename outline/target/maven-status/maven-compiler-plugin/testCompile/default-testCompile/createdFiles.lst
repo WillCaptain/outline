@@ -16,4 +16,5 @@ IfBranchTest.class
 ChurchTest.class
 AsyncTest.class
 LTTest.class
+ChurchNumeralsFullTest.class
 BuiltinTypeTest.class
