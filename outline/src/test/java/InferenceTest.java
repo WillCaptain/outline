@@ -1798,4 +1798,156 @@ public class InferenceTest {
         Outline outline = ast.program().body().statements().getLast().outline();
         assertEquals("(Integer,Integer)", outline.toString());
     }
+
+    @Test
+    void test_lambda_param_merged_from_assignment_and_member_access() {
+        // Regression: x should be inferred as {name:String, age:Integer}, not just {name:String}.
+        // `y = x` contributes x.hasToBe = {name:String};
+        // `x.age - 1` contributes x.definedToBe = {age:Number}.
+        // MetaExtractor.resolveOutline() must use min() to merge both constraints.
+        AST ast = RunnerHelper.parse("""
+                let f = x->{
+                    var y = {name="will"};
+                    y = x;
+                    let age = x.age-1;
+                    return age;
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "Expected no errors but got: " + ast.errors());
+
+        FirstOrderFunction f = cast(lhsOf(ast, 0));
+        Genericable<?, ?> xParam = cast(f.argument());
+        Outline resolved = org.twelve.gcp.meta.MetaExtractor.resolveOutline(xParam);
+
+        assertInstanceOf(ProductADT.class, resolved,
+                "x should resolve to a record/entity type, got: " + resolved);
+        ProductADT entity = cast(resolved);
+
+        assertTrue(entity.getMember("name").isPresent(),
+                "x must have field 'name' (inferred from y=x where y:{name:String})");
+        assertTrue(entity.getMember("age").isPresent(),
+                "x must have field 'age' (inferred from x.age-1)");
+    }
+
+    /**
+     * 覆盖 Genericable.guess() / toString() 路径（playground API 的 walkForSymbols 使用此路径）。
+     * min() 合并后的结果必须同时含有 name 和 age 两个字段，
+     * 函数类型字符串也必须包含 age（即 playground 展示时不能只显示 {name:String}）。
+     */
+    @Test
+    void test_lambda_param_guess_and_toString_include_both_fields() {
+        AST ast = RunnerHelper.parse("""
+                let f = x->{
+                    var y = {name="will"};
+                    y = x;
+                    let age = x.age-1;
+                    return age;
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "Expected no errors but got: " + ast.errors());
+
+        FirstOrderFunction f = cast(lhsOf(ast, 0));
+        Genericable<?, ?> xParam = cast(f.argument());
+
+        // min() must contain both fields (the merged lower bound)
+        Outline min = xParam.min();
+        assertInstanceOf(ProductADT.class, min,
+                "xParam.min() should be a ProductADT, got: " + min + " [" + min.getClass().getSimpleName() + "]");
+        ProductADT minEntity = cast(min);
+        assertTrue(minEntity.getMember("name").isPresent(),
+                "xParam.min() must have 'name', hasToBe=" + xParam.hasToBe() + ", definedToBe=" + xParam.definedToBe());
+        assertTrue(minEntity.getMember("age").isPresent(),
+                "xParam.min() must have 'age', hasToBe=" + xParam.hasToBe() + ", definedToBe=" + xParam.definedToBe());
+
+        // guess() must also contain both fields (used by Genericable.toString())
+        Outline guessed = xParam.guess();
+        assertInstanceOf(ProductADT.class, guessed,
+                "xParam.guess() should be a ProductADT, got: " + guessed);
+        ProductADT guessEntity = cast(guessed);
+        assertTrue(guessEntity.getMember("name").isPresent(),
+                "xParam.guess() must have 'name'");
+        assertTrue(guessEntity.getMember("age").isPresent(),
+                "xParam.guess() must have 'age'");
+
+        // The function's toString() (used by walkForSymbols in the playground backend)
+        // must show the parameter as a record containing age.
+        // e.g. "{name:String, age:Number} -> Number" or similar — must NOT be just "{name:String}"
+        Outline fOutline = lhsOf(ast, 0);
+        String funcType = fOutline.toString();
+        assertTrue(funcType.contains("age"),
+                "Function toString() must mention 'age', but got: " + funcType
+                + " (xParam.hasToBe=" + xParam.hasToBe() + ", xParam.definedToBe=" + xParam.definedToBe() + ")");
+    }
+
+    @Test
+    void test_curried_lift_hof() {
+        AST ast = RunnerHelper.parse("""
+                let lift = sel -> pred -> entity -> pred(sel(entity));
+                let get_score  = player -> player.score;
+                let is_passing = s -> s >= 60;
+                let is_ace     = s -> s >= 90;
+                let check_pass = lift(get_score)(is_passing);
+                let check_ace  = lift(get_score)(is_ace);
+                let r1 = check_pass({ name = "Alice", score = 85 });
+                let r2 = check_ace ({ name = "Bob",   score = 95 });
+                let r3 = check_pass({ name = "Carol", score = 55 });
+                r2;
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "Expected no errors but got: " + ast.errors());
+        Outline r2 = ast.program().body().statements().getLast().nodes().getFirst().outline();
+        assertEquals(ast.Boolean.toString(), r2.toString(), "r2 should be Bool");
+    }
+
+    @Test
+    void test_curried_lift_minimal() {
+        // Minimal: 2-level curried, no comparison
+        AST ast = RunnerHelper.parse("""
+                let f = sel -> pred -> x -> pred(sel(x));
+                let getV = a -> a.v;
+                let ident = b -> b;
+                let t = f(getV)(ident);
+                t({ v = 42 });
+                """);
+        ast.asf().infer();
+        System.out.println("Minimal errors: " + ast.errors());
+
+        // Is it the global to_str that leaks? Try without any stdlibs potentially interfering
+        // Test: 2-level but not 3-level
+        AST ast2 = RunnerHelper.parse("""
+                let apply = sel -> x -> sel(x);
+                let getV = a -> a.v;
+                let t = apply(getV);
+                t({ v = 42 });
+                """);
+        ast2.asf().infer();
+        System.out.println("2-level errors: " + ast2.errors());
+    }
+
+    @Test
+    void test_this_return_chain_no_stackoverflow() {
+        // Chaining methods that return `this{...}` must not cause StackOverflowError.
+        // The Lazy.eventual() cycle guard prevents infinite mutual recursion between
+        // MemberAccessorInference and Lazy.eventual() during multi-method chains.
+        AST ast = RunnerHelper.parse("""
+                outline Base = <i, o> {
+                    data: [i],
+                    map:  (f: i -> o) -> this{data = data.map(d -> f(d))}
+                };
+                outline Stream = <i> Base<i> {
+                    filter: (pred: i -> Bool) -> this{data = data.filter(d -> pred(d))}
+                };
+                let s = Stream { data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] };
+                let result = s
+                    .filter(x -> x % 2 == 0)
+                    .map(x -> x * x);
+                result.data;
+                """);
+        assertTrue(ast.asf().infer(), "infer() should return true without StackOverflow");
+        assertTrue(ast.errors().isEmpty(), "Expected no errors but got: " + ast.errors());
+        Outline resultData = ast.program().body().statements().getLast().nodes().getFirst().outline();
+        assertTrue(resultData.toString().contains("["), "result.data should be an Array, got: " + resultData);
+    }
 }
