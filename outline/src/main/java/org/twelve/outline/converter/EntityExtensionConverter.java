@@ -2,6 +2,7 @@ package org.twelve.outline.converter;
 
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.ast.SourceLocation;
 import org.twelve.gcp.node.expression.EntityNode;
 import org.twelve.gcp.node.statement.MemberNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
@@ -23,7 +24,12 @@ public class EntityExtensionConverter extends Converter {
         ParseNode host = ((NonTerminalNode) source).node(0);
         NonTerminalNode extension = cast(((NonTerminalNode) source).node(1));
         List<MemberNode> members = convertMembers(ast,extension);
-        return new EntityNode(members,converters.get(host.name()).convert(ast,host));
+        var loc = source.location();
+        int col = loc.lineStart() - loc.line().beginIndex();
+        return new EntityNode(
+                members,
+                converters.get(host.name()).convert(ast,host),
+                new SourceLocation(loc.start(), loc.end(), loc.line().number() + 1, col));
     }
 
     protected List<MemberNode> convertMembers(AST ast, NonTerminalNode entity){

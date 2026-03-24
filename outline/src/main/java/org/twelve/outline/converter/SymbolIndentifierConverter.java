@@ -15,6 +15,11 @@ public class SymbolIndentifierConverter extends Converter {
 
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
-        return new SymbolIdentifier(ast,new Token<>(source.lexeme()));
+        var loc = source.location();
+        return new SymbolIdentifier(ast, new Token<>(
+                source.lexeme(),
+                loc.start(),
+                loc.line().number() + 1,
+                loc.lineStart()));
     }
 }
