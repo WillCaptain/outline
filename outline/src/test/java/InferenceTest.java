@@ -270,6 +270,23 @@ public class InferenceTest {
     }
 
     @Test
+    void test_nested_entity_method_can_capture_outer_recursive_binding() {
+        AST ast = ASTHelper.mockRecursiveNestedEntityClosure();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty());
+
+        VariableDeclarator declarator = cast(ast.program().body().statements().getFirst());
+        Entity male = cast(declarator.assignments().getFirst().lhs().outline());
+        Entity wife = cast(male.getMember("wife").orElseThrow().outline());
+        Function<?, ?> husband = cast(wife.getMember("husband").orElseThrow().outline().eventual());
+
+        assertInstanceOf(Entity.class, husband.returns().supposedToBe().eventual());
+        assertTrue(husband.returns().supposedToBe().eventual().is(male));
+        assertTrue(male.is(husband.returns().supposedToBe().eventual()));
+        assertInstanceOf(Entity.class, ast.program().body().statements().getLast().outline().eventual());
+    }
+
+    @Test
     void test_tuple() {
         AST ast = ASTHelper.mockSimpleTuple();
         assertTrue(ast.asf().infer());
@@ -651,10 +668,13 @@ public class InferenceTest {
         VariableDeclarator name2 = cast(ast.program().body().get(5));
         Outline name2Outline = name2.assignments().getFirst().lhs().outline();
         //check return of match
-        assertInstanceOf(STRING.class, name1Outline);
+        assertInstanceOf(Option.class, name1Outline);
+        assertTrue(((Option) name1Outline).options().stream().anyMatch(o -> o instanceof STRING));
+        assertTrue(((Option) name1Outline).options().stream().anyMatch(o -> o == ast.Nothing));
         assertEquals("String|(Integer,String)", name2Outline.toString());
         assertEquals(1, ast.errors().size());
-        assertEquals(name1.assignments().getFirst(), ast.errors().getFirst().node());
+        assertEquals(GCPErrCode.NON_EXHAUSTIVE_MATCH, ast.errors().getFirst().errorCode());
+        assertEquals(name1.assignments().getFirst().rhs(), ast.errors().getFirst().node());
         //check match pattern type
         //tuple match
         List<MatchArm> arms1 = ((MatchExpression) name1.assignments().getFirst().rhs()).arms();
@@ -679,6 +699,40 @@ public class InferenceTest {
         age = arms2.get(1).test().pattern().get(1);
         assertInstanceOf(STRING.class, last.outline());
         assertInstanceOf(INTEGER.class, age.outline());
+    }
+
+    @Test
+    void test_non_exhaustive_match_as_function_return_becomes_nothing_option() {
+        AST ast = ASTHelper.mockNonExhaustiveMatchAsFunctionReturn();
+        assertTrue(ast.asf().infer());
+        List<Statement> statements = ast.program().body().statements();
+        VariableDeclarator result = cast(statements.get(statements.size() - 1));
+        Outline resultOutline = result.assignments().getFirst().lhs().outline();
+        assertInstanceOf(Option.class, resultOutline);
+        assertTrue(((Option) resultOutline).options().stream().anyMatch(o -> o instanceof STRING));
+        assertTrue(((Option) resultOutline).options().stream().anyMatch(o -> o == ast.Nothing));
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.NON_EXHAUSTIVE_MATCH));
+        assertFalse(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.AMBIGUOUS_RETURN));
+    }
+
+    @Test
+    void test_non_exhaustive_selection_before_tail_keeps_following_code_reachable() {
+        AST ast = ASTHelper.mockNonExhaustiveSelectionBeforeTail();
+        assertTrue(ast.asf().infer());
+        List<Statement> statements = ast.program().body().statements();
+        VariableDeclarator result = cast(statements.get(statements.size() - 1));
+        Outline resultOutline = result.assignments().getFirst().lhs().outline();
+        assertEquals("Integer|String", resultOutline.toString());
+        assertFalse(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.UNREACHABLE_STATEMENT));
+        assertFalse(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.AMBIGUOUS_RETURN));
+    }
+
+    @Test
+    void test_exhaustive_selection_before_tail_marks_following_code_unreachable() {
+        AST ast = ASTHelper.mockExhaustiveSelectionBeforeTail();
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.UNREACHABLE_STATEMENT));
+        assertFalse(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.AMBIGUOUS_RETURN));
     }
 
     @Test
@@ -1285,6 +1339,34 @@ public class InferenceTest {
         assertInstanceOf(org.twelve.gcp.interpreter.value.StringValue.class, result);
         assertEquals("GCP-System",
                 ((org.twelve.gcp.interpreter.value.StringValue) result).value());
+    }
+
+    @Test
+    void test_missing_required_field_points_to_construction_site() {
+        AST ast = ASTHelper.parser.parse(new ASF(), """
+                // outline Product has:
+                //   id, price   -> REQUIRED
+                //   category    -> DEFAULT VALUE ("general")
+                //   sku         -> LITERAL TYPE (#"AUTO")
+
+                outline Product = {
+                    id:       String,
+                    price:    Int,
+                    category: "general",
+                    sku:      #"AUTO"
+                };
+                let p3 = Product{id = "P003"};
+                """);
+        ast.asf().infer();
+
+        var missing = ast.errors().stream()
+                .filter(e -> e.errorCode() == GCPErrCode.MISSING_REQUIRED_FIELD)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("expected a missing required field error"));
+
+        assertNotNull(missing.node(), "missing-field error should keep a source node");
+        assertTrue(missing.node().loc().start() >= 0, "missing-field error should keep a real source offset");
+        assertEquals(12, missing.node().loc().line(), "error should point to the Product{...} call site");
     }
 
     /**

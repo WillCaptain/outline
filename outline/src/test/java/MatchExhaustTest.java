@@ -1,7 +1,12 @@
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.exception.GCPErrCode;
+import org.twelve.gcp.exception.GCPError;
 import org.twelve.outline.OutlineParser;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MatchExhaustTest {
     @Test
@@ -19,6 +24,11 @@ let r1 = is_weekend(Sat);
 let r2 = is_weekend(Mon);
 """);
         asf.infer();
+        assertTrue(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.NON_EXHAUSTIVE_MATCH &&
+                        e.severity() == GCPError.Severity.WARNING &&
+                        e.message().contains("widens to Option")),
+                "non-exhaustive match should surface a warning diagnostic with a stable error code");
         print(ast, "without wildcard");
     }
 
@@ -39,6 +49,9 @@ let r2 = is_weekend_2(Mon);
 let r3 = is_weekend_2(42);
 """);
         asf.infer();
+        assertFalse(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.NON_EXHAUSTIVE_MATCH),
+                "exhaustive match should not emit a non-exhaustive diagnostic");
         print(ast, "with wildcard");
     }
 

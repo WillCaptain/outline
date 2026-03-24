@@ -113,6 +113,44 @@ public class ASTHelper {
         return parser.parse(new ASF(), code);
     }
 
+    public static AST mockNonExhaustiveMatchAsFunctionReturn() {
+        String code = """
+                let f = n -> match n {
+                    1 -> "one"
+                };
+                let result = f(2);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockNonExhaustiveSelectionBeforeTail() {
+        String code = """
+                let f = n -> {
+                    if(n>1){
+                        1
+                    }
+                    "tail"
+                };
+                let result = f(0);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockExhaustiveSelectionBeforeTail() {
+        String code = """
+                let f = n -> {
+                    if(n>1){
+                        1
+                    }else{
+                        0
+                    }
+                    "tail"
+                };
+                let result = f(0);
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
     public static AST mockIf(boolean isIf) {
         String code;
         if (isIf) {
@@ -1310,6 +1348,19 @@ public class ASTHelper {
                 };
                 
                 father.son.girl_friend.name
+                """;
+        return parser.parse(new ASF(), code);
+    }
+
+    public static AST mockRecursiveNestedEntityClosure() {
+        String code = """
+                let male = {
+                    wife = {
+                        husband = ()->male,
+                        run = ()->10
+                    }
+                };
+                male.wife.husband()
                 """;
         return parser.parse(new ASF(), code);
     }
