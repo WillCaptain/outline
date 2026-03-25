@@ -1910,6 +1910,125 @@ public class MetaTest {
         return result;
     }
 
+    // ─────────────── SINGLE-edge collection navigation (FK → Employees) ──────
+
+    /**
+     * Preamble that mirrors what {@code Entitir.convert()} generates for a
+     * BadgeRequest entity with a SINGLE FK edge {@code employee: Unit -> Employee}.
+     *
+     * <p>The entity outline declares the single-entity return type; the
+     * <em>collection</em> outline overrides it to return the plural type:
+     * <pre>
+     *   outline BadgeRequest = { employee: Unit -> Employee };
+     *   outline BadgeRequests = VirtualSet&lt;BadgeRequest&gt; {
+     *       employee: Unit -> Employees    // ← Entitir.convert() generates this
+     *   };
+     * </pre>
+     * This is the source-of-truth Outline declaration that GCP must infer from.
+     */
+    private static final String BADGE_PREAMBLE = OntologyFixtures.SYSTEM_OUTLINES + """
+            outline Employee = { id: 0, name: String, department: String };
+            outline Employees = VirtualSet<Employee>{};
+            outline BadgeRequest = { id: 0, employee: Unit -> Employee };
+            outline BadgeRequests = VirtualSet<BadgeRequest> {
+                employee: Unit -> Employees
+            };
+            let employees     = __ontology_repo__<Employees>;
+            let badgeRequests = __ontology_repo__<BadgeRequests>;
+            """;
+
+    /**
+     * GCP must infer {@code badgeRequests.employee()} as {@code Employees}
+     * (a VirtualSet collection), not as {@code Employee} (a single entity).
+     *
+     * <p>This is the natural result of the Outline declaration:
+     * {@code BadgeRequests} body declares {@code employee: Unit -> Employees},
+     * so the call returns the VirtualSet type.  No extra heuristics needed —
+     * just read the declared return type level by level.
+     *
+     * <p>Failure here means the {@code BadgeRequests} collection-body override
+     * is not visible to GCP inference, which would force callers to apply
+     * workarounds (bad — "外部 service 不应该有什么额外逻辑").
+     */
+    @Test
+    void test_single_edge_on_collection_infers_as_virtualset() {
+        String code = "module org.test.badge\n" + BADGE_PREAMBLE + """
+                let result = badgeRequests.employee();
+                let dummy  = 0;
+                export result, dummy;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "No inference errors expected; got: " + ast.errors());
+
+        // Find the badgeRequests.employee() call node
+        org.twelve.gcp.ast.Node employeeCall = findMemberCallNode(ast.program(), "employee");
+        assertNotNull(employeeCall, "Should find badgeRequests.employee() call node in AST");
+
+        org.twelve.gcp.outline.Outline callOutline = employeeCall.outline();
+        assertNotNull(callOutline, "badgeRequests.employee() must have a non-null inferred outline");
+
+        // The return type must be a VirtualSet collection, not a plain entity
+        assertTrue(MetaExtractor.isVirtualSetCollection(callOutline),
+                "badgeRequests.employee() must infer as VirtualSet (Employees), not Employee entity. "
+                        + "Got: " + callOutline + " (" + callOutline.getClass().getSimpleName() + ")");
+    }
+
+    /**
+     * {@code MetaExtractor.fieldsOf(badgeRequests.employee().outline())} must
+     * return {@code Employees} VirtualSet members — the same members used for
+     * dot-completion in the editor.
+     *
+     * <p>If this passes, the completion system simply calls
+     * {@code MetaExtractor.fieldsOf} on the inferred outline and gets the right
+     * answer without any special-casing for SINGLE edges.
+     */
+    @Test
+    void test_single_edge_on_collection_fieldsOf_returns_virtualset_members() {
+        String code = "module org.test.badgefields\n" + BADGE_PREAMBLE + """
+                let result = badgeRequests.employee();
+                let dummy  = 0;
+                export result, dummy;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "No inference errors expected; got: " + ast.errors());
+
+        org.twelve.gcp.ast.Node employeeCall = findMemberCallNode(ast.program(), "employee");
+        assertNotNull(employeeCall, "Should find badgeRequests.employee() call node");
+
+        org.twelve.gcp.outline.Outline callOutline = employeeCall.outline();
+        assertNotNull(callOutline, "badgeRequests.employee() must have a non-null outline");
+
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(callOutline);
+        assertFalse(fields.isEmpty(),
+                "MetaExtractor.fieldsOf(badgeRequests.employee().outline()) must NOT be empty. "
+                        + "Got empty — outline=" + callOutline
+                        + " (" + callOutline.getClass().getSimpleName() + ")");
+
+        // Must include VirtualSet operators — this is what editor completions need
+        assertTrue(fields.stream().anyMatch(f -> "count".equals(f.name())),
+                "Expected 'count' (VirtualSet operator) in Employees members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "filter".equals(f.name())),
+                "Expected 'filter' (VirtualSet operator) in Employees members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertTrue(fields.stream().anyMatch(f -> "to_list".equals(f.name())),
+                "Expected 'to_list' (VirtualSet operator) in Employees members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+
+        // Must NOT include Employee entity fields (name, department) directly —
+        // those belong to single-entity access, not the VirtualSet level
+        assertFalse(fields.stream().anyMatch(f -> "name".equals(f.name())),
+                "'name' is an Employee entity field and must NOT appear in Employees VirtualSet members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+        assertFalse(fields.stream().anyMatch(f -> "department".equals(f.name())),
+                "'department' is an Employee entity field and must NOT appear in Employees VirtualSet members: "
+                        + fields.stream().map(FieldMeta::name).toList());
+    }
+
     private static void findAllMemberCallNodes(
             org.twelve.gcp.ast.Node node, String memberName,
             List<org.twelve.gcp.ast.Node> result) {

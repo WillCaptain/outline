@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260315050225716_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-03-15T05-02-25_686-jvmRun1 surefire-20260315050225716_1tmp surefire_0-20260315050225716_2tmp"/>
+    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260318163209276_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-03-18T16-32-09_240-jvmRun1 surefire-20260318163209276_1tmp surefire_0-20260318163209276_2tmp"/>
     <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/apache/commons/commons-configuration2/2.12.0/commons-configuration2-2.12.0.jar:/Users/imac/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/imac/.m2/repository/org/apache/commons/commons-text/1.13.1/commons-text-1.13.1.jar:/Users/imac/.m2/repository/commons-logging/commons-logging/1.3.4/commons-logging-1.3.4.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:/Users/imac/.m2/repository/org/twelve/ext-builder-test/1.0-SNAPSHOT/ext-builder-test-1.0-SNAPSHOT.jar:"/>
@@ -33,7 +33,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260315050225716_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260318163209276_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="java.runtime.version" value="21.0.6"/>
@@ -64,24 +64,24 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="interpret_await_named_promise" classname="AsyncTest" time="0.004"/>
+  <testcase name="interpret_await_named_promise" classname="AsyncTest" time="0.003"/>
   <testcase name="infer_await_unwraps_promise_to_inner_type" classname="AsyncTest" time="0.001"/>
-  <testcase name="interpret_catch_not_triggered_on_success" classname="AsyncTest" time="0.029"/>
+  <testcase name="interpret_catch_not_triggered_on_success" classname="AsyncTest" time="0.028"/>
   <testcase name="infer_await_on_non_promise_reports_error" classname="AsyncTest" time="0.001"/>
   <testcase name="interpret_await_async_expression_with_arithmetic" classname="AsyncTest" time="0.001"/>
   <testcase name="interpret_catch_callback_receives_message_on_failure" classname="AsyncTest" time="0.001"/>
   <testcase name="infer_async_integer_literal_is_promise_integer" classname="AsyncTest" time="0.001"/>
-  <testcase name="interpret_then_not_triggered_on_failure" classname="AsyncTest" time="0.022"/>
+  <testcase name="interpret_then_not_triggered_on_failure" classname="AsyncTest" time="0.026"/>
   <testcase name="interpret_async_produces_promise_value" classname="AsyncTest" time="0.001"/>
-  <testcase name="interpret_await_async_string" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_await_async_string" classname="AsyncTest" time="0.0"/>
   <testcase name="interpret_then_callback_receives_resolved_value" classname="AsyncTest" time="0.0"/>
-  <testcase name="infer_promise_then_member_is_function" classname="AsyncTest" time="0.0"/>
-  <testcase name="infer_async_lambda_is_promise_function" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_promise_then_member_is_function" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_async_lambda_is_promise_function" classname="AsyncTest" time="0.0"/>
   <testcase name="interpret_multiple_await_calls" classname="AsyncTest" time="0.001"/>
-  <testcase name="infer_async_string_literal_is_promise_string" classname="AsyncTest" time="0.0"/>
-  <testcase name="infer_promise_toString_includes_type_name" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_async_string_literal_is_promise_string" classname="AsyncTest" time="0.001"/>
+  <testcase name="infer_promise_toString_includes_type_name" classname="AsyncTest" time="0.0"/>
   <testcase name="infer_promise_catch_member_is_function" classname="AsyncTest" time="0.0"/>
-  <testcase name="interpret_await_async_function_call" classname="AsyncTest" time="0.001"/>
+  <testcase name="interpret_await_async_function_call" classname="AsyncTest" time="0.0"/>
   <testcase name="interpret_await_async_integer" classname="AsyncTest" time="0.001"/>
   <testcase name="interpret_promise_display_resolves_after_await" classname="AsyncTest" time="0.001"/>
 </testsuite>

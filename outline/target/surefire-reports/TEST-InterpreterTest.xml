@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="InterpreterTest" time="0.198" tests="184" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="InterpreterTest" time="1.442" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="socksProxyHost" value="127.0.0.1"/>
     <property name="http.proxyHost" value="127.0.0.1"/>
@@ -10,15 +10,15 @@
     <property name="java.vm.vendor" value="Homebrew"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.vendor.url" value="https://github.com/Homebrew/homebrew-core/issues"/>
-    <property name="user.timezone" value="Asia/Shanghai"/>
     <property name="os.name" value="Mac OS X"/>
     <property name="java.vm.specification.version" value="21"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="CN"/>
     <property name="sun.boot.library.path" value="/opt/homebrew/Cellar/openjdk@21/21.0.6/libexec/openjdk.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260315050225716_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-03-15T05-02-25_686-jvmRun1 surefire-20260315050225716_1tmp surefire_0-20260315050225716_2tmp"/>
+    <property name="sun.java.command" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260322142248900_3.jar /Users/imac/Documents/code/github/outline/outline/target/surefire 2026-03-22T14-22-48_526-jvmRun1 surefire-20260322142248900_1tmp surefire_0-20260322142248900_2tmp"/>
     <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="jdk.debug" value="release"/>
+    <property name="test" value="InterpreterTest#test_nested_entity_method_returns_outer_recursive_binding"/>
     <property name="surefire.test.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/test-classes:/Users/imac/Documents/code/github/outline/outline/target/classes:/Users/imac/.m2/repository/org/twelve/gcp/1.0-SNAPSHOT/gcp-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/apache/commons/commons-configuration2/2.12.0/commons-configuration2-2.12.0.jar:/Users/imac/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/imac/.m2/repository/org/apache/commons/commons-text/1.13.1/commons-text-1.13.1.jar:/Users/imac/.m2/repository/commons-logging/commons-logging/1.3.4/commons-logging-1.3.4.jar:/Users/imac/.m2/repository/com/sun/xml/ws/jaxws-rt/4.0.1/jaxws-rt-4.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-impl/4.0.2/jaxb-impl-4.0.2.jar:/Users/imac/.m2/repository/com/sun/xml/bind/jaxb-core/4.0.2/jaxb-core-4.0.2.jar:/Users/imac/.m2/repository/org/glassfish/ha/ha-api/3.1.13/ha-api-3.1.13.jar:/Users/imac/.m2/repository/org/glassfish/external/management-api/3.2.3/management-api-3.2.3.jar:/Users/imac/.m2/repository/org/glassfish/gmbal/gmbal-api-only/4.0.3/gmbal-api-only-4.0.3.jar:/Users/imac/.m2/repository/org/jvnet/staxex/stax-ex/2.1.0/stax-ex-2.1.0.jar:/Users/imac/.m2/repository/com/sun/xml/stream/buffer/streambuffer/2.1.0/streambuffer-2.1.0.jar:/Users/imac/.m2/repository/org/jvnet/mimepull/mimepull/1.10.0/mimepull-1.10.0.jar:/Users/imac/.m2/repository/com/sun/xml/fastinfoset/FastInfoset/2.1.0/FastInfoset-2.1.0.jar:/Users/imac/.m2/repository/jakarta/mail/jakarta.mail-api/2.1.1/jakarta.mail-api-2.1.1.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-activation/2.0.0/angus-activation-2.0.0.jar:/Users/imac/.m2/repository/org/eclipse/angus/angus-mail/2.0.1/angus-mail-2.0.1.jar:/Users/imac/.m2/repository/com/sun/xml/messaging/saaj/saaj-impl/3.0.0/saaj-impl-3.0.0.jar:/Users/imac/.m2/repository/com/fasterxml/woodstox/woodstox-core/6.5.0/woodstox-core-6.5.0.jar:/Users/imac/.m2/repository/org/codehaus/woodstox/stax2-api/4.2.1/stax2-api-4.2.1.jar:/Users/imac/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.1/jakarta.activation-api-2.1.1.jar:/Users/imac/.m2/repository/jakarta/xml/ws/jakarta.xml.ws-api/4.0.0/jakarta.xml.ws-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.0/jakarta.xml.bind-api-4.0.0.jar:/Users/imac/.m2/repository/jakarta/xml/soap/jakarta.xml.soap-api/3.0.0/jakarta.xml.soap-api-3.0.0.jar:/Users/imac/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/imac/.m2/repository/org/twelve/msll/1.0-SNAPSHOT/msll-1.0-SNAPSHOT.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter/5.9.2/junit-jupiter-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.9.2/junit-jupiter-api-5.9.2.jar:/Users/imac/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-commons/1.9.2/junit-platform-commons-1.9.2.jar:/Users/imac/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.9.2/junit-jupiter-params-5.9.2.jar:/Users/imac/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.9.2/junit-jupiter-engine-5.9.2.jar:/Users/imac/.m2/repository/org/junit/platform/junit-platform-engine/1.9.2/junit-platform-engine-1.9.2.jar:/Users/imac/.m2/repository/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar:/Users/imac/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/imac/.m2/repository/net/bytebuddy/byte-buddy/1.12.21/byte-buddy-1.12.21.jar:/Users/imac/.m2/repository/org/twelve/ext-builder-test/1.0-SNAPSHOT/ext-builder-test-1.0-SNAPSHOT.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="/Users/imac"/>
@@ -34,7 +34,7 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260315050225716_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/imac/Documents/code/github/outline/outline/target/surefire/surefirebooter-20260322142248900_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|100.64.0.0/10|*.100.64.0.0/10|17.0.0.0/8|*.17.0.0.0/8|localhost|*.localhost|local|*.local|169.254.0.0/16|*.169.254.0.0/16|224.0.0.0/4|*.224.0.0.0/4|240.0.0.0/4|*.240.0.0.0/4"/>
     <property name="java.runtime.version" value="21.0.6"/>
@@ -65,194 +65,5 @@
     <property name="java.class.version" value="65.0"/>
     <property name="http.proxyPort" value="7890"/>
   </properties>
-  <testcase name="test_prefix_decrement_returns_new_value" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_comparison" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_match_guard" classname="InterpreterTest" time="0.003"/>
-  <testcase name="test_builtin_len_string" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_simple_tuple" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_entity_inheritance_base_access" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_dict_keys_values" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_if_from_asthelper" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_entity_unpack" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_complex_literal" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_bool_methods_from_asthelper" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_symbol_entity_match" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_dict_literal_and_access" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_realistic_bank_account" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_outline_negative_int_default" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_definition" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_builtin_to_int_from_float" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_if_else_if_chain" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_hof_apply_function" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_postfix_decrement_returns_old_value" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_dict_methods_from_asthelper" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_prefix_increment_updates_variable" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_curried_addition" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_negative_number" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_builtin_to_int_from_int" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_dict_get" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_dict_len" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_external_constructor_via_plugin" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_closure_counter" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_prefix_increment_returns_new_value" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_to_lower" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_len" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_to_upper" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_builtin_to_float_from_string" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_outline_default_method" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_string_trim" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_postfix_in_expression" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_poly_reassign_full_poly" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_concat" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_bare_symbol_pattern" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_add_two_ints" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_poly" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_general_module" classname="InterpreterTest" time="0.003"/>
-  <testcase name="test_keyword_as_var_name_reports_reserved_hint" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_nested_entity_member_access" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_postfix_decrement_updates_variable" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_tuple_second_element" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_outline_literal_method" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_builtin_print_returns_unit" classname="InterpreterTest" time="0.001">
-    <system-out><![CDATA[hi
-]]></system-out>
-  </testcase>
-  <testcase name="test_early_return_from_function" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_entity_literal_type" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_entity_method_uses_this" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_long_literal" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_literal" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_builtin_assert_passes" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_bare_symbol_wildcard_match" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_postfix_increment_returns_old_value" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_hof_projection_pipeline" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_repeat" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_hof_projection_1" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_realistic_string_pipeline" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_bool_and_also" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_builtin_to_str_float" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_to_int" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_map_method" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_entity_var_member_assignment" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_realistic_entity_inheritance_polymorphism" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_string_escape_sequences" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_any_all" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_symbol_literal_type" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_chars" classname="InterpreterTest" time="0.004"/>
-  <testcase name="test_string_split" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_float_ceil_floor" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_int_literal" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_future_reference_from_entity" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_entity_unpack_with_alias" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_random_person_entity" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_contains" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_builtin_to_str_bool" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_realistic_curried_pipeline" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_realistic_word_frequency" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_builtin_to_float_from_int" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_float_literal" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_built_in_entity_console" classname="InterpreterTest" time="0.001">
-    <system-out><![CDATA[stdlib test
-]]></system-out>
-  </testcase>
-  <testcase name="test_self_recursive_factorial" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_poly_role_dispatch_int" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_entity_base_field_accessible_in_child" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_poly_reassign_partial_poly" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_external_constructor_placeholder_without_plugin" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_dynamic_range_variable_end" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_entity_with_guard" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_literal" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_builtin_to_str_int" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_replace" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_closure_captures_outer_var" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_entity_chained_method_calls" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_var_reassignment" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_bool_or_else" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_nested_entity_field_access" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_builtin_len_array" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_add_func_curried" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_literal_outline" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_array_flat_map" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_symbol_match_full" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_index_of" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_tuple_method_uses_this" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_builtin_to_int_from_string" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_recursive_extension" classname="InterpreterTest" time="0.013"/>
-  <testcase name="test_array_literal" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_realistic_fibonacci_list" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_array_dynamic_range_filter" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_take_and_drop" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_with_expression" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_return_without_early_exit" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_poly_role_dispatch_entity" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_int_to_str" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_entity_method_returns_this" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_dynamic_range_both_variable" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_multiple_parse_errors_collected" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_wildcard" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_outline_negative_long_default" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_tuple_unpack" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_builtin_assert_fails" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_int_abs" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_entity_field_access" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_realistic_student_statistics" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_bool_not" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_mixed_bare_and_unpack" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_gcp_error_format_readable" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_keyword_in_module_path_reports_reserved_hint" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_builtin_to_number_from_string_int" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_match_from_asthelper" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_poly_role_dispatch_string" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_realistic_order_state_machine" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_tuple_element_access" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_string_methods_from_asthelper" classname="InterpreterTest" time="0.003"/>
-  <testcase name="test_import_outline_type" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_symbol_tuple_match" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_dict_contains_key" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_int_to_float" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_negate_lambda" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_access_by_index" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_min_max" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_string_sub_str" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_reverse" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_hof_compose" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_import_export_outline" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_poly_reassign_single_value" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_increment_in_expression" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_with_expression_inline" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_tuple_literal_type" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_bool_literal" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_len" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_import_alias" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_ternary" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_entity_direct_field" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_if_true_branch" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_number_methods_from_asthelper" classname="InterpreterTest" time="0.002"/>
-  <testcase name="test_array_filter" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_ends_with" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_methods_from_asthelper" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_entity_method_closure_capture" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_unpack_from_asthelper" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_find" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_array_sort" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_postfix_increment_updates_variable" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_poly_type_annotation_extraction" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_string_starts_with" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_built_in_entity_date" classname="InterpreterTest" time="0.013"/>
-  <testcase name="test_built_in_entity_math" classname="InterpreterTest" time="0.003"/>
-  <testcase name="test_recursive_from_asthelper" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_import_export_value" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_array_reduce_method" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_if_false_branch" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_let_in_block" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_float_sqrt" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_entity_override_field" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_bare_symbol_with_guard" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_bang_lambda" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_symbol_entity_construction" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_outline_long_literal_default" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_tuple_unpack" classname="InterpreterTest" time="0.0"/>
-  <testcase name="test_nested_tuple_unpack" classname="InterpreterTest" time="0.001"/>
-  <testcase name="test_match_entity_unpack" classname="InterpreterTest" time="0.0"/>
+  <testcase name="test_nested_entity_method_returns_outer_recursive_binding" classname="InterpreterTest" time="0.284"/>
 </testsuite>

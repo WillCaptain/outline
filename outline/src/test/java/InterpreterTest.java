@@ -1347,6 +1347,24 @@ public class InterpreterTest {
     }
 
     @Test
+    void test_nested_entity_method_returns_outer_recursive_binding() {
+        Value v = RunnerHelper.run("""
+                let male = {
+                    run = ()->20,
+                    wife = {
+                        husband = ()->male,
+                        run = ()->10
+                    }
+                };
+                (male.wife.husband().run(), male.wife.husband().wife.run())
+                """);
+        assertThat(v).isInstanceOf(TupleValue.class);
+        TupleValue tv = (TupleValue) v;
+        assertThat(RunnerHelper.intVal(tv.get(0))).isEqualTo(20L);
+        assertThat(RunnerHelper.intVal(tv.get(1))).isEqualTo(10L);
+    }
+
+    @Test
     void test_random_person_entity() {
         // mockRandomPersonEntity uses this.name and directly captures name
         // Let me verify name_2 = person.get_name() runs without error
