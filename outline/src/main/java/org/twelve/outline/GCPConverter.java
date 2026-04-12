@@ -52,6 +52,7 @@ public class GCPConverter {
         this.converters.put(Constants.ENTITY_TYPE, new EntityTypeConverter(converters));
         this.converters.put(Constants.TUPLE_TYPE, new TupleTypeConverter(converters));
         this.converters.put(Constants.QUESTION_TYPE, new QuestionTypeConverter(converters));
+        this.converters.put(Constants.NULLABLE_SUFFIX, new NullableTypeConverter(converters));
         DeclaredTypeConverter declaredTypeConverter = new DeclaredTypeConverter(converters);
         this.converters.put(Constants.DECLARED_TYPE, declaredTypeConverter);
         this.converters.put(Constants.ADT_TYPE, declaredTypeConverter);

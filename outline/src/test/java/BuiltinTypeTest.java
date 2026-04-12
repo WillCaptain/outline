@@ -5,6 +5,7 @@ import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.node.expression.Assignment;
 import org.twelve.gcp.node.statement.VariableDeclarator;
 import org.twelve.gcp.outline.Outline;
+import org.twelve.gcp.outline.adt.SumADT;
 import org.twelve.gcp.outline.primitive.*;
 import org.twelve.outline.OutlineParser;
 
@@ -108,5 +109,51 @@ public class BuiltinTypeTest {
 
         assertInstanceOf(INTEGER.class,  lhsOf(ast, 1));           // len  -> Integer
         assertEquals("[String]",         lhsOf(ast, 2).toString()); // keys -> [String]
+    }
+
+    // ─────────────────────── Nullable type (T?) ─────────────────────────────
+
+    @Test
+    void nullable_type_declared_as_option_type() throws IOException {
+        // "String?" in a declared type should parse to String|Nothing
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            outline Tag = {
+                id:0,
+                name:String,
+                note:String?
+            };
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "errors: " + ast.errors());
+
+        // "note" field should have type String|Nothing (a SumADT containing Nothing)
+        var tag = ast.symbolEnv().lookupAll("Tag");
+        assertNotNull(tag, "Tag outline should be defined");
+        var tagEntity = (org.twelve.gcp.outline.adt.Entity) tag.outline();
+        var noteMember = tagEntity.getMember("note");
+        assertTrue(noteMember.isPresent(), "note field should exist");
+        assertInstanceOf(SumADT.class, noteMember.get().outline(),
+                "note field type should be a union (String|Nothing)");
+        SumADT noteType = (SumADT) noteMember.get().outline();
+        assertTrue(noteType.options().stream().anyMatch(o -> o instanceof NOTHING),
+                "note field type should contain Nothing");
+    }
+
+    @Test
+    void nullable_type_entity_field_creation_allows_missing() throws IOException {
+        // Creating an entity while omitting nullable fields should not produce errors
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            outline Tag = {
+                id:0,
+                name:String,
+                note:String?
+            };
+            let t: {name:String} = {name = "hello"};
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(),
+                "omitting nullable field in struct literal should be error-free; errors: " + ast.errors());
     }
 }

@@ -39,6 +39,7 @@ public final class Constants {
     public static final String ARRAY_TYPE = ":array_type";
     public static final String MAP_TYPE = ":map_type";
     public static final String QUESTION_TYPE = ":QUESTION";
+    public static final String NULLABLE_SUFFIX = ":nullable_suffix";
     public static final String FUNC_TYPE = ":func_type";
     public static final String LITERAL_TYPE_ = "literal_type";
     public static final String LITERAL_TYPE = ":" + LITERAL_TYPE_;

@@ -23,6 +23,19 @@ public class FactorTypeConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         List<ParseNode> nodes = new ArrayList<>(((NonTerminalNode) source).nodes());
+
+        // Extract optional trailing nullable_suffix ('?').
+        // The '?' may appear as a NonTerminalNode("nullable_suffix") or as a direct
+        // TerminalNode("QUESTION") depending on whether MSLL inlines single-element rules.
+        // We identify it by: lexeme == "?" AND it is NOT the sole element (standalone Any type).
+        ParseNode nullable = null;
+        if (nodes.size() > 1) {
+            ParseNode last = nodes.getLast();
+            if ("?".equals(last.lexeme())) {
+                nullable = nodes.removeLast();
+            }
+        }
+
         ParseNode ref = (nodes.getLast().name().equals(Constants.REFERENCE_CALL)) ? nodes.removeLast() : null;
         Node result;
         nodes.removeIf(n -> "(,)".contains(n.lexeme()));
@@ -34,11 +47,13 @@ public class FactorTypeConverter extends Converter {
             node = nodes.getLast();
             result = converters.get(Constants.COLON_ + node.name()).convert(ast, node, ret);
         }
-        if (ref == null) {
-            return result;
-        } else {
-            return converters.get(Constants.COLON_ + ref.name()).convert(ast, ref, result);
-//            return new ReferenceCallTypeNode(ast,cast(result),null);
+        if (ref != null) {
+            result = converters.get(Constants.COLON_ + ref.name()).convert(ast, ref, result);
         }
+        // Wrap in NullableTypeNode if '?' suffix was present
+        if (nullable != null) {
+            result = converters.get(Constants.NULLABLE_SUFFIX).convert(ast, nullable, result);
+        }
+        return result;
     }
 }
