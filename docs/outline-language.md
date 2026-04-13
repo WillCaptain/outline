@@ -2,8 +2,8 @@
 
 Outline is the expression language that targets GCP's type engine. Every Outline program is a sequence of statements; the value of the program is the last evaluated expression.
 
-> **New here?** Start with the [Quick Start](../../gcp/docs/quickstart.md) to run your first program.  
-> **Need the Java API?** See [`OutlineParser` and `OutlineInterpreter`](../../gcp/docs/sdk-reference.md) in the SDK Reference.
+> **New here?** Start with the [Quick Start](./quickstart.md) to run your first parser flow.  
+> **Need Java integration details?** See [SDK Integration](./sdk-integration.md).
 
 ---
 
@@ -489,7 +489,7 @@ let db = __sqlite__<Person>("jdbc:sqlite:myapp.db");
 let cache = __redis__<String>("localhost", 6379);
 ```
 
-The `__name__` syntax calls the constructor registered as `"name"` in the interpreter. See [SDK Reference → Plugins](./sdk-reference.md#8-plugins-gcpbuilderplugin) for the Java side.
+The `__name__` syntax calls the constructor registered as `"name"` in the interpreter. See [SDK Integration](./sdk-integration.md) for module boundaries and integration entry points.
 
 ---
 
