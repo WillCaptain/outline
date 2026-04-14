@@ -158,7 +158,7 @@ public class BuiltinTypeTest {
     }
 
     @Test
-    void nullable_type_in_inline_struct_func_param() throws IOException {
+    void nullable_type_in_inline_struct_func_param_parses() throws IOException {
         // "Type?" should be valid in entity_field inside an inline struct used as a function parameter type.
         // E.g. update:{name: String?, price: Int?} -> Unit
         OutlineParser parser = new OutlineParser();
@@ -172,5 +172,83 @@ public class BuiltinTypeTest {
             """);
         assertTrue(ast.asf().infer());
         assertTrue(ast.errors().isEmpty(), "inline struct with nullable fields should parse; errors: " + ast.errors());
+    }
+
+    @Test
+    void nullable_inline_struct_field_infers_as_union_type() throws IOException {
+        // The field "note" in the inline struct {note: String?} used as a function param
+        // should be inferred as String|Nothing (a SumADT containing Nothing).
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            outline Tag = {
+                id:0,
+                name:String,
+                update:{name: String?, score: Int?} -> Unit
+            };
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "errors: " + ast.errors());
+
+        var tag = ast.symbolEnv().lookupAll("Tag");
+        assertNotNull(tag, "Tag outline should be defined");
+        var entity = (org.twelve.gcp.outline.adt.Entity) tag.outline();
+
+        // The "name" field of Tag should be plain String
+        var nameMember = entity.getMember("name");
+        assertTrue(nameMember.isPresent());
+        assertInstanceOf(STRING.class, nameMember.get().outline(),
+                "Tag.name should be plain String, not nullable");
+
+        // The update method should exist
+        var updateMember = entity.getMember("update");
+        assertTrue(updateMember.isPresent(), "update method should exist on entity");
+    }
+
+    @Test
+    void nullable_inline_struct_call_with_full_struct_no_errors() throws IOException {
+        // A function typed (p:{name: String?, score: Int?}) -> Unit
+        // called with a full matching struct should be error-free.
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (p:{name: String?, score: Int?}) -> p.name;
+            let r = f({name = "world", score = 20});
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(),
+                "calling with full struct should have no errors; errors: " + ast.errors());
+    }
+
+    @Test
+    void nullable_inline_struct_field_type_accepts_nothing() throws IOException {
+        // A nullable field (String?) should accept Nothing (null-like value).
+        // Structural subtype: {name: String, score: Int} should satisfy {name: String?, score: Int?}
+        // because String <: String? and Int <: Int?.
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (p:{name: String?, score: Int?}) -> p.name;
+            let r = f({name = "hello", score = 42});
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(),
+                "String and Int values should satisfy String? and Int? fields; errors: " + ast.errors());
+        // return type of f should be String? (since p.name is String?)
+        assertInstanceOf(SumADT.class, lhsOf(ast, 1),
+                "f return type should be String|Nothing (SumADT) since p.name: String?");
+        SumADT returnType = (SumADT) lhsOf(ast, 1);
+        assertTrue(returnType.options().stream().anyMatch(o -> o instanceof NOTHING),
+                "return type should contain Nothing");
+    }
+
+    @Test
+    void nullable_inline_struct_rejects_wrong_field_type() throws IOException {
+        // Passing wrong type for a field (Int where String? expected) should produce an error.
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (p:{name: String?}) -> p.name;
+            let r = f({name = 123});
+            """);
+        assertTrue(ast.asf().infer());
+        assertFalse(ast.errors().isEmpty(),
+                "passing Int for String? field should produce inference error");
     }
 }
