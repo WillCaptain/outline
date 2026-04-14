@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: InterpreterTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.442 s -- in InterpreterTest
+Tests run: 185, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.185 s -- in InterpreterTest

@@ -156,4 +156,21 @@ public class BuiltinTypeTest {
         assertTrue(ast.errors().isEmpty(),
                 "omitting nullable field in struct literal should be error-free; errors: " + ast.errors());
     }
+
+    @Test
+    void nullable_type_in_inline_struct_func_param() throws IOException {
+        // "Type?" should be valid in entity_field inside an inline struct used as a function parameter type.
+        // E.g. update:{name: String?, price: Int?} -> Unit
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            outline Employee = {
+                id:0,
+                name:String,
+                price:Int,
+                update:{name: String?, price: Int?} -> Unit
+            };
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "inline struct with nullable fields should parse; errors: " + ast.errors());
+    }
 }

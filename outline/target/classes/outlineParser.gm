@@ -88,7 +88,10 @@ factor_type
     : (Number_Type | Int_Type | Long_Type | Float_Type | Unit_Type
     | Double_Type | String_Type | tuple_type | THIS | literal_type
     | entity_type | array_type | map_type |  '?' | ID | Symbol
-    | '(' declared_outline ')') reference_call?
+    | '(' declared_outline ')') reference_call? nullable_suffix?
+    ;
+nullable_suffix
+    : '?'
     ;
 literal_type
     : '#' literal
