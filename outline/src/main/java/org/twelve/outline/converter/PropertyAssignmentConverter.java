@@ -40,7 +40,12 @@ public class PropertyAssignmentConverter extends Converter {
             name = cast(argument);
         }
         i++;
-        if(property.node(i).name().equals(Constants.EQUAL)){
+        // Separator between property name and value can be '=' (outline style)
+        // or ':' (JS-style shorthand). Both are accepted; ':' does not introduce a
+        // type annotation here because `argument` has already consumed any optional
+        // type declaration (e.g. `name:String = "will"`).
+        if (property.node(i).name().equals(Constants.EQUAL)
+                || property.node(i).name().equals(Constants.COLON)) {
            i++;
            expression = cast(converters.get(property.node(i).name()).convert(ast,property.node(i)));
 

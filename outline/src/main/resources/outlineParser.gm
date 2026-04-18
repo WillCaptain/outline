@@ -102,7 +102,7 @@ tuple_type
     : reference_type? '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
     ;
 entity_type
-    : reference_type? '{' (entity_field (',' entity_field?)*)? '}'
+    : reference_type? '{' (entity_field (',' entity_field)*)? '}'
     ;
 entity_field
     : ID (':' (declared_outline | literal))?
@@ -236,6 +236,7 @@ expression_atom
     | Base
     | True
     | False
+    | Null
     | number
     | STRING
     | entity
@@ -249,6 +250,7 @@ literal
     | Base
     | True
     | False
+    | Null
     | number
     | '-' number
     | STRING
@@ -290,13 +292,14 @@ map
     : '[' (':' | ( literal ':' expression (',' literal ':' expression)* )) ']'
     ;
 entity
-    : '{' property_assignment (',' property_assignment?)* '}'
+    : '{' property_assignment (',' property_assignment)* '}'
     ;
 tuple
     : '(' expression (','expression)+ ')'
     ;
 property_assignment
     : (('let'|'var') {notLineTerminator()})? argument '=' expression
+    | (('let'|'var') {notLineTerminator()})? ID ':' expression
     ;
 lambda
     : reference_type? lambda_args '->' expression ('&&&' lambda)*
