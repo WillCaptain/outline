@@ -71,13 +71,29 @@ public class FunctionConverter extends Converter {
         if(parent instanceof TerminalNode){
             args.add(parent);
         }else{
-            args.addAll(((NonTerminalNode)parent).nodes());
+            List<ParseNode> children = ((NonTerminalNode)parent).nodes();
+            // Untyped bare single-ID lambda_args: ID — unchanged
+            // Typed bare single-ID lambda_args: ID ':' non_func_type — reshape into
+            // an `argument` payload so the downstream wrapper logic can take the
+            // ArgumentWrapper path uniformly with the parenthesised form.
+            if (children.size() == 3 && Constants.COLON_.equals(children.get(1).lexeme())) {
+                args.add(parent);
+            } else {
+                args.addAll(children);
+            }
         }
         args.stream().filter(n -> !"<(,)>".contains(n.lexeme())).forEach(n -> {
             if(n.name().equals(Constants.FUNC_HEAD)) return;
             Identifier arg;
             TypeNode typeNode = null;
-            Node converted = converters.get(n.name()).convert(ast, n);
+            // Reshaped typed lambda_args (ID ':' non_func_type) has the same
+            // child layout as `argument`, so reuse ArgumentConverter directly.
+            String converterKey = (n.name().equals("lambda_args")
+                    && n instanceof NonTerminalNode
+                    && ((NonTerminalNode) n).nodes().size() == 3)
+                    ? Constants.ARGUMENT
+                    : n.name();
+            Node converted = converters.get(converterKey).convert(ast, n);
             if(converted instanceof ArgumentWrapper){
                 arg = ((ArgumentWrapper) converted).argument();
                 typeNode = ((ArgumentWrapper) converted).typeNode();
