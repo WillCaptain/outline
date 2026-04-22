@@ -55,4 +55,55 @@ area(Rect{w=4, h=6});
         }
     }
 
+    @Test
+    void debug_forward_ref_arithmetic() {
+        ASF asf = new ASF();
+        AST ast = new OutlineParser().parse(asf,
+            "let f = x -> g(x.son) - 1;\n" +
+            "let g = y -> y.age;\n" +
+            "f({son = {age = \"will\"}})\n");
+        asf.infer();
+        System.out.println("=== forward-ref errors: " + ast.errors().size() + " ===");
+        for (var e : ast.errors()) {
+            var n = e.node();
+            System.out.println("  code=" + e.errorCode()
+                + " | node=" + n.getClass().getSimpleName()
+                + " | outline=" + n.outline()
+                + " | lexeme='" + n.lexeme().substring(0, Math.min(50, n.lexeme().length())) + "'");
+        }
+        var stmts = ast.program().body().statements();
+        var fOutline = stmts.get(0).get(0).get(0).outline();
+        var gOutline = stmts.get(1).get(0).get(0).outline();
+        System.out.println("=== f type : " + fOutline);
+        System.out.println("=== g type : " + gOutline);
+        System.out.println("=== call   : " + stmts.get(2).outline());
+        // Inspect f's parameter type detail
+        if (fOutline instanceof org.twelve.gcp.outline.projectable.FirstOrderFunction fof) {
+            var arg = fof.argument();
+            var g = (org.twelve.gcp.outline.projectable.Genericable<?,?>)arg;
+            System.out.println("=== f.arg class=" + arg.getClass().getSimpleName() + " id=" + g.id() + " min=" + g.min() + " max=" + g.max());
+            System.out.println("=== f.arg.definedToBe=" + g.definedToBe() + " CLASS=" + g.definedToBe().getClass().getSimpleName());
+            System.out.println("=== f.arg.hasToBe=" + g.hasToBe() + " CLASS=" + g.hasToBe().getClass().getSimpleName());
+            System.out.println("=== f.arg.declaredToBe=" + g.declaredToBe() + " CLASS=" + g.declaredToBe().getClass().getSimpleName());
+            // Check if definedToBe is an Entity and print its member details
+            if (g.definedToBe() instanceof org.twelve.gcp.outline.adt.Entity ent) {
+                System.out.println("=== f.arg.definedToBe is Entity with members() count=" + ent.members().size());
+                for (var m : ent.members()) {
+                    System.out.println("    member=" + m.name() + " outline=" + m.outline() + " class=" + m.outline().getClass().getSimpleName() + " isDefault=" + m.isDefault());
+                }
+                // print base
+                var baseField = ent.base();
+                System.out.println("=== f.arg.definedToBe.base=" + baseField + " class=" + baseField.getClass().getSimpleName());
+            }
+        }
+        // Inspect g's return detail
+        if (gOutline instanceof org.twelve.gcp.outline.projectable.FirstOrderFunction gof) {
+            var ret = gof.returns();
+            System.out.println("=== g.returns class=" + ret.getClass().getSimpleName() + " supposed=" + ret.supposedToBe());
+            if (ret.supposedToBe() instanceof org.twelve.gcp.outline.projectable.Genericable<?,?> gret) {
+                System.out.println("=== g.return.supposed hasToBe=" + gret.hasToBe() + " definedToBe=" + gret.definedToBe() + " min=" + gret.min());
+            }
+        }
+    }
+
 }

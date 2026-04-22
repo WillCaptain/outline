@@ -2,7 +2,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
-import org.twelve.gcp.node.expression.Assignment;
+import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.node.statement.VariableDeclarator;
 import org.twelve.gcp.outline.Outline;
 import org.twelve.gcp.outline.adt.SumADT;
@@ -138,6 +138,146 @@ public class BuiltinTypeTest {
         SumADT noteType = (SumADT) noteMember.get().outline();
         assertTrue(noteType.options().stream().anyMatch(o -> o instanceof NOTHING),
                 "note field type should contain Nothing");
+    }
+
+    @Test
+    void member_accessor_is_nothing_check_should_infer_without_crash() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            outline Employee = {
+                id:0,
+                birthday:String?
+            };
+            let f = (employee:Employee, event_type:String) ->
+                employee.birthday is Nothing;
+            """);
+        assertTrue(ast.asf().infer());
+        boolean hasJavaCastCrash = ast.errors().stream()
+                .map(e -> String.valueOf(e.message()))
+                .anyMatch(m -> m.contains("cannot be cast to class"));
+        assertFalse(hasJavaCastCrash,
+                "member accessor in `is Nothing` should not throw Java cast errors; errors: " + ast.errors());
+    }
+
+    @Test
+    void nullable_function_param_is_nothing_branch_infers() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (x:String?)->{
+              if(x is Nothing){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(),
+                "x:String? with `x is Nothing` should infer without errors; errors: " + ast.errors());
+    }
+
+    @Test
+    void nullable_function_param_behaves_like_union_nothing_in_if_branch() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST astNullable = parser.parse(new ASF(), """
+            let f = (x:String?)->{
+              if(x is Nothing){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        AST astUnion = parser.parse(new ASF(), """
+            let f = (x:String|Nothing)->{
+              if(x is Nothing){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        assertTrue(astNullable.asf().infer());
+        assertTrue(astUnion.asf().infer());
+        assertEquals(astUnion.errors().size(), astNullable.errors().size(),
+                "String? and String|Nothing should have same error count in identical if-is-Nothing flow");
+    }
+
+    @Test
+    void null_keyword_equals_is_nothing_for_nullable_param() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST astIs = parser.parse(new ASF(), """
+            let f = (x:String?)->{
+              if(x is Nothing){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        AST astEqNull = parser.parse(new ASF(), """
+            let f = (x:String?)->{
+              if(x==null){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        assertTrue(astIs.asf().infer());
+        assertTrue(astEqNull.asf().infer());
+        assertEquals(astIs.errors().size(), astEqNull.errors().size(),
+                "`x==null` should behave like `x is Nothing` for nullable type");
+    }
+
+    @Test
+    void non_nullable_equals_null_should_report_warning_error() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (x:String)->{
+              if(x==null){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        assertTrue(ast.asf().infer());
+        assertFalse(ast.errors().isEmpty(),
+                "`x==null` should report mismatch when x is non-nullable");
+    }
+
+    @Test
+    void non_nullable_equals_null_in_condition_should_be_warning_only() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (x:String)->{
+              if(x==null){
+                100
+              }else{
+                10
+              }
+            };
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.OUTLINE_MISMATCH_IN_CONDITION),
+                "condition mismatch should be reported as condition warning");
+        assertFalse(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.OUTLINE_MISMATCH),
+                "condition mismatch should not use generic OUTLINE_MISMATCH");
+    }
+
+    @Test
+    void non_nullable_equals_null_outside_condition_should_stay_error() throws IOException {
+        OutlineParser parser = new OutlineParser();
+        AST ast = parser.parse(new ASF(), """
+            let f = (x:String)-> x==null;
+            """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.OUTLINE_MISMATCH),
+                "non-condition mismatch should remain OUTLINE_MISMATCH");
     }
 
     @Test

@@ -11,6 +11,8 @@ import org.twelve.msll.parsetree.ParserGrammarTree;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Facade for parsing Outline source code into GCP ASTs.
@@ -142,6 +144,48 @@ public class OutlineParser {
         MyParser parser = sharedBuilder().createParser(code);
         AST ast = new GCPConverter(asf).convert(parser.parse());
         ast.setSourceCode(code);
+        return ast;
+    }
+
+    /**
+     * Resilient counterpart to {@link #parse(ASF, String)}.
+     *
+     * <p>Unlike {@link #parse(ASF, String)}, this method never throws a
+     * {@link org.twelve.msll.exception.GrammarSyntaxException}. Syntax errors
+     * are collected from the underlying MSLL parser (via panic-mode recovery)
+     * and attached to the resulting {@link AST} as messages, accessible via
+     * {@link AST#syntaxErrors()}. A best-effort (possibly partial) AST is
+     * returned so callers (IDE diagnostics, validators, language servers) can
+     * continue type inference on correct portions of the input even if some
+     * statements are malformed.
+     *
+     * <p>If the partial parse tree is so broken that {@link GCPConverter}
+     * itself throws, the returned AST will be a minimal placeholder containing
+     * only the collected syntax errors plus the converter's failure message.
+     */
+    public AST parseResilient(ASF asf, String code) {
+        MyParser parser = sharedBuilder().createParser(code);
+        org.twelve.msll.parsetree.ParserTree tree = parser.parseResilient();
+        List<String> syntaxErrorMsgs = new ArrayList<>();
+        for (org.twelve.msll.exception.GrammarSyntaxException e : parser.syntaxErrors()) {
+            syntaxErrorMsgs.add(e.getMessage());
+        }
+        // If the partial parse tree is too broken for GCPConverter, we still
+        // want the caller to surface the collected syntax errors. We therefore
+        // wrap the converter failure in a ResilientParseException that carries
+        // the already-collected messages so validate-style callers can render
+        // diagnostics instead of crashing opaquely.
+        AST ast;
+        try {
+            ast = new GCPConverter(asf).convert(tree);
+        } catch (RuntimeException convertFailure) {
+            syntaxErrorMsgs.add("parse tree conversion failed: "
+                    + convertFailure.getClass().getSimpleName()
+                    + (convertFailure.getMessage() != null ? ": " + convertFailure.getMessage() : ""));
+            throw new ResilientParseException(syntaxErrorMsgs, convertFailure);
+        }
+        ast.setSourceCode(code);
+        ast.setSyntaxErrors(syntaxErrorMsgs);
         return ast;
     }
 }

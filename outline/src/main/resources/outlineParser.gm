@@ -18,6 +18,7 @@ statement
     | expression_statement
     | return_statement
     | outline_declarator
+    | function_declarator
 //    | classDeclaration
 //    | functionDeclaration
 //    | expressionStatement
@@ -214,7 +215,7 @@ factor_expression
     | async_expression
     | await_expression
     | factor_expression '[' expression ']'                                 # array_map_accessor
-    | factor_expression '.' (ID|INT)                                       # entity_member_accessor
+    | factor_expression '.' (ID|INT|Symbol)                                # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'           # function_call
     | factor_expression reference_parameters'                              # reference_call
     //| factor_expression '<' declared_outline (',' declared_outline)* '>' # reference_call
@@ -306,7 +307,10 @@ lambda
     ;
 lambda_args
     : ID (':' non_func_type)?
-    | function_args'
+    | function_args' (':' non_func_type)?
+    ;
+function_declarator
+    : Function ID reference_type? function_args' (':' non_func_type)? block ';'?
     ;
 function_args'
     : '(' (argument (','+ argument)*)? ')'

@@ -17,7 +17,7 @@ public class ReferenceTypeConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         List<Node> refs = ((NonTerminalNode) source).nodes().stream()
-                .filter(n -> !("{<fx,)>}").contains(n.lexeme()))
+                .filter(n -> !("{<fn,)>}").contains(n.lexeme()))
                 .map(n-> converters.get(n.name()).convert(ast, n)).toList();
         return new ReferenceWrapper(ast,refs);
     }

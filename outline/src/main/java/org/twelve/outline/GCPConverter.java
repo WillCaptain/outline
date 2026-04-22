@@ -75,6 +75,7 @@ public class GCPConverter {
         BoolTypeConverter boolTypeConverter = new BoolTypeConverter(converters);
         this.converters.put(Constants.TRUE, boolTypeConverter);
         this.converters.put(Constants.FALSE, boolTypeConverter);
+        this.converters.put(Constants.NULL, new NullLiteralConverter(converters));
         //wrapper
         this.converters.put(Constants.ARGUMENT, new ArgumentConverter(converters));
         this.converters.put(Constants.ENTITY_FIELD, new EntityFieldConverter(converters));
@@ -118,7 +119,9 @@ public class GCPConverter {
         });
 
         //function
-        this.converters.put(Constants.FUNCTION, new FunctionConverter(converters));
+        FunctionConverter functionConverter = new FunctionConverter(converters);
+        this.converters.put(Constants.FUNCTION, functionConverter);
+        this.converters.put(Constants.FUNCTION_DECLARATOR, new FnDeclaratorConverter(converters, functionConverter));
         //relational_expression
         this.converters.put(Constants.RELATION_EXPRESSION, new BinaryExpressionConverter(converters));
         //numeric expression

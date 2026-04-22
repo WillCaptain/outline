@@ -62,7 +62,7 @@ public class ASTHelper {
 
     public static AST mockTupleProjection() {
         String code = """
-                let f =fx<a,b>(x: a)->(y: ((a, String), b))->y;
+                let f =fn<a,b>(x: a)->(y: ((a, String), b))->y;
                 let h = f(100,(("Will","Zhang"),"male"));
                 let g = f("Will",(("Will","Zhang"),30));
                 let will = g.0.0;
@@ -196,7 +196,7 @@ public class ASTHelper {
 
     public static AST mockDeclare() {
         String code = """
-                let f = fx<a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
+                let f = fn<a:{gender:"male"|"female",age}>(x:a->String->Int->{name:String,age:Int},y:String,z:Int)->x({gender ="male",age = 30 },y,z);""";
 
         /*code = """
                 let f = <a>(x:a->{name:a,age:Int})->{
@@ -210,7 +210,7 @@ public class ASTHelper {
 
     public static AST mockReferenceInFunction() {
         String code = """
-                let f = fx<a,b>(x: a)->{
+                let f = fn<a,b>(x: a)->{
                   let y: b = 100;
                   y
                 };""";
@@ -269,7 +269,7 @@ public class ASTHelper {
                   x = ["will","zhang"];
                   y
                 };
-                let r = fx<a>(x: [a])->{
+                let r = fn<a>(x: [a])->{
                   var b = [1,2];
                   b = x;
                   let c: a = x[0];
@@ -555,10 +555,10 @@ public class ASTHelper {
 
     public static AST mockReferenceInEntity() {
         String code = """
-                let g = fx<a,b>()->{
+                let g = fn<a,b>()->{
                   {
                     z: a = 100,
-                    f = fx<c>(x: b)->(y: c)->y
+                    f = fn<c>(x: b)->(y: c)->y
                   }
                 };""";
         return parser.parse(new ASF(), code);
@@ -776,7 +776,7 @@ public class ASTHelper {
 
     public static AST mockDeclaredHofProjection() {
         String code = """
-                let f = fx<a>(x:a->{name:a,age:Int})->{
+                let f = fn<a>(x:a->{name:a,age:Int})->{
                     x("Will").name
                 };
                 f<Int>;
@@ -841,7 +841,7 @@ public class ASTHelper {
 
     public static AST mockExtendEntityProjection() {
         String code = """
-                let f = fx<a>(person,gender:a)-> person{gender = gender};
+                let f = fn<a>(person,gender:a)-> person{gender = gender};
                 let g = f<String>;
                 g("Will",1);
                 f({name="Will"},1);
@@ -860,7 +860,7 @@ public class ASTHelper {
 
     public static AST mockComplicatedHofProjection() {
         String code = """
-                let f = fx<a>(x: a->a)->y->z->{
+                let f = fn<a>(x: a->a)->y->z->{
                     x = b->b+"some";
                     y = x;
                     x = z;
@@ -938,7 +938,7 @@ public class ASTHelper {
                   x = ["Will":"Zhang"];
                   y
                 };
-                let r = fx<a>(x: [String : a])->{
+                let r = fn<a>(x: [String : a])->{
                   var b = ["Will":30];
                   b = x;
                   let c: a = x["Will"];
@@ -957,9 +957,9 @@ public class ASTHelper {
 
     public static AST mockReferenceInEntity1() {
         String code = """
-                let g = fx<a,b>()->{
+                let g = fn<a,b>()->{
                   z: a = 100,
-                  f = fx<c>(x: b)->(y: c)->y
+                  f = fn<c>(x: b)->(y: c)->y
                 };
                 let f1 = g<Int,String>().f;
                 let f2 = f1<Long>;""";
@@ -1083,7 +1083,7 @@ public class ASTHelper {
                     // Sort descending by projection field (? matches any orderable type); returns sorted new collection (~this)
                     order_desc_by: (a -> ?) -> ~this,
                     take: Int -> Int -> ~this,
-                    map: fx<b> (a->b) -> VirtualSet<b>,
+                    map: fn<b> (a->b) -> VirtualSet<b>,
                     type:#"Virtual Set",
                 
                      //terminal operators
@@ -1094,9 +1094,9 @@ public class ASTHelper {
                      exists: Unit -> Bool,
                      sum: (a->Number) -> Number,
                      avg: (a->Number) -> Number,
-                     min: fx<b>(a -> b) -> b,
-                     max: fx<b>(a -> b) -> b,
-                     reduce: fx<b>b->(a->b)->b,
+                     min: fn<b>(a -> b) -> b,
+                     max: fn<b>(a -> b) -> b,
+                     reduce: fn<b>b->(a->b)->b,
                      each: (a -> Unit) -> Unit,
                      aggregate: <b>(Aggregator<a> -> b) -> b,
                      group_by: <b>(a->b)->GroupBy<b,a>
@@ -1249,8 +1249,8 @@ public class ASTHelper {
 
     public static AST mockMoreReference() {
         String code = """
-                outline O1 = fx<a> a->a;
-                outline O11 = fx<a> a->a;
+                outline O1 = fn<a> a->a;
+                outline O11 = fn<a> a->a;
                 
                 outline O2 = <a,b>{name:a,age:b};
                 outline O3 = <a,b>(a,b);
@@ -1263,7 +1263,7 @@ public class ASTHelper {
 
     public static AST mockReferCallThis() {
         String code = """
-                let mono = fx<a>(a:a)->{
+                let mono = fn<a>(a:a)->{
                     map = <b>(x:(a->b))->{
                         return builder
                     }
@@ -1669,7 +1669,7 @@ public class ASTHelper {
                     order_by: (a -> ?) -> ~this,
                     order_desc_by: (a -> ?) -> ~this,
                     take: Int -> Int -> ~this,
-                    map: fx<b> (a->b) -> VirtualSet<b>,
+                    map: fn<b> (a->b) -> VirtualSet<b>,
                     type:#"Virtual Set",
                     to_list: Unit -> [a],
                      first: Unit -> a,
@@ -1678,9 +1678,9 @@ public class ASTHelper {
                      exists: Unit -> Bool,
                      sum: (a->Number) -> Number,
                      avg: (a->Number) -> Number,
-                     min: fx<b>(a -> b) -> b,
-                     max: fx<b>(a -> b) -> b,
-                     reduce: fx<b>b->(a->b)->b,
+                     min: fn<b>(a -> b) -> b,
+                     max: fn<b>(a -> b) -> b,
+                     reduce: fn<b>b->(a->b)->b,
                      each: (a -> Unit) -> Unit,
                      aggregate: <b>(Aggregator<a> -> b) -> b,
                      group_by: <b>(a->b)->GroupBy<b,a>

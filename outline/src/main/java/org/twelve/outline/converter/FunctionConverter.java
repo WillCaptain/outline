@@ -40,7 +40,9 @@ public class FunctionConverter extends Converter {
             if (nodes.getFirst().name().equals(Constants.REFERENCE_TYPE)) {
                 convertArgOrRef(ast, cast(nodes.removeFirst()), refs);
             }
-            convertArgOrRef(ast, cast(nodes.removeFirst()), args);
+            ParseNode lambdaArgsNode = nodes.removeFirst();
+            TypeNode declaredReturn = extractDeclaredReturn(ast, lambdaArgsNode);
+            convertArgOrRef(ast, cast(lambdaArgsNode), args);
 
             nodes.removeFirst();
             ParseNode originBody = nodes.removeFirst();
@@ -54,7 +56,7 @@ public class FunctionConverter extends Converter {
                 body.addStatement(new ReturnStatement((Expression) statements));
             }
 
-            functions.add(FunctionNode.from(body, refs, args));
+            functions.add(FunctionNode.from(body, refs, args, declaredReturn));
 
             if(!nodes.isEmpty()){
                 nodes = ((NonTerminalNode)nodes.get(1)).nodes();
@@ -66,18 +68,64 @@ public class FunctionConverter extends Converter {
             return new PolyNode(functions.removeFirst(),functions.toArray(new FunctionNode[0]));
         }
     }
-    private void convertArgOrRef(AST ast,ParseNode parent,List list){
+    /**
+     * The msll parse tree flattens the {@code function_args'} sub-production
+     * into its parent {@code lambda_args}, so trailing {@code ')' ':' type}
+     * is the signal for a lambda return-type annotation. Peels it and converts
+     * to a {@link TypeNode}; returns null when absent. The input parse node is
+     * left intact — {@link #convertArgOrRef} strips the same tail when building
+     * the argument list so both sides stay consistent.
+     */
+    /** package-private so {@link FnDeclaratorConverter} can reuse the same peel logic. */
+    TypeNode extractDeclaredReturn(AST ast, ParseNode lambdaArgs) {
+        if (!(lambdaArgs instanceof NonTerminalNode nt)) return null;
+        List<ParseNode> children = nt.nodes();
+        int n = children.size();
+        if (n < 3) return null;
+        ParseNode maybeColon = children.get(n - 2);
+        ParseNode maybeRParen = children.get(n - 3);
+        if (!Constants.COLON_.equals(maybeColon.lexeme())) return null;
+        if (!")".equals(maybeRParen.lexeme())) return null;
+        ParseNode typeSrc = children.get(n - 1);
+        if ("non_func_type".equals(typeSrc.name()) && typeSrc instanceof NonTerminalNode nt2) {
+            typeSrc = nt2.nodes().get(0);
+        }
+        Converter cvt = converters.get(Constants.COLON_ + typeSrc.name());
+        if (cvt == null) return null;
+        Node converted = cvt.convert(ast, typeSrc);
+        return converted instanceof TypeNode tn ? tn : null;
+    }
+
+    /** package-private so {@link FnDeclaratorConverter} can reuse the same arg/ref walker. */
+    void convertArgOrRef(AST ast,ParseNode parent,List list){
         List<ParseNode> args = new ArrayList<>();
         if(parent instanceof TerminalNode){
             args.add(parent);
         }else{
             List<ParseNode> children = ((NonTerminalNode)parent).nodes();
-            // Untyped bare single-ID lambda_args: ID — unchanged
-            // Typed bare single-ID lambda_args: ID ':' non_func_type — reshape into
-            // an `argument` payload so the downstream wrapper logic can take the
-            // ArgumentWrapper path uniformly with the parenthesised form.
-            if (children.size() == 3 && Constants.COLON_.equals(children.get(1).lexeme())) {
+            // Layouts to recognise:
+            //   a. ID                                 — untyped single-ID (size 1)
+            //   b. ID ':' non_func_type               — typed single-ID (size 3, first=TerminalNode)
+            //   c. function_args'                     — parenthesised args only (size 1)
+            //   d. function_args' ':' non_func_type   — parens + declared return (size 3,
+            //                                            first=NonTerminalNode). The trailing
+            //                                            `:R` has been peeled off by
+            //                                            extractDeclaredReturn, so recurse into
+            //                                            the inner function_args' only.
+            boolean isTypedSingle = children.size() == 3
+                    && children.get(0) instanceof TerminalNode
+                    && Constants.COLON_.equals(children.get(1).lexeme());
+            // msll flattens function_args' into lambda_args. Detect `... ')' ':' type`
+            // trailing return-type annotation and strip those 3 tokens here — the
+            // type is handled out-of-band by extractDeclaredReturn.
+            int n2 = children.size();
+            boolean hasTrailingReturn = n2 >= 3
+                    && ")".equals(children.get(n2 - 3).lexeme())
+                    && Constants.COLON_.equals(children.get(n2 - 2).lexeme());
+            if (isTypedSingle) {
                 args.add(parent);
+            } else if (hasTrailingReturn) {
+                args.addAll(children.subList(0, n2 - 2));
             } else {
                 args.addAll(children);
             }

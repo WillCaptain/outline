@@ -60,8 +60,8 @@ public final class OntologyFixtures {
                   order_desc_by: (a -> ?) -> ~this,
                   // Take the first n records; returns a subset of at most n elements (~this)
                   take: Int -> ~this,
-                  // Transform each element a via f:(a→b) into b; returns VirtualSet<b> (fx<b> is generic constraint)
-                  map: fx<b> (a->b) -> VirtualSet<b>,
+                  // Transform each element a via f:(a→b) into b; returns VirtualSet<b> (fn<b> is generic constraint)
+                  map: fn<b> (a->b) -> VirtualSet<b>,
                   type:#"Virtual Set",
                   // Trigger database query and materialise results as an ordered list [a]
                   to_list: Unit -> [a],
@@ -78,11 +78,11 @@ public final class OntologyFixtures {
                   // Apply projection (a→Number) to each element and return the average as Number
                   avg: (a->Number) -> Number,
                   // Apply projection (a→b) and return the minimum value (b must be comparable)
-                  min: fx<b>(a -> b) -> b,
+                  min: fn<b>(a -> b) -> b,
                   // Apply projection (a→b) and return the maximum value (b must be comparable)
-                  max: fx<b>(a -> b) -> b,
+                  max: fn<b>(a -> b) -> b,
                   // Fold reduction: starting from init:b, apply f:(a→b) to accumulate over each element, returning b
-                  reduce: fx<b>b->(a->b)->b,
+                  reduce: fn<b>b->(a->b)->b,
                   // Iterate each element applying side-effect function f:(a→Unit); produces no new collection, returns Unit
                   each: (a -> Unit) -> Unit,
                   // Run multi-aggregation on the collection via an Aggregator pipeline; call compute() to get results

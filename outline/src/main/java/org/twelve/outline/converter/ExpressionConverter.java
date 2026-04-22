@@ -5,6 +5,7 @@ import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.As;
 import org.twelve.gcp.node.expression.Expression;
 import org.twelve.gcp.node.expression.IsAs;
+import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
@@ -47,7 +48,13 @@ public class ExpressionConverter extends Converter {
             Expression convertedAs = cast(converters.get(as.name()).convert(ast,as));
             return new IsAs(expression,convertedType,cast(convertedAs));
         }else {
-            return new IsAs(cast(expression), convertedType);
+            // Keep original narrowing behavior for identifiers (`x is T`) by
+            // preserving the implicit bind target = lhs identifier.
+            if (expression instanceof Identifier id) {
+                return new IsAs(id, convertedType);
+            }
+            // For non-identifier lhs (e.g. member access), there is no implicit bind target.
+            return new IsAs(expression, convertedType);
         }
     }
 }

@@ -494,7 +494,7 @@ public class InferenceTest {
     @Test
     void test_inference_of_reference_in_function() {
         /*
-        let f = fx<a,b>(x:a)->{
+        let f = fn<a,b>(x:a)->{
            let y:b = 100;
            y
         }*/
@@ -512,10 +512,10 @@ public class InferenceTest {
     @Test
     void test_inference_of_reference_in_entity() {
         /*
-        let g = fx<a,b>()->{
+        let g = fn<a,b>()->{
            {
                 z:a = 100,
-                f = fx<c>(x:b,y:c)->y
+                f = fn<c>(x:b,y:c)->y
             }
         }*/
         AST ast = ASTHelper.mockReferenceInEntity();
@@ -811,6 +811,50 @@ public class InferenceTest {
     @Test
     void test_function_project_change_function_declaration() {
 
+    }
+
+    // ─────────────────── forward-reference constraint propagation ─────────────
+
+    /**
+     * Reproduces: f uses g before g is declared; g's return type is constrained
+     * by the arithmetic in f (g(x.son) - 1 demands Number), but g = y -> y.age
+     * resolves to String when the call site provides age="will".
+     *
+     * Expected behaviour: the final call should produce at least one type-mismatch
+     * or NOT_A_FUNCTION / OUTLINE_MISMATCH error because String cannot participate
+     * in numeric subtraction.
+     *
+     * Current behaviour (bug): no errors are reported — the mismatch is silently
+     * swallowed because the backward constraint from "- 1" is not propagated back
+     * through the forward reference to g.
+     */
+    @Test
+    void forward_ref_arithmetic_constraint_mismatch_should_report_error() {
+        AST ast = ASTHelper.parser.parse(new ASF(), """
+            let f = x -> g(x.son) - 1;
+            let g = y -> y.age;
+            f({son = {age = "will"}})
+            """);
+        ast.asf().infer();
+        // The call resolves g's return to String (from age="will"),
+        // which then feeds into "- 1" — that must be a type error.
+        assertFalse(ast.errors().isEmpty(),
+            "Expected at least one type error: String cannot be used in arithmetic subtraction");
+    }
+
+    /**
+     * Sanity check: when the field is numeric the exact same program should be error-free.
+     */
+    @Test
+    void forward_ref_arithmetic_constraint_with_numeric_field_is_ok() {
+        AST ast = ASTHelper.parser.parse(new ASF(), """
+            let f = x -> g(x.son) - 1;
+            let g = y -> y.age;
+            f({son = {age = 30}})
+            """);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+            "No type error expected: age=30 (Integer), g returns Integer, Integer-1 is valid");
     }
 
     // ─────────────────── helper ───────────────────────────────────────────────

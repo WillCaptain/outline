@@ -260,7 +260,7 @@ public class GCPInferenceTest {
     @Test
     void test_gcp_declared_hof_projection(){
         /*
-         * let f = fx<a>(x:a->{name:a,age:Integer})->{
+         * let f = fn<a>(x:a->{name:a,age:Integer})->{
          *   x("Will").name
          * };
          * f<Integer>;
@@ -513,7 +513,7 @@ public class GCPInferenceTest {
     @Test
     void test_gcp_only_reference_for_simple_function(){
         /*
-        let f = fx<a,b>(x:a)->{
+        let f = fn<a,b>(x:a)->{
            let y:b = 100;
            y
         }

@@ -226,7 +226,7 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                let f = fx<a,b>(x: a)->(y: ((a, String), b))->y;
+                let f = fn<a,b>(x: a)->(y: ((a, String), b))->y;
                 let h = f(100,(("Will","Zhang"),"male"));
                 let g = f("Will",(("Will","Zhang"),30));
                 let will = g.0.0;
@@ -281,7 +281,7 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                let f = fx<a:{gender: "male"|"female",age}>(x: a->String->Integer->{name: String,age: Integer})->(y: String)->(z: Integer)->x({
+                let f = fn<a:{gender: "male"|"female",age}>(x: a->String->Integer->{name: String,age: Integer})->(y: String)->(z: Integer)->x({
                   gender = "male",
                   age = 30 
                 },y,z);""";
@@ -295,7 +295,7 @@ public class ParserStructureTest {
         String expected = """
                 module default
                 
-                let f = fx<a,b>(x: a)->{
+                let f = fn<a,b>(x: a)->{
                   let y: b = 100;
                   y
                 };""";
@@ -360,7 +360,7 @@ public class ParserStructureTest {
                   x = ["will","zhang"];
                   y
                 };
-                let r = fx<a>(x: [a])->{
+                let r = fn<a>(x: [a])->{
                   var b = [1,2];
                   b = x;
                   let c: a = x[0];

@@ -31,7 +31,9 @@ public class FactorTypeConverter extends Converter {
         ParseNode nullable = null;
         if (nodes.size() > 1) {
             ParseNode last = nodes.getLast();
-            if ("?".equals(last.lexeme())) {
+            // MSLL may keep nullable_suffix as a non-terminal node (name=nullable_suffix),
+            // or inline it as terminal '?' depending on tree simplification stage.
+            if ("?".equals(last.lexeme()) || "nullable_suffix".equals(last.name())) {
                 nullable = nodes.removeLast();
             }
         }
@@ -50,7 +52,6 @@ public class FactorTypeConverter extends Converter {
         if (ref != null) {
             result = converters.get(Constants.COLON_ + ref.name()).convert(ast, ref, result);
         }
-        // Wrap in NullableTypeNode if '?' suffix was present
         if (nullable != null) {
             result = converters.get(Constants.NULLABLE_SUFFIX).convert(ast, nullable, result);
         }

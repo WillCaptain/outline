@@ -1121,7 +1121,7 @@ public class InterpreterTest {
     void test_nested_tuple_unpack() {
         Value v = RunnerHelper.run("""
                 let t = (("Will","Zhang"),48);
-                let ((fn,ln),_) = t;
+                let ((first,ln),_) = t;
                 ln
                 """);
         assertThat(RunnerHelper.strVal(v)).isEqualTo("Zhang");

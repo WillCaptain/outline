@@ -23,10 +23,23 @@ public class ProgramConverter extends Converter{
         NonTerminalNode root = cast(source);
         Program program = cast(related);
         for (ParseNode node : root.nodes()) {
-            Node converted = converters.get(node.name()).convert(ast, node,program.body());
-            if(converted instanceof Expression){
+            // Resilient parsing (panic-mode recovery in MSLL) can attach extra
+            // "recovery" subtrees to the root whose grammar name has no registered
+            // converter (e.g. an empty/partial "statement" stub). Skip those so a
+            // single malformed statement does not poison conversion of the rest.
+            Converter cvt = converters.get(node.name());
+            if (cvt == null) continue;
+            Node converted;
+            try {
+                converted = cvt.convert(ast, node, program.body());
+            } catch (RuntimeException ex) {
+                // Per-statement conversion failure must not abort the whole module:
+                // downstream tooling (IDE markers) surfaces the syntax errors
+                // collected by the parser via AST#syntaxErrors().
+                continue;
+            }
+            if (converted instanceof Expression) {
                 program.body().addStatement(new ReturnStatement((Expression) converted));
-//
             }
         }
         return program;
