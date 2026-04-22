@@ -137,6 +137,26 @@ class StructuralVariantTest {
     // ── Call-site argument upcast (regression for empty-Option extend-constraint bug) ──
 
     @Test
+    void tag_only_variant_access_via_owner() {
+        AST ast = parse("""
+            outline Status = Pending{name:String}|Ok;
+            let pending = Status.Pending{name:"will"};
+            let ok = Status.Ok;
+            """);
+        assertTrue(ast.errors().isEmpty(), "errors=" + ast.errors());
+    }
+
+    @Test
+    void unknown_tag_via_owner_errors() {
+        AST ast = parse("""
+            outline Status = Pending{name:String}|Ok;
+            let bad = Status.Missing;
+            """);
+        assertFalse(ast.errors().isEmpty(),
+                "unknown tag should error, errors=" + ast.errors());
+    }
+
+    @Test
     void call_site_accepts_free_tag_when_formal_is_adt() {
         AST ast = parse("""
             outline Status = Pending{name:String}|Approved{boss:String};
