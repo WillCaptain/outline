@@ -12,11 +12,17 @@ import org.twelve.gcp.node.expression.identifier.Identifier;
 public class EntityFieldWithDefaultWrapper extends AbstractNode {
     private final Identifier field;
     private final Node defaultValueNode;
+    private final boolean mutable;
 
     public EntityFieldWithDefaultWrapper(AST ast, Identifier field, Node defaultValueNode) {
+        this(ast, field, defaultValueNode, false);
+    }
+
+    public EntityFieldWithDefaultWrapper(AST ast, Identifier field, Node defaultValueNode, boolean mutable) {
         super(ast);
         this.field = field;
         this.defaultValueNode = defaultValueNode;
+        this.mutable = mutable;
     }
 
     public Identifier field() {
@@ -25,5 +31,9 @@ public class EntityFieldWithDefaultWrapper extends AbstractNode {
 
     public Node defaultValueNode() {
         return defaultValueNode;
+    }
+
+    public boolean mutable() {
+        return mutable;
     }
 }

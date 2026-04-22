@@ -34,8 +34,11 @@ public class ReferenceCallConverter extends Converter {
         }
         Node node = new ReferenceCallNode((Expression)related,types.toArray(new TypeNode[0]) );
         if(refs.nodes().size()>i+1){
-            NonTerminalNode next = cast(refs.node(i+1));
-            node = converters.get(next.explain()).convert(ast,next,node);
+            ParseNode tail = refs.node(i+1);
+            String key = tail instanceof NonTerminalNode nt && nt.explain() != null && !nt.explain().isEmpty()
+                    ? nt.explain()
+                    : tail.name();
+            node = converters.get(key).convert(ast,tail,node);
         }
 
         return node;

@@ -22,9 +22,13 @@ public class EntityConverter extends EntityExtensionConverter {
         List<MemberNode> members = convertMembers(ast,cast(source));
         var loc = source.location();
         int col = loc.lineStart() - loc.line().beginIndex();
+        // `related` is non-null when the entity appears as a trailing suffix in
+        // factor_expression chains, e.g. `Status.Unknown{x:1}` or `p.f(){k:v}`.
+        // In those cases the preceding host already converted to an Expression and
+        // must become the EntityNode's base (tagged / extended entity literal).
         return new EntityNode(
                 members,
-                null,
+                related,
                 new SourceLocation(loc.start(), loc.end(), loc.line().number() + 1, col));
     }
 }

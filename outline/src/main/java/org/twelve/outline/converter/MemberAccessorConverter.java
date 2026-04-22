@@ -31,7 +31,12 @@ public class MemberAccessorConverter extends Converter {
 
         }
         if (accessor.nodes().size()==3){
-            return converters.get(((NonTerminalNode)accessor.node(2)).explain()).convert(ast,accessor.node(2),host);
+            ParseNode tail = accessor.node(2);
+            // For non-labelled chain trailers (e.g. plain `entity`), explain() can be empty.
+            String key = tail instanceof NonTerminalNode nt && nt.explain() != null && !nt.explain().isEmpty()
+                    ? nt.explain()
+                    : tail.name();
+            return converters.get(key).convert(ast,tail,host);
         }else{
             return host;
         }

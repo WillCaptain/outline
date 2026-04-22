@@ -106,7 +106,7 @@ entity_type
     : reference_type? '{' (entity_field (',' entity_field)*)? '}'
     ;
 entity_field
-    : ID (':' (declared_outline | literal))?
+    : ('let'|'var')? ID (':' (declared_outline | literal))?
     ;
 symbol_type
     : Symbol (tuple_type | entity_type)
@@ -170,7 +170,7 @@ assignment
 complex_expression
     : if_expression
     | match_expression
-    | ternary_expression entity?
+    | ternary_expression
     ;
 if_expression
     : 'if' '(' expression ')' expression ('else' expression)?
@@ -218,6 +218,7 @@ factor_expression
     | factor_expression '.' (ID|INT|Symbol)                                # entity_member_accessor
     | factor_expression '(' (expression (','+ expression)*)? ')'           # function_call
     | factor_expression reference_parameters'                              # reference_call
+    | factor_expression entity                                             # symbol_entity_literal
     //| factor_expression '<' declared_outline (',' declared_outline)* '>' # reference_call
     //| factor_expression '&' expression                                   # poly_expression
     //| '(' expression ')'                                                 # factor

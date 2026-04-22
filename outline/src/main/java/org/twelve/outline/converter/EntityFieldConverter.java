@@ -32,14 +32,24 @@ public class EntityFieldConverter extends Converter {
     @Override
     public Node convert(AST ast, ParseNode source, Node related) {
         NonTerminalNode field = cast(source);
-        Identifier identifier = cast(converters.get(field.node(0).name()).convert(ast, field.node(0)));
+        // Optional mutability keyword: `let` (immutable) or `var` (mutable).
+        // If omitted, the field defaults to immutable (preserves historical behaviour).
+        int i = 0;
+        boolean mutable = false;
+        String head = field.node(0).name();
+        if (Constants.LET.equals(head) || Constants.VAR.equals(head)) {
+            mutable = Constants.VAR.equals(head);
+            i++;
+        }
+        Identifier identifier = cast(converters.get(field.node(i).name()).convert(ast, field.node(i)));
 
-        if (field.nodes().size() < 3) {
-            // bare ID – no type annotation, no default
-            return new ArgumentWrapper(ast, identifier, null);
+        int remaining = field.nodes().size() - i;
+        if (remaining < 3) {
+            // bare (let|var)? ID – no type annotation, no default
+            return new ArgumentWrapper(ast, identifier, null, mutable);
         }
 
-        ParseNode typeOrDefault = field.node(2);
+        ParseNode typeOrDefault = field.node(i + 2);
         String typeName = typeOrDefault.name();
 
         // entity_field: ID ':' literal  →  default-value field (e.g. alias: "alice")
@@ -47,7 +57,7 @@ public class EntityFieldConverter extends Converter {
         // collapse it directly to the terminal token (STRING, INT, FLOAT, DOUBLE, number).
         if (Constants.LITERAL.equals(typeName)) {
             Node defaultNode = converters.get(Constants.LITERAL).convert(ast, typeOrDefault);
-            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
+            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode, mutable);
         }
         // MSLL may collapse  literal: <child>  →  <child>  for any single-production path.
         // Handle the most common collapsed cases: primitives, lambdas, entity/tuple literals.
@@ -60,7 +70,7 @@ public class EntityFieldConverter extends Converter {
                 || Constants.TUPLE.equals(typeName)      // tuple literal collapsed
                 || Constants.SYMBOL.equals(typeName)) {  // symbol literal collapsed (e.g. alias: Male)
             Node defaultNode = converters.get(typeName).convert(ast, typeOrDefault);
-            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode);
+            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode, mutable);
         }
 
         // MSLL may parse array-type annotations ([T]) as an 'array' expression node
@@ -72,15 +82,15 @@ public class EntityFieldConverter extends Converter {
             if (arrNodes.size() == 3) {
                 ParseNode elemNode = arrNodes.get(1);
                 TypeNode elemType = cast(converters.get(Constants.COLON_ + elemNode.name()).convert(ast, elemNode));
-                return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast, elemType));
+                return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast, elemType), mutable);
             }
-            return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast));
+            return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast), mutable);
         }
 
         // entity_field: ID ':' declared_outline  →  plain type annotation
         TypeNode typeNode = cast(
             converters.get(Constants.COLON_ + typeName).convert(ast, typeOrDefault)
         );
-        return new ArgumentWrapper(ast, identifier, typeNode);
+        return new ArgumentWrapper(ast, identifier, typeNode, mutable);
     }
 }

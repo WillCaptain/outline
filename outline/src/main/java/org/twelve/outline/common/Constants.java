@@ -62,6 +62,7 @@ public final class Constants {
     public static final String FUNCTION_CALL = "function_call";
     public static final String REFERENCE_CALL = "reference_call";
     public static final String ARRAY_MAP_ACCESSOR = "array_map_accessor";
+    public static final String SYMBOL_ENTITY_LITERAL = "symbol_entity_literal";
     public static final String TUPLE = "tuple";
     public static final String ARGUMENT = "argument";
     public static final String ENTITY_FIELD = "entity_field";

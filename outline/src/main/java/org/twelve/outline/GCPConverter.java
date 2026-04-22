@@ -165,6 +165,10 @@ public class GCPConverter {
         this.converters.put(Constants.REFERENCE_CALL, new ReferenceCallConverter(converters));
         //array map accessor
         this.converters.put(Constants.ARRAY_MAP_ACCESSOR, new AccessorConverter(converters));
+        //Symbol{...} tagged entity literal (e.g. `Stream{ data = [1,2] }`, `Pending{ name="x" }`)
+        //Arrives here via the left-recursive alpha-suffix expansion MSLL generates for the
+        //factor_expression entity alternative; related = already-converted host expression.
+        this.converters.put(Constants.SYMBOL_ENTITY_LITERAL, new SymbolEntityLiteralSuffixConverter(converters));
         //if expression
         this.converters.put(Constants.IF_EXPRESSION, new IfConverter(converters));
         this.converters.put(Constants.CONSEQUENCE, new ConsequenceConverter(converters));

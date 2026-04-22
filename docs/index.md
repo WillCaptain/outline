@@ -8,6 +8,7 @@
 
 ## 语言文档
 
+- `cheatsheet.md`：一页速查表，涵盖所有语法形式与特色能力。
 - `outline-language.md`：Outline 语法与语言特性手册。
 
 ## SDK 与集成
