@@ -84,14 +84,15 @@ outline LLMStream = <a> Stream<a> {
   complete: (f: String -> String) -> this{ data = data.map(f) }   // ask the model
 };
 
-let chat = LLMStream{ data = ["cats", "rust"], model = "gpt-5" };
+// Host plugin: a real runtime binds `ask` to an actual LLM client.
+let ask = prompt -> __llm__("gpt-5", prompt);   // stdlib host plugin
 
-chat
-  .filter(topic -> topic.len() > 2)        // LLMStream<String>  (inherited)
+LLMStream{ data = ["cats", "rust"], model = "gpt-5" }
+  .filter(topic -> len(topic) > 2)           // LLMStream<String>  (inherited)
   .prompt(topic -> "Write a haiku about " + topic)
-  .complete(req -> __llm__(this.model, req))   // still LLMStream<String>
-  .map(reply -> reply.sub_str(0, 140))      // still LLMStream<String>
-  .data;                                    //  [String]  — two haikus
+  .complete(ask)                             // still LLMStream<String>
+  .map(reply -> sub_str(reply, 0, 140))      // still LLMStream<String>
+  .data;                                     //  [String]  — two haikus
 ```
 
 ---
