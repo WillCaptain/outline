@@ -76,24 +76,63 @@ outline Stream = <a> {
 
 // Extend Stream with LLM operators — NO changes to Stream itself.
 // `this{...}` in Stream.map / Stream.filter returns THIS receiver, so every
-// inherited call on an LLMStream still produces an LLMStream — with `.prompt`
-// and `.complete` reachable through the whole chain.
-outline LLMStream = <a> Stream<a> {
+// inherited call on an AiFlow still produces an AiFlow — with `.prompt` and
+// `.complete` reachable through the whole chain.
+outline AiResult = Ok{text:String} | Denied{reason:String} | Timeout;
+
+outline AiFlow = <a> Stream<a> {
   model:    String,
-  prompt:   (p: a -> String) -> this{ data = data.map(p) },       // a → String
-  complete: (f: String -> String) -> this{ data = data.map(f) }   // ask the model
+  ask:      String -> AiResult,
+  prompt:   (p: a -> String) -> this{ data = data.map(p) },
+  complete: () -> this{
+      data = data
+        .map(p -> ask(p))
+        .filter(r -> match r { Ok{text} -> true, _ -> false })
+        .map(r -> match r { Ok{text} -> text, _ -> "" })
+  }
 };
 
-// Host plugin: a real runtime binds `ask` to an actual LLM client.
-let ask = prompt -> __llm__("gpt-5", prompt);   // stdlib host plugin
+// `__llm__(model, prompt) : AiResult` is a host-plugin bridge, shipped as
+// `outline-ai-plugin` (MockAiPlugin for tests, swap in OpenAI / Claude / etc.
+// in production).  The language itself contains no LLM logic — every operator
+// you see here is plain Outline.
+let ask = p -> __llm__("gpt-5", p);
 
-LLMStream{ data = ["cats", "rust"], model = "gpt-5" }
-  .filter(topic -> len(topic) > 2)           // LLMStream<String>  (inherited)
-  .prompt(topic -> "Write a haiku about " + topic)
-  .complete(ask)                             // still LLMStream<String>
-  .map(reply -> sub_str(reply, 0, 140))      // still LLMStream<String>
-  .data;                                     //  [String]  — two haikus
+AiFlow{ model = "gpt-5", ask = ask, data = ["cats", "rust"] }
+  .filter(topic -> len(topic) > 2)              // inherited — still AiFlow
+  .prompt(topic -> "Haiku about " + topic)      // AiFlow-specific
+  .complete()                                   // AiFlow-specific
+  .map(reply -> reply + " ✨")                   // inherited — still AiFlow
+  .data                                         //  [String]
 ```
+
+### Future-this and the *user-defined* operator
+
+Because every operator closes with `this{...}`, **users add new operators without ever
+touching `AiFlow` or `Stream`** — the returned type stays on the user's subtype:
+
+```outline
+// Third-party code.  AiFlow.java is never edited.
+outline JudgeFlow = <a> AiFlow<a> {
+  verdict: String,
+  judge: (render: a -> String) -> this{
+    data = data.filter(x -> {
+      let r = ask(render(x));
+      match r { Ok{text} -> text == verdict, _ -> false }
+    })
+  }
+};
+
+JudgeFlow{ model="gpt-5", ask=ask, verdict="good", data=["idea", "meh", "fine"] }
+  .filter(x -> len(x) > 2)        // Stream — returns JudgeFlow
+  .judge(x -> "Classify: " + x)   // JudgeFlow-only — returns JudgeFlow
+  .map(x -> "[kept] " + x)        // Stream — still JudgeFlow
+  .data
+```
+
+Most OO/ML languages force you to pick between F-bounded generics, explicit
+self-type trickery, or builder classes.  Outline’s `this{...}` gives you all
+of it for free — inherited operators travel at full type precision.
 
 ---
 

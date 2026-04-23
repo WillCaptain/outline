@@ -1,0 +1,25 @@
+// ============================================================================
+// ai_flow.outline — the Outline side of the LLM bridge.
+//
+// The host registers `__llm__(model, prompt) : AiResult` via outline-ai-plugin.
+// Everything else here is plain Outline.  Every AiFlow operator returns
+// `this{...}`; subtypes inherit the full pipeline and stay on their own type
+// when new operators are added — that's the future-this extensibility story.
+// ============================================================================
+
+outline AiResult = Ok{text:String} | Denied{reason:String} | Timeout;
+
+outline AiFlow = {
+    model:    String,
+    ask:      String -> AiResult,
+    data:     [String],
+    map:      (f: String -> String) -> this{ data = data.map(f) },
+    filter:   (p: String -> Bool)   -> this{ data = data.filter(p) },
+    prompt:   (r: String -> String) -> this{ data = data.map(r) },
+    complete: () -> this{
+        data = data
+            .map(p -> ask(p))
+            .filter(r -> match r { Ok{text} -> true, _ -> false })
+            .map(r -> match r { Ok{text} -> text, _ -> "" })
+    }
+};
