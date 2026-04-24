@@ -3023,4 +3023,64 @@ public class MetaTest {
         }
         return null;
     }
+
+    /**
+     * Semantic test for bare default-value literals in entity field declarations.
+     *
+     * <p>Outline grammar: {@code entity_field : ID (':' (declared_outline | literal))?}
+     * <ul>
+     *   <li>{@code id:0}     — bare {@code literal} branch (default VALUE, widens to primitive)</li>
+     *   <li>{@code id:#1}    — {@code literal_type} via declared_outline (explicit LITERAL type)</li>
+     *   <li>{@code id:0|3|4} — option of literal_types via declared_outline (literal union)</li>
+     * </ul>
+     *
+     * <p>Fix in {@link org.twelve.gcp.inference.EntityTypeNodeInference}: when a field
+     * has a default value whose inferred type is a {@link org.twelve.gcp.outline.primitive.Literal}
+     * wrapper, widen it to the origin primitive. Otherwise {@code id:0} would be typed as
+     * the singleton value 0, making downstream ops like {@code e.id + 1} nonsensical and
+     * breaking any usage that expects an Int.
+     */
+    @Test
+    void test_default_value_literal_widens_to_primitive() {
+        String code = "module org.test.defwiden\n" + OntologyFixtures.SYSTEM_OUTLINES + """
+                outline Person = { id:0, name:String };
+                outline People = VirtualSet<Person>{};
+                let people = __ontology_repo__<People>;
+                let p = people.first();
+                let x = 0;
+                export p, x;
+                """;
+        AST ast = parser.parse(code);
+        ast.asf().infer();
+        assertTrue(ast.errors().isEmpty(),
+                "Precondition: parse+infer should have no errors; got: " + ast.errors());
+
+        org.twelve.gcp.ast.Node firstCall = findMemberCallNode(ast.program(), "first");
+        assertNotNull(firstCall, "Should find people.first() call in AST");
+        org.twelve.gcp.outline.Outline resolved = MetaExtractor.resolveOutline(firstCall.outline());
+        assertTrue(resolved instanceof org.twelve.gcp.outline.adt.Entity,
+                "first() should resolve to Person entity; got " + resolved);
+        var person = (org.twelve.gcp.outline.adt.Entity) resolved;
+
+        // id is present and carries a user default value.
+        var idMember = person.getMember("id").orElseThrow(
+                () -> new AssertionError("Person must have 'id' member"));
+        assertTrue(idMember.isDefault(),
+                "id:0 must be marked isDefault (user-declared default value)");
+        assertTrue(idMember.hasDefaultValue(),
+                "id:0 must have a default-value node");
+
+        // Key invariant: id's type must widen from Literal(0) to its primitive (Integer/Number),
+        // NOT stay as a singleton literal type.
+        String idType = idMember.outline().toString();
+        assertFalse(idType.equals("0"),
+                "id:0 must widen to Int/Integer, not stay as literal '0'; got: " + idType);
+        assertTrue(idType.toLowerCase().contains("int") || idType.toLowerCase().contains("number"),
+                "id:0 should widen to Int/Integer/Number primitive; got: " + idType);
+
+        // name:String is declared (not a default value).
+        var nameMember = person.getMember("name").orElseThrow();
+        assertFalse(nameMember.isDefault(),
+                "name:String is a declared type, not a default value");
+    }
 }

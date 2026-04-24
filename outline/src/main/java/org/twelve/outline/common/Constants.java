@@ -114,6 +114,7 @@ public final class Constants {
 //    public static final String OUTLINE_DECLARATOR_SYMBOL = "outline_declarator_symbol";
     public static final String SYMBOL = "Symbol";
     public static final String SYMBOL_TYPE = ":symbol_type";
+    public static final String SYMBOL_TUPLE_VARIANT = ":symbol_tuple_variant";
     public static final String SYMBOL_UNPACK = "symbol_unpack";
 
     public static final String EXTEND_OUTLINE = ":extend_outline";

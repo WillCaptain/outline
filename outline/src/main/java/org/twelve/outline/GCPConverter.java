@@ -219,6 +219,7 @@ public class GCPConverter {
         this.converters.put(Constants.SYMBOL, new SymbolIndentifierConverter(converters));
         //symbol type
         this.converters.put(Constants.SYMBOL_TYPE, new SymbolTypeConverter(converters));
+        this.converters.put(Constants.SYMBOL_TUPLE_VARIANT, new SymbolTypeConverter(converters));
         this.converters.put(Constants.COLON_ + Constants.SYMBOL, new SymbolTypeConverter(converters));
         //extend outline
         this.converters.put(Constants.EXTEND_OUTLINE, new ExtendOutlineConverter(converters));

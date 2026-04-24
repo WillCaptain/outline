@@ -53,6 +53,12 @@ public class ExtendOutlineConverter extends Converter {
             return converters.get(Constants.COLON_ + adtNode.name()).convert(ast, adtNode);
         }
 
+        // ── Alt 2b: single-constructor variant like `Male(String,Int)` ─────────
+        if (!nodes.isEmpty() && nodes.getFirst().name().equals("symbol_tuple_variant")) {
+            ParseNode node = nodes.removeFirst();
+            return converters.get(Constants.COLON_ + node.name()).convert(ast, node);
+        }
+
         // ── Alt 1: non_compound_type entity_type? ───────────────────────────────
         // Unwrap non_compound_type (which is func_type or factor_type)
         ParseNode typeNode = nodes.removeFirst();

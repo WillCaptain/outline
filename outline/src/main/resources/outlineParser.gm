@@ -49,7 +49,11 @@ outline_declarator
 extend_outline
     : non_compound_type entity_type?
     | adt_type
+    | symbol_tuple_variant
     | reference_type Symbol reference_call? entity_type?
+    ;
+symbol_tuple_variant
+    : Symbol tuple_type
     ;
 non_compound_type
     : func_type | factor_type
@@ -100,7 +104,8 @@ literal_type
     ;
 
 tuple_type
-    : reference_type? '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
+    : reference_type? '(' ('...'|declared_outline) ',' ')'
+    | reference_type? '(' ('...'|declared_outline) (',' ('...'|declared_outline))+ ')'
     ;
 entity_type
     : reference_type? '{' (entity_field (',' entity_field)*)? '}'
@@ -297,7 +302,8 @@ entity
     : '{' property_assignment (',' property_assignment)* '}'
     ;
 tuple
-    : '(' expression (','expression)+ ')'
+    : '(' expression ',' ')'
+    | '(' expression (',' expression)+ ')'
     ;
 property_assignment
     : (('let'|'var') {notLineTerminator()})? argument '=' expression
