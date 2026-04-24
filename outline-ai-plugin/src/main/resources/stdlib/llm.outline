@@ -1,0 +1,53 @@
+// ============================================================================
+// llm.outline — atomic LLM capability for Outline.
+//
+// The host registers `__llm__<T>` via outline-ai-plugin (LlmEntityPlugin).
+// Each provider tags itself with a literal `provider` field, which `__llm__`
+// inspects to dispatch.  All data is plain Outline — only the method bodies
+// (ask / stream) are injected by the host via this-aware builtins.
+//
+// Users:
+//   let llm = open_ai("deepseek-chat",
+//                     env("LLM_API_KEY"),
+//                     env_or("LLM_BASE_URL", "https://api.deepseek.com/v1"));
+//   let a = llm.ask("What is Go?");                           // sync
+//   await llm.stream("Haiku", c -> match c {                  // async
+//       Delta{text as t} -> print(t),
+//       _                -> Unit
+//   });
+// ============================================================================
+
+outline Chunk = Delta{text:String} | Done | Error{reason:String};
+
+// ── Capability contract (behaviour only) ───────────────────────────────────
+outline LLM = {
+    ask:    String -> String,
+    stream: (String, Chunk -> Unit) -> Promise<Unit>
+};
+
+// ── Provider adapters (data + literal-type tag) ────────────────────────────
+outline OpenAI = LLM{
+    provider: #"openai",
+    model:    String,
+    api_key:  String,
+    base_url: String
+};
+
+// Future providers follow the same shape.  The `provider` literal tag is
+// what the host plugin uses for dispatch.
+//
+// outline Anthropic = LLM{
+//     provider: #"anthropic",
+//     api_key:  String,
+//     version:  String
+// };
+
+// ── Factory functions (hide __llm__ from users) ────────────────────────────
+// The `provider` literal-type field is auto-populated by the __llm__ builder
+// from OpenAI's type declaration; users only supply the data fields.
+let open_ai = (model, api_key, base_url) ->
+    __llm__<OpenAI>{
+        model    = model,
+        api_key  = api_key,
+        base_url = base_url
+    };
