@@ -49,6 +49,7 @@ outline_declarator
 extend_outline
     : non_compound_type entity_type?
     | adt_type
+    | reference_type '(' adt_type ')'
     | symbol_tuple_variant
     | reference_type Symbol reference_call? entity_type?
     ;
@@ -88,11 +89,17 @@ reference_parameters'
     : '<' declared_outline (',' declared_outline)* '>'
     ;
 adt_type
-    : (factor_type|literal|symbol_type) (('|'|'&') (factor_type|literal|symbol_type))+
+    : (symbol_type|adt_factor_type|literal) (('|'|'&') (symbol_type|adt_factor_type|literal))+
+    ;
+adt_factor_type
+    : (Number_Type | Int_Type | Long_Type | Float_Type | Unit_Type
+    | Double_Type | String_Type | tuple_type | THIS | This_Type | literal_type
+    | entity_type | array_type | map_type |  '?' | ID
+    | '(' declared_outline ')') reference_call? nullable_suffix?
     ;
 factor_type
     : (Number_Type | Int_Type | Long_Type | Float_Type | Unit_Type
-    | Double_Type | String_Type | tuple_type | THIS | literal_type
+    | Double_Type | String_Type | tuple_type | THIS | This_Type | literal_type
     | entity_type | array_type | map_type |  '?' | ID | Symbol
     | '(' declared_outline ')') reference_call? nullable_suffix?
     ;
@@ -115,8 +122,7 @@ entity_field
     : ('let'|'var')? ID (':' (declared_outline | literal))?
     ;
 symbol_type
-    : Symbol (tuple_type | entity_type)
-    | Symbol '(' declared_outline ')'
+    : Symbol (tuple_type | entity_type | '(' declared_outline ')')?
     ;
 array_type
     : '[' declared_outline ']'

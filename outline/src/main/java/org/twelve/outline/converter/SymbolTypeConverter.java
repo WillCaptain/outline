@@ -32,6 +32,9 @@ public class SymbolTypeConverter extends Converter {
 
         NonTerminalNode parent = cast(source);
         SymbolIdentifier symbol = cast(converters.get(parent.node(0).name()).convert(ast, parent.node(0)));
+        if (parent.nodes().size() == 1) {
+            return new SymbolTupleTypeTypeNode(symbol);
+        }
         if (parent.node(1).name().equals("entity_type")) {
             EntityTypeNode entity = cast(converters.get(Constants.COLON_ + parent.node(1).name()).convert(ast, parent.node(1)));
             return new SymbolEntityTypeTypeNode(symbol, entity.members());
@@ -39,9 +42,10 @@ public class SymbolTypeConverter extends Converter {
             TupleTypeNode tuple = cast(converters.get(Constants.COLON_ + parent.node(1).name()).convert(ast, parent.node(1)));
             return new SymbolTupleTypeTypeNode(symbol, tuple.members().stream().map(Variable::declared).toList());
         } else {
-            TypeNode single = cast(converters.get(Constants.COLON_ + parent.node(1).name())
-                    .convert(ast, parent.node(1), null));
-            return new SymbolTupleTypeTypeNode(symbol, java.util.List.of(single));
+            ParseNode singleNode = "(".equals(parent.node(1).lexeme()) ? parent.node(2) : parent.node(1);
+            TypeNode single = cast(converters.get(Constants.COLON_ + singleNode.name())
+                    .convert(ast, singleNode, null));
+            return new SymbolTupleTypeTypeNode(symbol, java.util.List.of(single), true);
         }
     }
 }

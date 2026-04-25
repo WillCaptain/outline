@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.interpreter.value.Value;
 import org.twelve.outline.OutlineParser;
 
@@ -30,6 +31,21 @@ public class TupleAndSingleCtorTest {
                 "(T,) should parse as single-element tuple; got: " + ast.errors());
         assertTrue(ast.asf().infer(),
                 "inference should succeed for single-element tuple");
+    }
+
+    @Test
+    void capital_this_type_alias_parses_like_legacy_tilde_this() {
+        String code = """
+                outline Box = {
+                    value: Int,
+                    keep: Unit -> This,
+                    legacy: Unit -> ~this
+                };
+                """;
+        AST ast = parse(code);
+        assertTrue(ast.errors().isEmpty(),
+                "`This` should parse as a type-level alias of `~this`; got: " + ast.errors());
+        assertTrue(ast.asf().infer(), "inference should succeed for both This and ~this");
     }
 
     @Test
@@ -102,8 +118,8 @@ public class TupleAndSingleCtorTest {
     void tuple_variant_function_payload_can_be_unpacked_and_called() {
         String code = """
                 outline Operator =
-                    Map(String -> String)
-                  | Filter(String -> Bool)
+                    Map(String -> String,)
+                  | Filter(String -> Bool,)
                   | Source;
 
                 let op = Map(s -> s + "!");
@@ -122,7 +138,7 @@ public class TupleAndSingleCtorTest {
         String code = """
                 outline Chunk = Delta{text:String} | Done | Error{reason:String};
                 outline Operator =
-                    Map(Chunk -> Chunk)
+                    Map(Chunk -> Chunk,)
                   | Source;
 
                 let chunk = Delta{text="hi"};
@@ -140,7 +156,7 @@ public class TupleAndSingleCtorTest {
     void tuple_variant_preserves_filter_payload_type() {
         String code = """
                 outline Chunk = Delta{text:String} | Done | Error{reason:String};
-                outline Operator = Filter(Chunk -> Bool) | Source;
+                outline Operator = Filter(Chunk -> Bool,) | Source;
                 let chunk = Delta{text="hi"};
                 let filter_op = Filter(c -> match c { Delta{text as t} -> t == "hi", _ -> false });
                 match filter_op {
@@ -153,6 +169,37 @@ public class TupleAndSingleCtorTest {
     }
 
     @Test
+    void single_item_variant_payload_without_trailing_comma_reports_inference_error() {
+        String code = """
+                outline Tmp = Source | Map(? -> ?);
+                """;
+        AST ast = parse(code);
+        assertTrue(ast.errors().isEmpty(),
+                "`Map(? -> ?)` remains syntactically legal so diagnostics come from inference; got: " + ast.errors());
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.INFER_ERROR),
+                "missing tuple comma should report an inference error; got: " + ast.errors());
+    }
+
+    @Test
+    void generic_option_alias_with_single_item_tuple_variant_projects_in_steps() {
+        String code = """
+                outline Operator = Source | Map(? -> ?,);
+                outline Operator_2 = <a,b>(Source | Map(a -> b,));
+                outline Operator_3 = Operator_2<String>;
+                outline Operator_4 = Operator_3<Int>;
+                """;
+        AST ast = parse(code);
+        assertTrue(ast.errors().isEmpty(),
+                "generic option alias syntax should parse; got: " + ast.errors());
+        assertTrue(ast.asf().infer(),
+                "generic option alias projection should infer; got: " + ast.errors());
+        assertNotNull(ast.symbolEnv().lookupAll("Operator_4"),
+                "projected alias Operator_4 should be defined");
+        assertEquals("Source|Map(String->Integer)", ast.symbolEnv().lookupAll("Operator_4").outline().toString());
+    }
+
+    @Test
     void tuple_variant_preserves_round_operator_payload_types() {
         String code = """
                 outline ChunkSession = {
@@ -161,8 +208,8 @@ public class TupleAndSingleCtorTest {
                     last_answer: String
                 };
                 outline Operator =
-                    Loop((String, ChunkSession) -> String)
-                  | Until(ChunkSession -> Bool)
+                    Loop((String, ChunkSession) -> String,)
+                  | Until(ChunkSession -> Bool,)
                   | Source;
                 let session = ChunkSession{step=1, question="q", last_answer="a"};
                 let loop_op = Loop((answer, s) -> s.question + ":" + answer);
@@ -184,7 +231,7 @@ public class TupleAndSingleCtorTest {
                     last_answer: String
                 };
                 outline Operator =
-                    Until(ChunkSession -> Bool)
+                    Until(ChunkSession -> Bool,)
                   | Source;
                 let session = ChunkSession{step=1, question="q", last_answer="a"};
                 let until_op = Until(s -> s.step > 0);

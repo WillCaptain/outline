@@ -61,8 +61,11 @@ public class GCPConverter {
         this.converters.put(Constants.MAP_TYPE, new MapTypeConverter(converters));
         this.converters.put(Constants.OTHERS_TYPE, new OtherTypeConverter(converters));
         this.converters.put(Constants.COLON_+Constants.REFERENCE_CALL, new ReferenceCallTypeConverter(converters));
-        this.converters.put(Constants.FACTOR_TYPE, new FactorTypeConverter(converters));
+        FactorTypeConverter factorTypeConverter = new FactorTypeConverter(converters);
+        this.converters.put(Constants.FACTOR_TYPE, factorTypeConverter);
+        this.converters.put(Constants.ADT_FACTOR_TYPE, factorTypeConverter);
         this.converters.put(Constants.THIS, new ThisTypeConverter(converters));
+        this.converters.put(Constants.THIS_TYPE_ALIAS, new ThisTypeConverter(converters));
 
         //literal
         LiteralTypeConverter literalTypeConverter = new LiteralTypeConverter(converters);

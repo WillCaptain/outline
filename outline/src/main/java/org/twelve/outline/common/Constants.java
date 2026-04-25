@@ -28,8 +28,10 @@ public final class Constants {
     public static final String DOUBLE_TYPE = ":Double_Type";
     public static final String DECLARED_TYPE = ":declared_outline";
     public static final String ADT_TYPE = ":adt_type";
+    public static final String ADT_FACTOR_TYPE = ":adt_factor_type";
     public static final String FACTOR_TYPE = ":factor_type";
     public static final String THIS = ":THIS";
+    public static final String THIS_TYPE_ALIAS = ":This_Type";
     public static final String LITERAL_INT_TYPE = ":INT";
     public static final String LITERAL_STRING_TYPE = ":STRING";
     public static final String LITERAL_ENTITY_TYPE = ":entity";

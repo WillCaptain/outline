@@ -23,6 +23,7 @@ Let                        : 'let';
 Var                        : 'var';
 This                       : 'this';
 THIS                       : '~this';
+This_Type                  : 'This';
 Return                     : 'return';
 Function                   : 'fn';
 Null                       : 'null';

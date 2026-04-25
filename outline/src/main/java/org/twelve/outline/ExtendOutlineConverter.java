@@ -5,6 +5,7 @@ import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.node.expression.referable.ReferenceNode;
 import org.twelve.gcp.node.expression.typeable.EntityTypeNode;
 import org.twelve.gcp.node.expression.typeable.ExtendTypeNode;
+import org.twelve.gcp.node.expression.typeable.ReferenceAliasTypeNode;
 import org.twelve.gcp.node.expression.typeable.ReferenceCallTypeNode;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.gcp.outline.projectable.Reference;
@@ -32,6 +33,12 @@ public class ExtendOutlineConverter extends Converter {
         // ── Alt 3: reference_type Symbol reference_call? entity_type? ──────────
         if (!nodes.isEmpty() && nodes.getFirst().name().equals(Constants.REFERENCE_TYPE)) {
             List<ReferenceNode> refs = Tool.convertReferences(converters, cast(nodes.removeFirst()), ast);
+            if (!nodes.isEmpty() && "(".equals(nodes.getFirst().lexeme())) {
+                nodes.removeFirst(); // (
+                ParseNode adtNode = nodes.removeFirst();
+                TypeNode body = cast(converters.get(Constants.COLON_ + adtNode.name()).convert(ast, adtNode));
+                return new ReferenceAliasTypeNode(ast, refs, body);
+            }
             ParseNode symbolNode = nodes.removeFirst();   // Symbol
             TypeNode base = cast(converters.get(Constants.COLON_ + symbolNode.name()).convert(ast, symbolNode));
             ReferenceCallTypeNode refArgs = null;
