@@ -8,6 +8,7 @@ import org.twelve.gcp.node.expression.typeable.EntityTypeNode;
 import org.twelve.gcp.node.expression.typeable.SymbolEntityTypeTypeNode;
 import org.twelve.gcp.node.expression.typeable.SymbolTupleTypeTypeNode;
 import org.twelve.gcp.node.expression.typeable.TupleTypeNode;
+import org.twelve.gcp.node.expression.typeable.TypeNode;
 import org.twelve.msll.parsetree.NonTerminalNode;
 import org.twelve.msll.parsetree.ParseNode;
 import org.twelve.msll.parsetree.TerminalNode;
@@ -34,9 +35,13 @@ public class SymbolTypeConverter extends Converter {
         if (parent.node(1).name().equals("entity_type")) {
             EntityTypeNode entity = cast(converters.get(Constants.COLON_ + parent.node(1).name()).convert(ast, parent.node(1)));
             return new SymbolEntityTypeTypeNode(symbol, entity.members());
-        }else{
+        } else if (parent.node(1).name().equals("tuple_type")) {
             TupleTypeNode tuple = cast(converters.get(Constants.COLON_ + parent.node(1).name()).convert(ast, parent.node(1)));
             return new SymbolTupleTypeTypeNode(symbol, tuple.members().stream().map(Variable::declared).toList());
+        } else {
+            TypeNode single = cast(converters.get(Constants.COLON_ + parent.node(1).name())
+                    .convert(ast, parent.node(1), null));
+            return new SymbolTupleTypeTypeNode(symbol, java.util.List.of(single));
         }
     }
 }

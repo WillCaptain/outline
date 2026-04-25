@@ -54,6 +54,7 @@ extend_outline
     ;
 symbol_tuple_variant
     : Symbol tuple_type
+    | Symbol '(' declared_outline ')'
     ;
 non_compound_type
     : func_type | factor_type
@@ -115,6 +116,7 @@ entity_field
     ;
 symbol_type
     : Symbol (tuple_type | entity_type)
+    | Symbol '(' declared_outline ')'
     ;
 array_type
     : '[' declared_outline ']'

@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Test;
 import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
+import org.twelve.gcp.interpreter.value.Value;
 import org.twelve.outline.OutlineParser;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,5 +94,106 @@ public class TupleAndSingleCtorTest {
         assertTrue(ast.errors().isEmpty(),
                 "single-ctor with (T,) tuple type should parse; got: " + ast.errors());
         assertTrue(ast.asf().infer(), "inference should succeed");
+    }
+
+    // ─────────── Problem 3: tuple-variant payload + match unpack ─────────────
+
+    @Test
+    void tuple_variant_function_payload_can_be_unpacked_and_called() {
+        String code = """
+                outline Operator =
+                    Map(String -> String)
+                  | Filter(String -> Bool)
+                  | Source;
+
+                let op = Map(s -> s + "!");
+                match op {
+                    Map(f)    -> f("ok"),
+                    Filter(p) -> if (p("ok")) "yes" else "no",
+                    Source    -> "source"
+                }
+                """;
+        Value v = RunnerHelper.run(code);
+        assertEquals("\"ok!\"", v.toString());
+    }
+
+    @Test
+    void tuple_variant_preserves_chunk_function_payload_type() {
+        String code = """
+                outline Chunk = Delta{text:String} | Done | Error{reason:String};
+                outline Operator =
+                    Map(Chunk -> Chunk)
+                  | Source;
+
+                let chunk = Delta{text="hi"};
+                let map_op    = Map(c -> match c { Delta{text as t} -> Delta{text=t + "!"}, _ -> c });
+                match map_op {
+                    Map(f) -> f(chunk),
+                    _      -> Done
+                }
+                """;
+        Value v = RunnerHelper.run(code);
+        assertEquals("Delta{text = hi!}", v.toString());
+    }
+
+    @Test
+    void tuple_variant_preserves_filter_payload_type() {
+        String code = """
+                outline Chunk = Delta{text:String} | Done | Error{reason:String};
+                outline Operator = Filter(Chunk -> Bool) | Source;
+                let chunk = Delta{text="hi"};
+                let filter_op = Filter(c -> match c { Delta{text as t} -> t == "hi", _ -> false });
+                match filter_op {
+                    Filter(p) -> if (p(chunk)) "filter:yes" else "filter:no",
+                    _         -> "filter:other"
+                }
+                """;
+        Value v = RunnerHelper.run(code);
+        assertEquals("\"filter:yes\"", v.toString());
+    }
+
+    @Test
+    void tuple_variant_preserves_round_operator_payload_types() {
+        String code = """
+                outline ChunkSession = {
+                    step: Int,
+                    question: String,
+                    last_answer: String
+                };
+                outline Operator =
+                    Loop((String, ChunkSession) -> String)
+                  | Until(ChunkSession -> Bool)
+                  | Source;
+                let session = ChunkSession{step=1, question="q", last_answer="a"};
+                let loop_op = Loop((answer, s) -> s.question + ":" + answer);
+                match loop_op {
+                    Loop(f) -> "loop:" + f("ans", session),
+                    _       -> "loop:other"
+                }
+                """;
+        Value v = RunnerHelper.run(code);
+        assertEquals("\"loop:q:ans\"", v.toString());
+    }
+
+    @Test
+    void tuple_variant_preserves_until_payload_type_and_bare_branch() {
+        String code = """
+                outline ChunkSession = {
+                    step: Int,
+                    question: String,
+                    last_answer: String
+                };
+                outline Operator =
+                    Until(ChunkSession -> Bool)
+                  | Source;
+                let session = ChunkSession{step=1, question="q", last_answer="a"};
+                let until_op = Until(s -> s.step > 0);
+                match until_op {
+                    Until(p) -> if (p(session)) "until:yes" else "until:no",
+                    Source   -> "source"
+                }
+                """;
+        Value v = RunnerHelper.run(code);
+        assertEquals("\"until:yes\"", v.toString());
     }
 }
