@@ -10,6 +10,7 @@
 
 - `cheatsheet.md`：一页速查表，涵盖所有语法形式与特色能力。
 - `outline-language.md`：Outline 语法与语言特性手册。
+- `type-entity-extension.md`：type/entity 扩展时同名成员的默认、`override`、`overload` 规则。
 
 ## SDK 与集成
 

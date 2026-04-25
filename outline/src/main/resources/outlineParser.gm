@@ -119,7 +119,7 @@ entity_type
     : reference_type? '{' (entity_field (',' entity_field)*)? '}'
     ;
 entity_field
-    : ('let'|'var')? ID (':' (declared_outline | literal))?
+    : ('override'|'overload')? ('let'|'var')? ID (':' (declared_outline | literal))?
     ;
 symbol_type
     : Symbol (tuple_type | entity_type | '(' declared_outline ')')?
@@ -314,8 +314,8 @@ tuple
     | '(' expression (',' expression)+ ')'
     ;
 property_assignment
-    : (('let'|'var') {notLineTerminator()})? argument '=' expression
-    | (('let'|'var') {notLineTerminator()})? ID ':' expression
+    : ('override'|'overload')? (('let'|'var') {notLineTerminator()})? argument '=' expression
+    | ('override'|'overload')? (('let'|'var') {notLineTerminator()})? ID ':' expression
     ;
 lambda
     : reference_type? lambda_args '->' expression ('&&&' lambda)*

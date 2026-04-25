@@ -57,6 +57,8 @@ public final class Constants {
     public static final String PROPERTY_ASSIGNMENT = "property_assignment";
     public static final String VAR = "Var";
     public static final String LET = "Let";
+    public static final String OVERRIDE = "Override";
+    public static final String OVERLOAD = "Overload";
     public static final String FACTOR_EXPRESSION = "factor_expression";
     public static final String This = "This";
     public static final String BASE = "Base";

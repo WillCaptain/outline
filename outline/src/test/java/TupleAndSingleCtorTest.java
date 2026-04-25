@@ -282,4 +282,35 @@ public class TupleAndSingleCtorTest {
             ast.asf().interpret();
         });
     }
+
+    @Test
+    void default_duplicate_field_must_satisfy_existing_field_type() {
+        String code = """
+                outline Box = { value: Int };
+                outline BadBox = Box{ value: "not an int" };
+                """;
+        AST ast = parse(code);
+        assertTrue(ast.errors().isEmpty(), "unexpected parse errors: " + ast.errors());
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.OUTLINE_MISMATCH),
+                "duplicate field should reject incompatible type; got: " + ast.errors());
+    }
+
+    @Test
+    void entity_extension_duplicate_field_modes_are_explicit() {
+        String code = """
+                outline Base = { value: Number };
+                outline Narrow = Base{ value: Int };
+                outline Wide = Narrow{ override value: Number };
+                outline OverloadSameBase = Base{ overload value: Int };
+                outline OverloadWide = Narrow{ overload value: Number };
+                """;
+        AST ast = parse(code);
+        assertTrue(ast.errors().isEmpty(), "unexpected parse errors: " + ast.errors());
+        assertTrue(ast.asf().infer(), "field merge modes should infer; got: " + ast.errors());
+        assertEquals("{value: Integer}", ast.symbolEnv().lookupAll("Narrow").outline().toString());
+        assertEquals("{value: Number}", ast.symbolEnv().lookupAll("Wide").outline().toString());
+        assertEquals("{value: Number}", ast.symbolEnv().lookupAll("OverloadSameBase").outline().toString());
+        assertEquals("{value: Number}", ast.symbolEnv().lookupAll("OverloadWide").outline().toString());
+    }
 }

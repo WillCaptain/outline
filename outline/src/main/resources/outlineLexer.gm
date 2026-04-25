@@ -21,6 +21,8 @@ Arrow                      : '->';
 //----------key words----------
 Let                        : 'let';
 Var                        : 'var';
+Override                   : 'override';
+Overload                   : 'overload';
 This                       : 'this';
 THIS                       : '~this';
 This_Type                  : 'This';

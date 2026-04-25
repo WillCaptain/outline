@@ -2,6 +2,7 @@ package org.twelve.outline.converter;
 
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
+import org.twelve.gcp.common.FieldMergeMode;
 import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.expression.typeable.ArrayTypeNode;
 import org.twelve.gcp.node.expression.typeable.TypeNode;
@@ -36,7 +37,13 @@ public class EntityFieldConverter extends Converter {
         // If omitted, the field defaults to immutable (preserves historical behaviour).
         int i = 0;
         boolean mutable = false;
+        FieldMergeMode mergeMode = FieldMergeMode.DEFAULT;
         String head = field.node(0).name();
+        if (Constants.OVERRIDE.equals(head) || Constants.OVERLOAD.equals(head)) {
+            mergeMode = Constants.OVERRIDE.equals(head) ? FieldMergeMode.OVERRIDE : FieldMergeMode.OVERLOAD;
+            i++;
+            head = field.node(i).name();
+        }
         if (Constants.LET.equals(head) || Constants.VAR.equals(head)) {
             mutable = Constants.VAR.equals(head);
             i++;
@@ -46,7 +53,7 @@ public class EntityFieldConverter extends Converter {
         int remaining = field.nodes().size() - i;
         if (remaining < 3) {
             // bare (let|var)? ID – no type annotation, no default
-            return new ArgumentWrapper(ast, identifier, null, mutable);
+            return new ArgumentWrapper(ast, identifier, null, mutable, mergeMode);
         }
 
         ParseNode typeOrDefault = field.node(i + 2);
@@ -57,7 +64,7 @@ public class EntityFieldConverter extends Converter {
         // collapse it directly to the terminal token (STRING, INT, FLOAT, DOUBLE, number).
         if (Constants.LITERAL.equals(typeName)) {
             Node defaultNode = converters.get(Constants.LITERAL).convert(ast, typeOrDefault);
-            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode, mutable);
+            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode, mutable, mergeMode);
         }
         // MSLL may collapse  literal: <child>  →  <child>  for any single-production path.
         // Handle the most common collapsed cases: primitives, lambdas, entity/tuple literals.
@@ -70,7 +77,7 @@ public class EntityFieldConverter extends Converter {
                 || Constants.TUPLE.equals(typeName)      // tuple literal collapsed
                 || Constants.SYMBOL.equals(typeName)) {  // symbol literal collapsed (e.g. alias: Male)
             Node defaultNode = converters.get(typeName).convert(ast, typeOrDefault);
-            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode, mutable);
+            return new EntityFieldWithDefaultWrapper(ast, identifier, defaultNode, mutable, mergeMode);
         }
 
         // MSLL may parse array-type annotations ([T]) as an 'array' expression node
@@ -82,15 +89,15 @@ public class EntityFieldConverter extends Converter {
             if (arrNodes.size() == 3) {
                 ParseNode elemNode = arrNodes.get(1);
                 TypeNode elemType = cast(converters.get(Constants.COLON_ + elemNode.name()).convert(ast, elemNode));
-                return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast, elemType), mutable);
+                return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast, elemType), mutable, mergeMode);
             }
-            return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast), mutable);
+            return new ArgumentWrapper(ast, identifier, new ArrayTypeNode(ast), mutable, mergeMode);
         }
 
         // entity_field: ID ':' declared_outline  →  plain type annotation
         TypeNode typeNode = cast(
             converters.get(Constants.COLON_ + typeName).convert(ast, typeOrDefault)
         );
-        return new ArgumentWrapper(ast, identifier, typeNode, mutable);
+        return new ArgumentWrapper(ast, identifier, typeNode, mutable, mergeMode);
     }
 }

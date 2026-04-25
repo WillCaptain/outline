@@ -45,10 +45,10 @@ public class EntityTypeConverter extends Converter {
 
             if (converted instanceof EntityFieldWithDefaultWrapper dfw) {
                 // alias: "alice"  →  Variable with no declared type; default stored separately
-                fields.add(new Variable(dfw.field(), dfw.mutable(), null));
+                fields.add(new Variable(dfw.field(), dfw.mutable(), null, dfw.mergeMode()));
                 defaultNodes.add(dfw.defaultValueNode());
             } else if (converted instanceof ArgumentWrapper aw) {
-                fields.add(new Variable(aw.argument(), aw.mutable(), aw.typeNode()));
+                fields.add(new Variable(aw.argument(), aw.mutable(), aw.typeNode(), aw.mergeMode()));
                 defaultNodes.add(null);
             } else {
                 fields.add(new Variable(cast(converted), false, null));

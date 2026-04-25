@@ -498,7 +498,7 @@ public class ASTHelper {
                 let name_1 = person.name;
                 let name_2 = person.get_name();
                 let me = person{
-                    get_name = last_name->{
+                    overload get_name = last_name->{
                         this.get_name()+last_name;
                         100
                     },
