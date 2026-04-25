@@ -2,3 +2,8 @@
 .DS_Store
 .idea/
 out/
+
+# ── Deployment runtime artifacts ─────────────────────────────────────────────
+**/deploy/*.jar
+**/deploy/*.log
+**/deploy/*.pid
