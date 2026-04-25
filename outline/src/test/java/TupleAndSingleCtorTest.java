@@ -5,6 +5,8 @@ import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.interpreter.value.Value;
 import org.twelve.outline.OutlineParser;
 
+import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -258,5 +260,26 @@ public class TupleAndSingleCtorTest {
                 """;
         Value v = RunnerHelper.run(code);
         assertEquals("\"until:yes\"", v.toString());
+    }
+
+    @Test
+    void generic_operator_recursive_push_infers_without_timeout() {
+        String code = """
+                outline Operator = <a,b>(Source | Map(a -> b,));
+                let push = (stage, value, sink) -> {
+                    let op = stage._operator;
+                    match op {
+                        Source -> sink(value),
+                        Map(f) -> push(stage._upstream, value, x -> sink(f(x)))
+                    }
+                };
+                """;
+        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
+            AST ast = parse(code);
+            assertTrue(ast.errors().isEmpty(), "unexpected parse errors: " + ast.errors());
+            ast.asf().infer();
+            ast.meta().toMap();
+            ast.asf().interpret();
+        });
     }
 }
