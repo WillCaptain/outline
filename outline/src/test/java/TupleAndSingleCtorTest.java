@@ -200,6 +200,22 @@ public class TupleAndSingleCtorTest {
     }
 
     @Test
+    void misspelled_generic_alias_reports_outline_not_found_before_not_referable() {
+        String code = """
+                outline Opertor_2 = <a,b>(Source | Map(a -> b,));
+                outline Operator_3 = Operator_2<String>;
+                """;
+        AST ast = parse(code);
+        assertTrue(ast.errors().isEmpty(),
+                "misspelled alias case should parse so inference can report the name error; got: " + ast.errors());
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.OUTLINE_NOT_FOUND),
+                "undefined Operator_2 should report OUTLINE_NOT_FOUND; got: " + ast.errors());
+        assertFalse(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.NOT_REFER_ABLE),
+                "undefined Operator_2 should not cascade into NOT_REFER_ABLE; got: " + ast.errors());
+    }
+
+    @Test
     void tuple_variant_preserves_round_operator_payload_types() {
         String code = """
                 outline ChunkSession = {
