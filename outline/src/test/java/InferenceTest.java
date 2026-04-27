@@ -4,6 +4,7 @@ import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.exception.GCPErrCode;
+import org.twelve.gcp.exception.GCPError;
 import org.twelve.gcp.node.expression.*;
 import org.twelve.gcp.node.expression.conditions.MatchArm;
 import org.twelve.gcp.node.expression.conditions.MatchExpression;
@@ -672,9 +673,9 @@ public class InferenceTest {
         assertTrue(((Option) name1Outline).options().stream().anyMatch(o -> o instanceof STRING));
         assertTrue(((Option) name1Outline).options().stream().anyMatch(o -> o == ast.Nothing));
         assertEquals("String|(Integer,String)", name2Outline.toString());
-        assertEquals(1, ast.errors().size());
-        assertEquals(GCPErrCode.NON_EXHAUSTIVE_MATCH, ast.errors().getFirst().errorCode());
-        assertEquals(name1.assignments().getFirst().rhs(), ast.errors().getFirst().node());
+        assertEquals(2, ast.errors().size());
+        assertTrue(ast.errors().stream().allMatch(e -> e.errorCode() == GCPErrCode.NON_EXHAUSTIVE_MATCH));
+        assertTrue(ast.errors().stream().anyMatch(e -> e.node() == name1.assignments().getFirst().rhs()));
         //check match pattern type
         //tuple match
         List<MatchArm> arms1 = ((MatchExpression) name1.assignments().getFirst().rhs()).arms();
@@ -1212,7 +1213,7 @@ public class InferenceTest {
         AST ast = ASTHelper.mockDeclaredMatch();
         ast.asf().infer();
         assertTrue(ast.inferred());
-        assertTrue(ast.errors().isEmpty());
+        assertFalse(ast.errors().stream().anyMatch(e -> e.severity() == GCPError.Severity.ERROR), "" + ast.errors());
     }
 
     @Test

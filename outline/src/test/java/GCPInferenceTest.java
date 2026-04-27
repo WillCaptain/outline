@@ -5,6 +5,7 @@ import org.twelve.gcp.ast.Node;
 import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.exception.GCPErrCode;
+import org.twelve.gcp.exception.GCPError;
 import org.twelve.gcp.node.expression.Assignment;
 import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.expression.LiteralNode;
@@ -34,6 +35,52 @@ public class GCPInferenceTest {
     @BeforeAll
     static void warmUp() {
         ASTHelper.parser.toString();
+    }
+
+    @Test
+    void declared_entity_parameter_rejects_missing_accessed_field() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                let create = (x:{age:Int})->{
+                    x.name
+                };
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.FIELD_NOT_FOUND),
+                "declared x:{age:Int} should reject x.name; got: " + ast.errors());
+    }
+
+    @Test
+    void match_pattern_with_wildcard_does_not_restrict_argument() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline Human = Male{name:String, age:Int}, Pet = Dog;
+                let get_name = someone -> match someone {
+                    Male{name} -> name,
+                    _ -> {other = 100f}
+                };
+                let pet = Dog;
+                get_name(pet)
+                """);
+        ast.asf().infer();
+        assertFalse(ast.errors().stream().anyMatch(e -> e.severity() == GCPError.Severity.ERROR),
+                "match pattern should not become a hard argument constraint; got: " + ast.errors());
+        assertEquals("{other: Float}", ast.program().body().statements().getLast().outline().toString());
+    }
+
+    @Test
+    void match_could_be_mismatch_is_warning_only() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline Human = Male{name:String}, Pet = Dog | Cat;
+                let check = (pet:Pet) -> match pet {
+                    Male{name} -> 1,
+                    _ -> 0
+                };
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.NON_EXHAUSTIVE_MATCH
+                        && e.severity() == GCPError.Severity.WARNING),
+                "could_be mismatch should be reported as a warning; got: " + ast.errors());
+        assertFalse(ast.errors().stream().anyMatch(e -> e.severity() == GCPError.Severity.ERROR),
+                "could_be mismatch must not become a hard error; got: " + ast.errors());
     }
 
     @Test
