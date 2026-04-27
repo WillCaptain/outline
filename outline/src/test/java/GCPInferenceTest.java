@@ -6,7 +6,12 @@ import org.twelve.gcp.ast.Token;
 import org.twelve.gcp.common.VariableKind;
 import org.twelve.gcp.exception.GCPErrCode;
 import org.twelve.gcp.exception.GCPError;
+import org.twelve.gcp.interpreter.value.StringValue;
+import org.twelve.gcp.interpreter.value.Value;
+import org.twelve.gcp.meta.FieldMeta;
+import org.twelve.gcp.meta.MetaExtractor;
 import org.twelve.gcp.node.expression.Assignment;
+import org.twelve.gcp.node.expression.accessor.MemberAccessor;
 import org.twelve.gcp.node.expression.identifier.Identifier;
 import org.twelve.gcp.node.expression.LiteralNode;
 import org.twelve.gcp.node.expression.body.FunctionBody;
@@ -84,6 +89,31 @@ public class GCPInferenceTest {
     }
 
     @Test
+    void enum_field_to_str_infers_interprets_and_completes() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline Status = Approved|Rejected;
+
+                let create = (x:{status:Status})->{
+                    x.status.to_str()
+                };
+
+                let status = create({status:Approved});
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "" + ast.errors());
+
+        Value result = ast.asf().interpret();
+        assertInstanceOf(StringValue.class, result);
+        assertEquals("Approved", ((StringValue) result).value());
+
+        MemberAccessor statusAccess = findMemberAccessor(ast.program(), "x.status");
+        assertNotNull(statusAccess);
+        List<FieldMeta> fields = MetaExtractor.fieldsOf(statusAccess.outline(), ast.sourceCode());
+        assertTrue(fields.stream().anyMatch(field -> "to_str".equals(field.name())),
+                "Status field completion should include to_str; got: " + fields);
+    }
+
+    @Test
     void test_gcp_declare_to_be() {
         /*
         let f = x:Integer->x;
@@ -112,6 +142,17 @@ public class GCPInferenceTest {
         //call2: Integer
         assertEquals(ast.Integer.toString(), call2.outline().toString());
 
+    }
+
+    private static MemberAccessor findMemberAccessor(Node node, String lexeme) {
+        if (node instanceof MemberAccessor accessor && lexeme.equals(accessor.lexeme())) {
+            return accessor;
+        }
+        for (Node child : node.nodes()) {
+            MemberAccessor found = findMemberAccessor(child, lexeme);
+            if (found != null) return found;
+        }
+        return null;
     }
 
     @Test
