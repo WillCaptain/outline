@@ -91,26 +91,58 @@ public class GCPInferenceTest {
     @Test
     void enum_field_to_str_infers_interprets_and_completes() {
         AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
-                outline Status = Approved|Rejected;
+                outline Status = Approved|Rejected|Pending|Fail;
 
                 let create = (x:{status:Status})->{
                     x.status.to_str()
                 };
 
-                let status = create({status:Approved});
+                let status = create({status:Status.Pending});
                 """);
         assertTrue(ast.asf().infer());
         assertTrue(ast.errors().isEmpty(), "" + ast.errors());
 
         Value result = ast.asf().interpret();
         assertInstanceOf(StringValue.class, result);
-        assertEquals("Approved", ((StringValue) result).value());
+        assertEquals("Pending", ((StringValue) result).value());
 
         MemberAccessor statusAccess = findMemberAccessor(ast.program(), "x.status");
         assertNotNull(statusAccess);
         List<FieldMeta> fields = MetaExtractor.fieldsOf(statusAccess.outline(), ast.sourceCode());
         assertTrue(fields.stream().anyMatch(field -> "to_str".equals(field.name())),
                 "Status field completion should include to_str; got: " + fields);
+    }
+
+    @Test
+    void template_construction_rejects_wrong_nested_field_name() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline Decision = <a>{
+                    payload:a,
+                    name:String
+                };
+                outline Decision_1 = Decision<{gender:String}>;
+                let decision_1 = Decision_1{payload:{gender2:"male"},name:"Evan"};
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.OUTLINE_MISMATCH
+                                || e.errorCode() == GCPErrCode.PROJECT_FAIL),
+                "expected mismatch on payload field name; got: " + ast.errors());
+    }
+
+    @Test
+    void template_construction_rejects_wrong_nested_field_name_simple() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline D = {
+                    payload:{gender:String}
+                };
+                let d = D{payload:{g:"male"}};
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().anyMatch(e ->
+                        e.errorCode() == GCPErrCode.OUTLINE_MISMATCH
+                                || e.errorCode() == GCPErrCode.PROJECT_FAIL),
+                "expected mismatch on payload field name; got: " + ast.errors());
     }
 
     @Test
