@@ -307,7 +307,18 @@ map
     : '[' (':' | ( literal ':' expression (',' literal ':' expression)* )) ']'
     ;
 entity
-    : '{' property_assignment (',' property_assignment)* '}'
+    : '{' entity_first (',' entity_member)* '}'
+    ;
+entity_first
+    : property_assignment
+    | shorthand_member ',' entity_member
+    ;
+entity_member
+    : property_assignment
+    | shorthand_member
+    ;
+shorthand_member
+    : ('override'|'overload')? (('let'|'var') {notLineTerminator()})? ID
     ;
 tuple
     : '(' expression ',' ')'
