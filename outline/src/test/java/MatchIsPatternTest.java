@@ -4,6 +4,9 @@ import org.twelve.gcp.ast.ASF;
 import org.twelve.gcp.ast.AST;
 import org.twelve.outline.OutlineParser;
 
+import org.twelve.gcp.interpreter.value.StringValue;
+import org.twelve.gcp.interpreter.value.Value;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -80,6 +83,43 @@ public class MatchIsPatternTest {
         assertTrue(guarded.asf().infer());
         assertEquals(guarded.errors().size(), sugar.errors().size(),
                 "is-pattern sugar should produce the same diagnostics as the guarded form");
+    }
+
+    @Test
+    void is_pattern_dispatches_to_correct_arm_at_runtime() {
+        // Regression: the legacy IsAs interpreter unconditionally returned TRUE so
+        // every `x is T` guard succeeded; passing `null` (UnitValue) into the
+        // function below would then run the `is String -> x` arm and yield null
+        // instead of the expected "nothing" branch.
+        AST nullCase = parse("""
+                var a:String? = null;
+                let f = x:String?->{
+                    match x {
+                        is String  -> "string",
+                        is Nothing -> "nothing"
+                    }
+                };
+                f(a)
+                """);
+        assertTrue(nullCase.asf().infer());
+        Value nullResult = nullCase.asf().interpret();
+        assertInstanceOf(StringValue.class, nullResult, "f(null) must select Nothing arm");
+        assertEquals("nothing", ((StringValue) nullResult).value());
+
+        AST stringCase = parse("""
+                var a:String? = "hi";
+                let f = x:String?->{
+                    match x {
+                        is String  -> "string",
+                        is Nothing -> "nothing"
+                    }
+                };
+                f(a)
+                """);
+        assertTrue(stringCase.asf().infer());
+        Value stringResult = stringCase.asf().interpret();
+        assertInstanceOf(StringValue.class, stringResult, "f(\"hi\") must select String arm");
+        assertEquals("string", ((StringValue) stringResult).value());
     }
 
     @Test
