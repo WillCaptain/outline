@@ -172,7 +172,10 @@ match_arms'
     : match_arm (',' match_arm)* ','?
     ;
 match_arm
-    : (symbol_unpack | Symbol | ID | number | STRING | '_') match_if? '->' expression
+    : (symbol_unpack | Symbol | ID | number | STRING | '_' | is_match_pattern) match_if? '->' expression
+    ;
+is_match_pattern
+    : 'is' declared_outline
     ;
 match_if
     : 'if' or_expression

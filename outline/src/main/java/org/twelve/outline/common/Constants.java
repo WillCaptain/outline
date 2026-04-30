@@ -103,6 +103,7 @@ public final class Constants {
     public static final String AND_PLUS = "AND_PLUS";
     public static final String AS_EXPRESSION = "as_expression";
     public static final String IS_EXPRESSION = "is_expression";
+    public static final String IS_MATCH_PATTERN = "is_match_pattern";
     public static final String TRUE = "True";
     public static final String FALSE = "False";
     public static final String TUPLE_UNPACK = "tuple_unpack";
