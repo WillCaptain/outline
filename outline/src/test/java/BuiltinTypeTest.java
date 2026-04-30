@@ -380,6 +380,42 @@ public class BuiltinTypeTest {
     }
 
     @Test
+    void calling_nullable_param_function_does_not_emit_spurious_project_fail() throws IOException {
+        // Regression: passing any actual (String literal, null, or a String?-typed variable)
+        // to a function whose parameter is declared `String?` previously triggered
+        // `[type_system] project compilation failed – '(x: String?)' (X is not )` because
+        // Genericable.<init> sets extendToBe to an empty Option as a "bottom" sentinel
+        // when declaredToBe is an Option, and Option.projectMySelf treated empty options
+        // as a failed match. Empty Option must instead trivially accept any projection.
+        OutlineParser parser = new OutlineParser();
+
+        AST callWithLiteral = parser.parse(new ASF(), """
+            let f = x:String?->{ 100 };
+            f("hi")
+            """);
+        assertTrue(callWithLiteral.asf().infer());
+        assertTrue(callWithLiteral.errors().isEmpty(),
+                "calling nullable-param fn with String literal should be error-free; errors: " + callWithLiteral.errors());
+
+        AST callWithNull = parser.parse(new ASF(), """
+            let f = x:String?->{ 100 };
+            f(null)
+            """);
+        assertTrue(callWithNull.asf().infer());
+        assertTrue(callWithNull.errors().isEmpty(),
+                "calling nullable-param fn with null should be error-free; errors: " + callWithNull.errors());
+
+        AST callWithNullableVar = parser.parse(new ASF(), """
+            var a:String? = null;
+            let f = x:String?->{ 100 };
+            f(a)
+            """);
+        assertTrue(callWithNullableVar.asf().infer());
+        assertTrue(callWithNullableVar.errors().isEmpty(),
+                "calling nullable-param fn with String? variable should be error-free; errors: " + callWithNullableVar.errors());
+    }
+
+    @Test
     void nullable_inline_struct_rejects_wrong_field_type() throws IOException {
         // Passing wrong type for a field (Int where String? expected) should produce an error.
         OutlineParser parser = new OutlineParser();
