@@ -123,6 +123,24 @@ public class EntityJsSyntaxTest {
     }
 
     @Test
+    void entity_copy_with_js_style_fields_can_project_to_struct_parameter() {
+        AST ast = parse("""
+                outline EmployeeStatus = INITIALIZED|ACTIVE|INACTIVE;
+                let create = (x:{name:String, email:String, status:EmployeeStatus, sync_status:String})->x;
+                let employee = {
+                  name = "Will",
+                  email = "will@example.com",
+                  status = EmployeeStatus.INITIALIZED,
+                  sync_status = "external"
+                };
+                create(employee{status:EmployeeStatus.INITIALIZED, sync_status: "internal"});
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(),
+                "Expected no errors but got: " + ast.errors());
+    }
+
+    @Test
     void trailing_comma_in_js_style_entity_is_rejected() {
         // The parser raises a syntax error as soon as it sees the dangling ','
         // before the closing '}' – trailing commas are disallowed by grammar.

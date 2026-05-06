@@ -114,6 +114,33 @@ public class GCPInferenceTest {
     }
 
     @Test
+    void nullable_named_entity_relation_return_preserves_target_type() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline ItemStatus = PENDING|APPROVED|EXPIRED;
+                outline Computer = {
+                    id:Int,
+                    serial_num:String?,
+                    status:ItemStatus?,
+                    update:{serial_num:String?, status:ItemStatus?} -> Unit
+                };
+                outline Employee = {
+                    id:Int,
+                    computer_id:Int?,
+                    computer:Unit -> Computer?
+                };
+
+                let activate = (employee: Employee, serial_number: String) -> {
+                    let computer = employee.computer();
+                    if (computer is Computer) {
+                        computer.update({serial_num = serial_number, status = ItemStatus.APPROVED});
+                    }
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "expected nullable relation to narrow to Computer, got: " + ast.errors());
+    }
+
+    @Test
     void template_construction_rejects_wrong_nested_field_name() {
         AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
                 outline Decision = <a>{
