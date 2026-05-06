@@ -141,6 +141,32 @@ public class GCPInferenceTest {
     }
 
     @Test
+    void lazy_named_entity_return_satisfies_declared_relation_function_type() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline ItemStatus = PENDING|APPROVED|EXPIRED;
+                outline Computer = {
+                    id:Int,
+                    serial_num:String?,
+                    status:ItemStatus?,
+                    update:{serial_num:String?, status:ItemStatus?} -> Unit
+                };
+                outline Employee = {
+                    id:Int,
+                    computer_id:Int?,
+                    computer:Unit -> Computer?
+                };
+
+                let employee:Employee = {
+                    _computer:Computer? = null,
+                    id = 100,
+                    computer = () -> _computer
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "expected lazy Computer? return to satisfy Unit -> Computer?, got: " + ast.errors());
+    }
+
+    @Test
     void template_construction_rejects_wrong_nested_field_name() {
         AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
                 outline Decision = <a>{
