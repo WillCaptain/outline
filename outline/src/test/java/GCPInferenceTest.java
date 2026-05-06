@@ -141,6 +141,116 @@ public class GCPInferenceTest {
     }
 
     @Test
+    void outline_decl_after_throwing_rhs_still_registered() {
+        // Regression: prior to the resilient OutlineDefinitionInference fix,
+        // a fatal Throwable (e.g. StackOverflowError from recursive generic
+        // projection on `VirtualSet<X>{...}`) on one outline rhs caused every
+        // subsequent `outline X = …` declaration in the same body scope to be
+        // silently dropped. Downstream `is X` narrowing then resolved X to a
+        // bare SYMBOL placeholder with no members. We simulate the failure by
+        // assigning a known-bad rhs and verifying the next outline declaration
+        // still registers and exposes its members.
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline Bad = doesNotExist<NotAType>{also: bogus};
+                outline Computer = { id:Int, serial_num:String? };
+                let computer:Computer? = null;
+                if (computer is Computer) {
+                    computer.id
+                }
+                """);
+        ast.asf().infer();
+        assertTrue(ast.errors().stream().noneMatch(e -> e.errorCode() == GCPErrCode.FIELD_NOT_FOUND),
+                "expected `outline Computer` after a failing earlier rhs to still register; got: " + ast.errors());
+    }
+
+    @Test
+    void direct_typed_local_member_access() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline Computer = { id:Int, serial_num:String? };
+                let computer:Computer? = null;
+                computer.id
+                """);
+        ast.asf().infer();
+        // Computer? is nullable — direct .id should fail (Nothing has no id),
+        // but the diagnostic tells us if Computer itself resolves correctly:
+        System.err.println("direct typed errs: " + ast.errors());
+    }
+
+    @Test
+    void nullable_local_is_narrowing_member_access() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline ItemStatus = PENDING|APPROVED|EXPIRED;
+                outline Computer = {
+                    id:Int,
+                    serial_num:String?,
+                    status:ItemStatus?,
+                    update:{serial_num: String?, status: ItemStatus?} -> Unit,
+                    delete:Unit -> Unit
+                };
+                let computer:Computer? = null;
+                if (computer is Computer) {
+                    computer.id
+                }
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "expected `computer is Computer` to narrow Computer? -> Computer for member access; got: " + ast.errors());
+    }
+
+    @Test
+    void untyped_lambda_relation_narrowing_in_if_body() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline ItemStatus = PENDING|APPROVED|EXPIRED;
+                outline Computer = {
+                    id:Int,
+                    serial_num:String?,
+                    status:ItemStatus?,
+                    update:{serial_num:String?, status:ItemStatus?} -> Unit
+                };
+                outline Employee = {
+                    id:Int,
+                    computer_id:Int?,
+                    computer:Unit -> Computer?
+                };
+
+                let activate = (employee) -> {
+                    let computer = employee.computer();
+                    if (computer is Computer) {
+                        computer.update({serial_num = "SN", status = ItemStatus.APPROVED});
+                    }
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "expected untyped lambda to still narrow `computer is Computer`, got: " + ast.errors());
+    }
+
+    @Test
+    void nullable_relation_disjoint_is_reports_unreachable_cast() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline ItemStatus = PENDING|APPROVED|EXPIRED;
+                outline Computer = {
+                    id:Int,
+                    serial_num:String?,
+                    status:ItemStatus?,
+                    update:{serial_num:String?, status:ItemStatus?} -> Unit
+                };
+                outline Employee = {
+                    id:Int,
+                    computer_id:Int?,
+                    computer:Unit -> Computer?
+                };
+
+                let f = (employee: Employee) -> {
+                    let computer = employee.computer();
+                    if (computer is Employee) {
+                    }
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().stream().anyMatch(e -> e.errorCode() == GCPErrCode.TYPE_CAST_NEVER_SUCCEED),
+                "expected impossible `computer is Employee` to surface TYPE_CAST_NEVER_SUCCEED; got: " + ast.errors());
+    }
+
+    @Test
     void lazy_named_entity_return_satisfies_declared_relation_function_type() {
         AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
                 outline ItemStatus = PENDING|APPROVED|EXPIRED;
@@ -164,6 +274,57 @@ public class GCPInferenceTest {
                 """);
         assertTrue(ast.asf().infer());
         assertTrue(ast.errors().isEmpty(), "expected lazy Computer? return to satisfy Unit -> Computer?, got: " + ast.errors());
+    }
+
+    @Test
+    void generated_employee_schema_allows_typed_action_param_relation_access() {
+        AST ast = ASTHelper.parser.parse(new org.twelve.gcp.ast.ASF(), """
+                outline EmployeeStatus = INITIALIZED|APPROVED|REJECTED|ACTIVE;
+                outline ItemStatus = PENDING|APPROVED|EXPIRED;
+                outline Department = { id:Int };
+                outline SalaryRecord = { id:Int };
+                outline Badge = { id:Int };
+                outline Computer = {
+                    id:Int,
+                    serial_num:String?,
+                    status:ItemStatus?,
+                    update:{serial_num: String?, status: ItemStatus?} -> Unit
+                };
+                outline Employee = {
+                    id:Int,
+                    name:String,
+                    email:String,
+                    gender:String,
+                    sync_status:String,
+                    status:EmployeeStatus,
+                    department_id:Int?,
+                    salary_id:Int?,
+                    computer_id:Int?,
+                    badge_id:Int?,
+                    apply_pc_id:Int,
+                    define_salary_id:Int,
+                    issue_badge_id:Int,
+                    department:Unit -> Department?,
+                    salary:Unit -> SalaryRecord?,
+                    computer:Unit -> Computer?,
+                    badge:Unit -> Badge?,
+                    apply_pc:Unit -> Computer,
+                    define_salary:Unit -> SalaryRecord,
+                    issue_badge:Unit -> Badge,
+                    register_onboarding:Unit -> Unit,
+                    register:Unit -> ?,
+                    activate:String -> ?,
+                    update:{name: String?, email: String?, gender: String?, sync_status: String?, status: EmployeeStatus?, department_id: Int?, salary_id: Int?, computer_id: Int?, badge_id: Int?, apply_pc_id: Int?, define_salary_id: Int?, issue_badge_id: Int?} -> Unit,
+                    delete:Unit -> Unit
+                };
+
+                let activate = (employee: Employee) -> {
+                    let computer = employee.computer();
+                    computer
+                };
+                """);
+        assertTrue(ast.asf().infer());
+        assertTrue(ast.errors().isEmpty(), "expected generated Employee relation access to infer, got: " + ast.errors());
     }
 
     @Test
