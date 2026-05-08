@@ -783,7 +783,6 @@ public class InferenceTest {
     }
 
     @Test
-    @Disabled("known-incomplete: cross-module invoke chains do not converge to fully-resolved types")
     void test_inter_invoke(){
         AST ast = ASTHelper.mockInterInvoke();
         ast.asf().infer();
@@ -1229,7 +1228,6 @@ public class InferenceTest {
     }
 
     @Test
-    @Disabled("known-incomplete: recursive `outline X = ... X ...` extension not yet inferred end-to-end")
     void test_recursive_extension(){
         AST ast = ASTHelper.mockRecurExtend();
         ast.asf().infer();
@@ -2057,7 +2055,6 @@ public class InferenceTest {
     }
 
     @Test
-    @Disabled("known-incomplete: this-return chain produces spurious 'value cannot be assigned to this binding' error")
     void test_this_return_chain_no_stackoverflow() {
         // Chaining methods that return `this{...}` must not cause StackOverflowError.
         // The Lazy.eventual() cycle guard prevents infinite mutual recursion between
