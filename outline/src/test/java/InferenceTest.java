@@ -773,7 +773,6 @@ public class InferenceTest {
     }
 
     @Test
-    @Disabled("known-incomplete: forward reference from outline body not fully resolved by inferer")
     void test_future_reference_from_outline(){
         AST ast = ASTHelper.mockFutureReferenceFromOutline();
         ast.asf().infer();
@@ -794,7 +793,6 @@ public class InferenceTest {
     }
 
     @Test
-    @Disabled("known-incomplete: Lazy reference-call constraint propagation incomplete")
     void test_reference_call_Lazy(){
         AST ast = ASTHelper.mockReferCallLazy();
         ast.asf().infer();
@@ -1922,7 +1920,6 @@ public class InferenceTest {
     }
 
     @Test
-    @Disabled("known-incomplete: ~this propagation through chained filter() loses entity context")
     void test_chained_filter_this_preserved() {
         AST ast = ASTHelper.mockChainedFilterThis();
         ast.asf().infer();
